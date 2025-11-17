@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài Đặt Thanh Toán - Buser.com</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-sidebar {
+            background-color: #f8f8f8;
+            border-right: 1px solid #ddd;
+            padding: 15px;
+            min-height: 80vh;
+        }
+
+        .admin-sidebar .nav-pills>li>a {
+            color: #333;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .admin-sidebar .nav-pills>li>a:hover {
+            background-color: #eee;
+        }
+
+        .admin-sidebar .nav-pills>li.active>a {
+            background-color: #2882C0;
+            color: #fff;
+        }
+
+        .admin-main-content {
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM (ADMIN)</a>
+                </div>
+                <div class="collapse navbar-collapse" id="navbar-main">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="index.html" style="color: #fff;"><i class="fa fa-home"></i> Trang chủ</a></li>
+                        <li><a href="login.html" style="color: #fff;"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-sm-3 admin-sidebar">
+                <ul class="nav nav-pills nav-stacked">
+                    <li><a href="admin_dashboard.html"><i class="fa fa-dashboard"></i> Tổng quan</a></li>
+                    <li><a href="admin_history.html"><i class="fa fa-history"></i> Lịch sử Giao dịch</a></li>
+                    <li><a href="admin_users.html"><i class="fa fa-users"></i> Quản lý Người dùng</a></li>
+                    <li class="active"><a href="admin_settings.html"><i class="fa fa-cogs"></i> Cài đặt Thanh toán</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-sm-9 admin-main-content">
+                <h2>Cài đặt Thanh toán</h2>
+                <p>Cấu hình thông tin tài khoản của bạn để nhận thanh toán từ người dùng.</p>
+
+                <form id="settings-form" class="form-horizontal">
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">Cấu hình nhận VNĐ (Cho đơn Mua)</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Ngân hàng (BIN):</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="admin_bank_bin"
+                                        placeholder="Ví dụ: 970407 (Techcombank)">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Số tài khoản:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="admin_account_number"
+                                        placeholder="STK của bạn">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Tên chủ tài khoản:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="admin_account_name"
+                                        placeholder="Tên của bạn, viết hoa không dấu">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-success">
+                        <div class="panel-heading">Cấu hình nhận Coin (Cho đơn Bán)</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Địa chỉ/ID Bustabit:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="admin_bustabit_id"
+                                        placeholder="ID Bustabit của bạn">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Địa chỉ ví USDT (BEP20):</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="admin_usdt_wallet"
+                                        placeholder="0x...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9 col-sm-offset-3">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Lưu Cài
+                                Đặt</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>

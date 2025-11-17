@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Tài Khoản Ngân Hàng - Buser.com</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body style="background-color: #f9f9f9;">
+
+    <header>
+        <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="panel panel-default" style="margin-top: 30px;">
+                    <div class="panel-heading">
+                        <h4><i class="fa fa-university"></i> Thêm tài khoản ngân hàng</h4>
+                    </div>
+                    <div class="panel-body">
+
+                        <form id="add-bank-form">
+
+                            <div class="form-group">
+                                <label class="labelGreen">Ngân hàng:</label>
+                                <select class="form-control formGreen" name="bank_name" required>
+                                    <option value="">-- Chọn ngân hàng --</option>
+                                    <option value="Vietcombank (VCB)">Vietcombank (VCB)</option>
+                                    <option value="Á Châu (ACB)">Á Châu (ACB)</option>
+                                    <option value="Techcombank (TCB)">Techcombank (TCB)</option>
+                                    <option value="MBBank (MB)">MBBank (MB)</option>
+                                    <option value="VietinBank (ICB)">VietinBank (ICB)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="labelGreen">Số tài khoản:</label>
+                                <input type="text" class="form-control formGreen" name="account_number"
+                                    placeholder="Nhập số tài khoản" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="labelRed">Họ tên chủ tài khoản:</label>
+                                <input type="text" class="form-control formRed" name="account_name"
+                                    placeholder="Họ tên viết hoa, không dấu" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-block">
+                                <i class="fa fa-save"></i> Lưu Lại
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>

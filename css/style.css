@@ -1,0 +1,200 @@
+body {
+    background-color: #E6E6FA;
+    /* Màu nền giống trang gốc */
+    padding-top: 0;
+    /* Navbar đã có rồi */
+}
+
+/* Định dạng chung cho các khung */
+.panel {
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.panel-success {
+    border-color: #d6e9c6;
+}
+
+.panel-success>.panel-heading {
+    background-color: #6cb55a;
+    color: #fff;
+    border-color: #d6e9c6;
+    font-weight: bold;
+}
+
+/* Định dạng Bảng giá */
+.rate_header {
+    background-color: #2882C0;
+    color: #fff;
+}
+
+.rate_buy {
+    color: #468847;
+    font-weight: bold;
+}
+
+.rate_sell {
+    color: #b94a48;
+    font-weight: bold;
+}
+
+.icon {
+    width: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+/* Các lớp màu cho form (sẽ dùng sau) */
+.formGreen {
+    border: 1px solid #468847;
+}
+
+.labelGreen {
+    color: #468847;
+}
+
+.formRed {
+    border: 1px solid #b94a48;
+}
+
+.labelRed {
+    color: #b94a48;
+}
+
+/* ========================
+   CSS CHO FORM SWAP MỚI
+   ======================== */
+
+#swap-form-panel {
+    border-radius: 8px;
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Tùy chỉnh Tab Mua/Bán */
+#buy-sell-tabs {
+    border-bottom: 2px solid #f1f1f1;
+    margin-bottom: 20px;
+}
+
+#buy-sell-tabs>li>a {
+    border: none !important;
+    background-color: transparent !important;
+    color: #888;
+    font-size: 16px;
+    font-weight: bold;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+#buy-sell-tabs>li.active>a,
+#buy-sell-tabs>li.active>a:hover,
+#buy-sell-tabs>li.active>a:focus {
+    color: #333;
+    border-bottom: 3px solid #6cb55a !important;
+    /* Màu xanh lá cho active */
+}
+
+/* Màu tab Mua */
+#buy-sell-tabs>li.active>a[href="#buy-tab"] {
+    border-bottom-color: #6cb55a !important;
+    /* Xanh lá */
+}
+
+/* Màu tab Bán */
+#buy-sell-tabs>li.active>a[href="#sell-tab"] {
+    border-bottom-color: #b94a48 !important;
+    /* Đỏ */
+}
+
+/* Khung Swap */
+.swap-box {
+    padding: 10px;
+}
+
+.swap-field {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.swap-field label {
+    font-size: 14px;
+    color: #777;
+    font-weight: normal;
+}
+
+.swap-field .input-group {
+    margin-bottom: 5px;
+}
+
+.swap-field .form-control {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 28px;
+    font-weight: bold;
+    padding-left: 0;
+    height: 45px;
+}
+
+.swap-field .balance-info {
+    font-size: 12px;
+    color: #999;
+}
+
+.swap-field .input-group-btn>.btn {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 20px !important;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px 12px;
+}
+
+.swap-field .input-group-btn .icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+/* Nút chuyển đổi */
+.swap-toggle {
+    display: none;
+}
+
+.swap-toggle .btn {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    color: #2882C0;
+}
+
+/* Thông tin tỷ giá */
+.swap-info {
+    /* Tăng margin-top để bù cho nút đã xóa */
+    margin: 30px 0 15px 0;
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+/* Nút chính */
+#btn-submit-swap {
+    background-color: #6cb55a;
+    /* Màu xanh */
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px;
+    transition: background-color 0.2s;
+}
+
+#btn-submit-swap:hover {
+    background-color: #5a9c4a;
+}

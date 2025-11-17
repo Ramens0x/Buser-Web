@@ -1,0 +1,12 @@
+Flask
+Flask-CORS
+Flask-SQLAlchemy
+requests
+qrcode
+Pillow
+werkzeug
+psycopg2-binary
+PyJWT
+Flask-Limiter
+Flask-SocketIO
+eventlet

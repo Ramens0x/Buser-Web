@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# File CSDL (Rất quan trọng! Không đẩy CSDL lên)
+buser.db
+
+# File cấu hình chứa bí mật (TOKEN, MẬT KHẨU)
+config.json
+
+# Các thư mục môi trường ảo (nếu bạn dùng)
+.env
+venv/
+env/
