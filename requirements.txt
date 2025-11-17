@@ -10,3 +10,5 @@ PyJWT
 Flask-Limiter
 Flask-SocketIO
 eventlet
+Flask-Mail
+APScheduler

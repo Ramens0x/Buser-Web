@@ -8,6 +8,7 @@ from flask_limiter.util import get_remote_address
 import requests 
 import json
 import os
+from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import random
@@ -18,9 +19,44 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 import jwt
 from datetime import datetime, timedelta
+from flask_mail import Mail, Message
+import time
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # --- [MỚI] CẤU HÌNH CSDL ---
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads/bills'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Giới hạn 5MB
+os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa có
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def clean_old_bills():
+    try:
+        retention_period = 90 * 24 * 60 * 60 
+        now = time.time()
+        folder = app.config.get('UPLOAD_FOLDER')
+        if not folder or not os.path.exists(folder): return
+        count = 0
+        for filename in os.listdir(folder):
+            filepath = os.path.join(folder, filename)
+            if os.path.isfile(filepath):
+                if now - os.path.getmtime(filepath) > retention_period:
+                    os.remove(filepath); count += 1
+        if count > 0: print(f"🧹 Đã xóa {count} bill cũ.")
+    except Exception as e: print(f"❌ Lỗi dọn dẹp: {e}")
+
+# Lưu ý: Với Gmail, mật khẩu phải là "Mật khẩu ứng dụng" (App Password), không phải mật khẩu đăng nhập thường.
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'email_cua_ban@gmail.com'  # <-- Thay email của bạn
+app.config['MAIL_PASSWORD'] = 'mat_khau_ung_dung_16_ky_tu' # <-- Thay mật khẩu ứng dụng
+mail = Mail(app)
+# ☝️ KẾT THÚC KHỐI CẤU HÌNH
 limiter = Limiter(
     get_remote_address,
     app=app
@@ -85,7 +121,7 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
-        default_settings = {"admin_bank_bin": "970407", "admin_account_number": "19035226373011", "admin_account_name": "ADMIN BUSER COM", "admin_bustabit_id": "YOUR_BUSTABIT_ID_HERE", "admin_usdt_wallet": "0x..."}
+        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "Buser", "admin_bustabit_id": "Buser", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "8444897137:AAGu2JzXx6IRa3t4srJkpYH4ozA2bGXw3vI","TELEGRAM_CHAT_ID": "398872968"}
         save_settings(default_settings)
         app_settings = default_settings
         return default_settings
@@ -97,6 +133,17 @@ def save_settings(settings):
     global app_settings
     with open(CONFIG_FILE, 'w') as f: json.dump(settings, f, indent=4)
     app_settings = settings
+
+def send_reset_email(user_email, reset_link):
+    try:
+        msg = Message('Đặt lại mật khẩu - Buser.com',
+                      sender=app.config.get('MAIL_USERNAME'),
+                      recipients=[user_email])
+        msg.body = f'Xin chào,\n\nBạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link sau:\n{reset_link}\n\nLink này sẽ hết hạn sau 15 phút.\n\nTrân trọng,\nBuser Team'
+        mail.send(msg)
+        print(f"✅ Đã gửi email reset tới {user_email}")
+    except Exception as e:
+        print(f"❌ Lỗi gửi email: {e}")
 
 # --- HÀM LẤY USER TỪ TOKEN ---
 def get_user_from_request():
@@ -131,7 +178,7 @@ def get_user_from_request():
         # Các lỗi khác (ví dụ: header không có 'Bearer ')
         return None
 
-def generate_random_id(prefix="BUSER"):
+def generate_random_id(prefix="Chuyen Tien"):
     number = random.randint(100000, 999999)
     return f"{prefix}{number}"
 
@@ -351,9 +398,9 @@ def api_forgot_password():
         db.session.commit()
         
         reset_link = f"http://127.0.0.1:5500/reset-password.html?token={token}"
-        print(f"--- [EMAIL SIM] Link reset cho {email}: {reset_link} ---")
+        send_reset_email(email, reset_link)
         
-    return jsonify({"success": True, "message": "Nếu email tồn tại, một link đặt lại mật khẩu đã được gửi (Kiểm tra terminal của bạn!)"})
+    return jsonify({"success": True, "message": "Nếu email tồn tại, vui lòng kiểm tra hộp thư (kể cả mục Spam)."})
 
 @app.route("/api/reset-password", methods=['POST'])
 @limiter.limit("5 per minute")
@@ -433,7 +480,7 @@ def create_order():
                 f"Nhận Coin: *{new_order.amount_coin:.8f} {new_order.coin.upper()}*\n"
                 f"Gửi VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*"
             )
-        send_telegram_notification(message)
+        send_telegram_notification(message, order_id=new_order.id)
     except Exception as e:
         print(f"Lỗi khi tạo tin nhắn Telegram: {e}")
 
@@ -444,6 +491,42 @@ def create_order():
         "user_wallet_id": new_order.user_wallet_id, "user_bank_id": new_order.user_bank_id,
         "payment_info": payment_info_dict
     }})
+
+# --- API UPLOAD BILL & XEM BILL ---
+@app.route("/api/upload-bill", methods=['POST'])
+def upload_bill():
+    user = get_user_from_request()
+    if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+    if 'bill_image' not in request.files: return jsonify({"success": False, "message": "Không có file"}), 400
+    
+    file = request.files['bill_image']
+    order_id = request.form.get('order_id')
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"{order_id}_{user.username}_{file.filename}")
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        order = Order.query.filter_by(id=order_id, username=user.username).first()
+        if order:
+            payment_info = json.loads(order.payment_info or '{}')
+            payment_info['bill_image'] = filename
+            order.payment_info = json.dumps(payment_info)
+            db.session.commit()
+            
+            # Báo Telegram cho Admin
+            try:
+                msg = f"📸 *BILL MỚI* \nUser: {user.username}\nĐơn: {order_id}"
+                send_telegram_notification(msg, order_id=order.id)
+            except: pass
+
+            return jsonify({"success": True, "filename": filename, "message": "Đã tải ảnh lên thành công!"})
+    return jsonify({"success": False, "message": "File không hợp lệ"}), 400
+
+@app.route("/api/admin/bill/<path:filename>")
+def get_bill_image(filename):
+    user = get_user_from_request()
+    if not user or user.role != 'Admin': return "Cấm truy cập", 403
+    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 # --- [MỚI] API LẤY CHI TIẾT ĐƠN HÀNG (CHO TRANG THANH TOÁN) ---
 @app.route("/api/order/<order_id>", methods=['GET'])
@@ -516,32 +599,46 @@ def get_qr_image():
     img = generate_qr_code_image(data); img_io = io.BytesIO(); img.save(img_io, 'PNG'); img_io.seek(0);
     return send_file(img_io, mimetype='image/png')
 
-# --- [MỚI] HÀM GỬI THÔNG BÁO TELEGRAM ---
-def send_telegram_notification(message):
-    global app_settings # Lấy cài đặt toàn cục
+# --- [MỚI] HÀM GỬI THÔNG BÁO TELEGRAM (NÂNG CẤP) ---
+def send_telegram_notification(message, order_id=None):
+    """
+    Gửi thông báo Telegram có nút tương tác
+    """
+    global app_settings
     token = app_settings.get('TELEGRAM_BOT_TOKEN')
     chat_id = app_settings.get('TELEGRAM_CHAT_ID')
-
-    # Kiểm tra nếu admin chưa cấu hình
-    if not token or not chat_id or token == "TOKEN_CUA_BAN_O_DAY":
+    
+    if not token or not chat_id or token == "":
         print(">>> LƯU Ý: Chưa cấu hình Telegram Bot. Bỏ qua thông báo.")
         return
-
+    
     api_url = f"https://api.telegram.org/bot{token}/sendMessage"
-
-    # Chúng ta dùng Markdown để tin nhắn đẹp hơn (in đậm)
+    
     payload = {
         'chat_id': chat_id,
         'text': message,
-        'parse_mode': 'Markdown' 
-    }
+        'parse_mode': 'Markdown'
+        }
+    
+    # Bạn có thể đổi 127.0.0.1:5500 thành tên miền thật khi deploy
 
-    try:
-        # Gửi tin nhắn, timeout 5 giây (để không làm treo web nếu Telegram chậm)
-        requests.post(api_url, json=payload, timeout=5)
-    except Exception as e:
-        # Nếu Telegram lỗi, chỉ in ra console, không làm sập server
-        print(f"Lỗi khi gửi thông báo Telegram: {e}")
+    if order_id:
+        payload['reply_markup'] = {
+            'inline_keyboard': [[
+                {
+                    'text': '✅ Xem chi tiết Dashboard',
+                    'url': f'http://127.0.0.1:5500/admin_dashboard.html' 
+                }
+            ]]
+         }
+        try:
+            response = requests.post(api_url, json=payload, timeout=5)
+            if response.status_code == 200:
+                print(f"✅ Đã gửi Telegram: {message[:50]}...")
+            else:
+                print(f"⚠️ Telegram lỗi: {response.text}")
+        except Exception as e:
+            print(f"❌ Lỗi khi gửi thông báo Telegram: {e}")
 
 # --- API VÍ/NGÂN HÀNG CỦA USER ---
 @app.route("/api/user/wallets", methods=['GET'])
@@ -649,6 +746,18 @@ def admin_cancel_order():
         return jsonify({"success": False, "message": "Không tìm thấy đơn hàng hoặc đơn hàng đã được xử lý"}), 404
     order.status = 'cancelled'
     db.session.commit()
+
+    try:
+        message = (
+            f"⛔ *ADMIN HỦY ĐƠN*\n"
+            f"Mã GD: *{order.id}*\n"
+            f"User: *{order.username}*"
+            )
+        send_telegram_notification(message)
+    except Exception as e:
+        print(f"Lỗi gửi Telegram: {e}")
+
+    socketio.emit('order_completed', {'order_id': order.id}, room=order.id)
     return jsonify({"success": True, "message": f"Admin đã hủy đơn hàng {order_id}"})
 
     # --- [MỚI] API ADMIN ĐỂ XEM VÀ DUYỆT GIAO DỊCH ---
@@ -662,9 +771,10 @@ def get_admin_transactions():
     
     orders_list = []
     for order in pending_orders:
-        # [MỚI] Lấy chi tiết ví/bank thực tế để hiển thị cho Admin
+        payment_info = json.loads(order.payment_info or '{}')
+        bill_image_filename = payment_info.get('bill_image', None)
         detail_info = "Không có dữ liệu"
-        if order.mode == 'buy': # Khách mua -> Admin cần biết ví khách để trả coin
+        if order.mode == 'buy': 
             w = Wallet.query.filter_by(id=order.user_wallet_id).first()
             if w:
                 tag_info = f" | Tag: {w.tag}" if w.tag else ""
@@ -677,7 +787,10 @@ def get_admin_transactions():
             "id": order.id, "mode": order.mode, "coin": order.coin, "amount_vnd": order.amount_vnd,
             "amount_coin": order.amount_coin, "status": order.status, "created_at": order.created_at.isoformat(),
             "username": order.username, 
-            "detail_info": detail_info # [MỚI] Gửi thông tin chi tiết thay vì ID
+            "detail_info": detail_info,
+            "username": order.username, 
+            "detail_info": detail_info,
+            "bill_image": bill_image_filename
         })
 
     # 2. [MỚI] Tính toán thống kê
@@ -724,6 +837,18 @@ def complete_admin_transaction():
         
     order.status = 'completed' # Cập nhật trạng thái
     db.session.commit()
+
+    try:
+        action = "Đã nhận coin" if order.mode == 'buy' else "Đã nhận VNĐ"
+        message = (
+            f"✅ *ĐƠN HÀNG HOÀN TẤT*\n"
+            f"Mã GD: *{order.id}*\n"
+            f"User: *{order.username}*\n"
+            f"Loại: *{order.mode.upper()}*"
+            )
+        send_telegram_notification(message, order_id=order.id)
+    except Exception as e:
+        print(f"Lỗi gửi Telegram: {e}")
 
     socketio.emit('order_completed', {'order_id': order.id}, room=order.id)
     
@@ -840,13 +965,33 @@ def get_user_transactions():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500    
     
+@socketio.on('join_room')
+def handle_join_room(data):
+    """
+    Client (người dùng) gọi sự kiện này khi họ mở trang thanh toán
+    để tham gia vào phòng của riêng đơn hàng đó.
+    """
+    room = data.get('room_id')
+    if room:
+        from flask_socketio import join_room
+        join_room(room)
+        print(f"✅ Client đã tham gia phòng: {room}")
+
+@socketio.on('connect')
+def handle_connect():
+    print("Một Client vừa kết nối Socket.IO")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("Một Client đã ngắt kết nối Socket.IO")
+
 # --- Chạy máy chủ ---
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         load_settings()
+
         
-        # Kiểm tra và tạo admin bằng chữ thường
         admin_user = User.query.filter_by(username='buser').first()
         if not admin_user:
             admin_pass = generate_password_hash("sonhoang1") 
@@ -859,6 +1004,12 @@ if __name__ == '__main__':
             db.session.add(admin_user)
             db.session.commit()
             print(">>> Đã tạo tài khoản Admin (buser/sonhoang1) cố định <<<") 
+            
+            scheduler = BackgroundScheduler()
+            # Chạy hàm clean_old_bills mỗi 24 giờ (1 ngày)
+            scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24)
+            scheduler.start()
+    print(">>> ✅ Đã kích hoạt bộ dọn dẹp Bill tự động (90 ngày) <<<")
             
 print(">>> Khởi chạy Buser-Web server với Socket.IO tại http://127.0.0.1:5000 <<<")
 socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)

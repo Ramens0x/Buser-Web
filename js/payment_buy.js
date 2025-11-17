@@ -40,6 +40,8 @@ $(document).ready(function () {
         $('#order-id').text(escapeHTML(order.id));
         $('#order-time').text(new Date(order.created_at).toLocaleString('vi-VN'));
 
+        $('#upload-order-id').val(order.id);
+
         // Hiển thị thông tin thanh toán (Admin nhận tiền)
         const info = order.payment_info;
         if (info) {
@@ -115,4 +117,43 @@ $(document).ready(function () {
             }
         });
     }
+
+    // --- XỬ LÝ UPLOAD BILL ---
+    $('#upload-bill-form').on('submit', function (e) {
+        e.preventDefault();
+
+        // Kiểm tra xem có orderId chưa (lấy từ URL ở đầu file)
+        if (!orderId) {
+            alert("Lỗi: Không tìm thấy mã đơn hàng!");
+            return;
+        }
+
+        const formData = new FormData(this);
+        //formData.append('order_id', orderId);
+
+        // Hiển thị trạng thái đang tải
+        const btn = $(this).find('button[type="submit"]');
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang tải...');
+
+        $.ajax({
+            url: `${API_URL}/api/upload-bill`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            },
+            success: function (res) {
+                alert(res.message);
+                $('#upload-bill-form').parent().removeClass('alert-info').addClass('alert-success')
+                    .html('<strong><i class="fa fa-check"></i> Đã gửi ảnh chứng từ thành công!</strong> Admin đang kiểm tra.');
+            },
+            error: function (xhr) {
+                alert('❌ Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.message : "Không thể tải ảnh"));
+                btn.prop('disabled', false).html(originalText); // Mở lại nút nếu lỗi
+            }
+        });
+    });
 });

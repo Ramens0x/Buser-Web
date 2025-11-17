@@ -666,6 +666,8 @@ $(document).ready(function () {
                     $('input[name="admin_account_name"]').val(response.settings.admin_account_name);
                     $('input[name="admin_bustabit_id"]').val(response.settings.admin_bustabit_id);
                     $('input[name="admin_usdt_wallet"]').val(response.settings.admin_usdt_wallet);
+                    $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
+                    $('input[name="telegram_chat_id"]').val(response.settings.TELEGRAM_CHAT_ID || '');
                 }
             },
             error: function (xhr) {
@@ -682,7 +684,9 @@ $(document).ready(function () {
             admin_account_number: $('input[name="admin_account_number"]').val(),
             admin_account_name: $('input[name="admin_account_name"]').val(),
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
-            admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val()
+            admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
+            TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
+            TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val()
         };
         $.ajax({
             url: API_URL + "/api/admin/settings",

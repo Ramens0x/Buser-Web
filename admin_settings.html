@@ -121,6 +121,37 @@
                         </div>
                     </div>
 
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">🤖 Cấu hình Telegram Bot (Tùy chọn)</div>
+                        <div class="panel-body">
+                            <div class="alert alert-info">
+                                <strong>Hướng dẫn:</strong>
+                                <ol style="margin-bottom: 0;">
+                                    <li>Tìm <strong>@BotFather</strong> trên Telegram → Tạo bot mới → Copy
+                                        <strong>Token</strong></li>
+                                    <li>Tìm <strong>@userinfobot</strong> → Gửi tin nhắn → Copy <strong>Chat ID</strong>
+                                        của bạn</li>
+                                    <li>Gửi tin nhắn bất kỳ cho Bot của bạn để kích hoạt</li>
+                                </ol>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Bot Token:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="telegram_bot_token"
+                                        placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Chat ID:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="telegram_chat_id"
+                                        placeholder="123456789">
+                                    <small class="text-muted">Để trống nếu không muốn dùng Telegram Bot</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <div class="col-sm-9 col-sm-offset-3">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Lưu Cài

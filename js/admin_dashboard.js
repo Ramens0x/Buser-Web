@@ -27,7 +27,9 @@ $(document).ready(function () {
 
     // --- Xử lý nút "Hủy Đơn" (Admin) ---
     $(document).on('click', '.btn-cancel-admin', function () {
-        const orderId = $(this).data('id');
+        const btn = $(this); // [MỚI] Lưu lại nút đang bấm
+        const orderId = btn.data('id'); // Sửa $(this) thành btn
+
         if (!confirm(`ADMIN: Bạn có chắc chắn muốn HỦY đơn hàng ${orderId} không?`)) {
             return;
         }
@@ -41,7 +43,9 @@ $(document).ready(function () {
             },
             success: function (response) {
                 alert(response.message);
-                $(`#order-${orderId}`).fadeOut(500, function () {
+
+                // [SỬA ĐOẠN NÀY] Xóa dòng chứa nút bấm (Chính xác 100%)
+                btn.closest('tr').fadeOut(500, function () {
                     $(this).remove();
                     loadTransactions();
                 });
@@ -90,15 +94,20 @@ $(document).ready(function () {
         let sellCount = 0;
 
         transactions.forEach(order => {
-            // Nút hành động chung (Gửi Coin / Chuyển Tiền + Hủy)
+
             let actionBtns = '';
             if (order.mode === 'buy') {
                 actionBtns = `<button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Gửi Coin</button>`;
             } else {
                 actionBtns = `<button class="btn btn-sm btn-warning btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Chuyển Tiền</button>`;
             }
-            // Thêm nút hủy
+
             actionBtns += `<br><button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top:5px;"><i class="fa fa-times"></i> Hủy đơn</button>`;
+
+            let billLink = '';
+            if (order.bill_image) {
+                billLink = `<br><a href="${API_URL}/api/admin/bill/${order.bill_image}" target="_blank" class="btn btn-xs btn-info" style="margin-top:5px;"><i class="fa fa-picture-o"></i> Xem Bill</a>`;
+            }
 
             const row = `
                 <tr id="order-${order.id}">
@@ -106,7 +115,7 @@ $(document).ready(function () {
                     <td>${escapeHTML(order.username)}</td>
                     <td>${numberFormat(order.mode === 'buy' ? order.amount_coin : order.amount_vnd, order.mode === 'buy' ? 8 : 0)} ${order.mode === 'buy' ? order.coin.toUpperCase() : 'VNĐ'}</td>
                     <td>${order.coin.toUpperCase()}</td>
-                    <td>${order.detail_info}</td> 
+                    <td>${order.detail_info} ${billLink}</td> 
                     <td>${actionBtns}</td>
                 </tr>`;
 
@@ -122,14 +131,16 @@ $(document).ready(function () {
     }
 
     // --- Xử lý nút "Hoàn tất" ---
-    // (Dùng .on() vì các nút này được tạo động)
     $(document).on('click', '.btn-complete', function () {
-        const orderId = $(this).data('id');
+        const btn = $(this); // [MỚI] Lưu lại nút đang bấm
+        const orderId = btn.data('id');
+
         if (!confirm(`Bạn có chắc chắn muốn hoàn tất đơn hàng ${orderId} không?`)) {
             return;
         }
 
         $.ajax({
+            // ... (các phần url, type giữ nguyên) ...
             url: `${API_URL}/api/admin/transactions/complete`,
             type: 'POST',
             contentType: 'application/json',
@@ -140,10 +151,9 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.success) {
                     alert(response.message);
-                    // Xóa hàng đó khỏi bảng
-                    $(`#order-${orderId}`).fadeOut(500, function () {
+                    btn.closest('tr').fadeOut(500, function () {
                         $(this).remove();
-                        // Tải lại để cập nhật số đếm
+
                         loadTransactions();
                     });
                 }

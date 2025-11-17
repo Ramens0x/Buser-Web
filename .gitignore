@@ -12,3 +12,6 @@ config.json
 .env
 venv/
 env/
+
+uploads
+bills
