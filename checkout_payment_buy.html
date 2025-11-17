@@ -88,6 +88,10 @@
                                 <img src="" id="qr-image" class="img-responsive" alt="Đang tải mã VietQR...">
                                 <p style="margin-top: 10px; font-weight: bold;">Quét mã VietQR để thanh toán</p>
                             </div>
+                            <div class="alert alert-warning text-center" style="margin-top: 10px; font-size: 13px;">
+                                <i class="fa fa-clock-o"></i> Lưu ý: Đơn hàng sẽ tự động bị hủy sau <strong>60
+                                    phút</strong> nếu chưa thanh toán.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,6 +120,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/main.js"></script>
     <script src="js/payment_buy.js"></script>

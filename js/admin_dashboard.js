@@ -90,61 +90,35 @@ $(document).ready(function () {
         let sellCount = 0;
 
         transactions.forEach(order => {
+            // Nút hành động chung (Gửi Coin / Chuyển Tiền + Hủy)
+            let actionBtns = '';
             if (order.mode === 'buy') {
-                // Đơn Mua: Admin cần gửi Coin
-                buyCount++;
-                const row = `
-                    <tr id="order-${order.id}">
-                        <td><a href="checkout_payment_buy.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
-                        <td>${escapeHTML(order.username)}</td>
-                        <td>${numberFormat(order.amount_coin, 8)}</td>
-                        <td>${escapeHTML(order.coin.toUpperCase())}</td>
-                        <td>
-                         <br>ID Ví: ${escapeHTML(order.user_wallet_id)}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Gửi Coin
-                            </button>
-                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}">...</button>
-                            <button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top: 5px;">
-                            <i class="fa fa-times"></i> Hủy đơn
-                            </button>
-                        </td>
-                    </tr>`;
-                buyTable.append(row);
-
+                actionBtns = `<button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Gửi Coin</button>`;
             } else {
-                // Đơn Bán: Admin cần gửi VNĐ
-                sellCount++;
-                const row = `
-                    <tr id="order-${order.id}">
-                        <td><a href="checkout_payment_sell.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
-                        <td>${escapeHTML(order.username)}</td>
-                        <td>${numberFormat(order.amount_vnd, 0)} VNĐ</td>
-                        <td>
-                            (Tạm thời: Sẽ hiển thị chi tiết Bank ở đây)
-                            <br>ID Bank: ${escapeHTML(order.user_bank_id)}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-warning btn-complete" data-id="${order.id}">
-                                <i class="fa fa-check"></i> Đã Chuyển VNĐ
-                            </button>
-                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}">...</button>
-                            <button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top: 5px;">
-                            <i class="fa fa-times"></i> Hủy đơn
-                            </button>
-                        </td>
-                    </tr>`;
-                sellTable.append(row);
+                actionBtns = `<button class="btn btn-sm btn-warning btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Chuyển Tiền</button>`;
             }
+            // Thêm nút hủy
+            actionBtns += `<br><button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top:5px;"><i class="fa fa-times"></i> Hủy đơn</button>`;
+
+            const row = `
+                <tr id="order-${order.id}">
+                    <td><a href="${order.mode === 'buy' ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html'}?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
+                    <td>${escapeHTML(order.username)}</td>
+                    <td>${numberFormat(order.mode === 'buy' ? order.amount_coin : order.amount_vnd, order.mode === 'buy' ? 8 : 0)} ${order.mode === 'buy' ? order.coin.toUpperCase() : 'VNĐ'}</td>
+                    <td>${order.coin.toUpperCase()}</td>
+                    <td>${order.detail_info}</td> 
+                    <td>${actionBtns}</td>
+                </tr>`;
+
+            if (order.mode === 'buy') { buyCount++; buyTable.append(row); }
+            else { sellCount++; sellTable.append(row); }
         });
 
-        // Cập nhật thống kê
+
         $('#stat-buy-pending').text(buyCount);
         $('#stat-sell-pending').text(sellCount);
-
-        if (buyCount === 0) buyTable.append('<tr><td colspan="5" class="text-center">Không có đơn MUA nào đang chờ.</td></tr>');
-        if (sellCount === 0) sellTable.append('<tr><td colspan="5" class="text-center">Không có đơn BÁN nào đang chờ.</td></tr>');
+        if (buyCount === 0) buyTable.append('<tr><td colspan="6" class="text-center">Không có đơn MUA nào đang chờ.</td></tr>');
+        if (sellCount === 0) sellTable.append('<tr><td colspan="6" class="text-center">Không có đơn BÁN nào đang chờ.</td></tr>');
     }
 
     // --- Xử lý nút "Hoàn tất" ---

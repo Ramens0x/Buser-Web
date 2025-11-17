@@ -273,15 +273,25 @@ $(document).ready(function () {
                         } else if (tx.status_vi.includes('Đã hủy')) {
                             statusClass = 'label-danger'; // Hủy
                         }
+
+                        let linkPage = tx.mode === 'Mua' ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
+                        // Lưu ý: API trả về tx.mode là tiếng Việt hoặc Anh tùy lúc, kiểm tra kỹ. 
+                        // Trong app.py ta để "Mua"/"Bán".
+                        if (tx.mode === 'buy' || tx.mode === 'Buy') linkPage = 'checkout_payment_buy.html';
+                        if (tx.mode === 'sell' || tx.mode === 'Sell') linkPage = 'checkout_payment_sell.html';
+                        if (tx.mode === 'Bán') linkPage = 'checkout_payment_sell.html';
+
+                        const idLink = `<a href="${linkPage}?id=${escapeHTML(tx.id)}" style="font-weight:bold; text-decoration:underline;">${escapeHTML(tx.id)}</a>`;
+
                         const row = `
                         <tr>
-                         <td>${escapeHTML(tx.created_at)}</td>
-                         <td>${escapeHTML(tx.mode)}</td>
-                         <td>${escapeHTML(tx.coin)}</td>
-                         <td>${amountCoin}</td>
-                         <td>${amountVND} VNĐ</td>
-                         <td><span class="label ${statusClass}">${tx.status_vi}</span></td>
-                         </tr>`;
+                            <td>${idLink}</td> <td>${escapeHTML(tx.created_at)}</td>
+                            <td>${escapeHTML(tx.mode)}</td>
+                            <td>${escapeHTML(tx.coin)}</td>
+                            <td>${amountCoin}</td>
+                            <td>${amountVND} VNĐ</td>
+                            <td><span class="label ${statusClass}">${tx.status_vi}</span></td>
+                        </tr>`;
                         historyBody.append(row);
                     });
                 } else {

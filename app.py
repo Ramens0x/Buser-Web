@@ -655,25 +655,29 @@ def admin_cancel_order():
 @app.route("/api/admin/transactions", methods=['GET'])
 def get_admin_transactions():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
+    
+    if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Không có quyền"}), 403
 
-    # 1. Lấy các đơn hàng "pending" (Như cũ)
     pending_orders = Order.query.filter_by(status='pending').order_by(Order.created_at.desc()).all()
-
+    
     orders_list = []
     for order in pending_orders:
+        # [MỚI] Lấy chi tiết ví/bank thực tế để hiển thị cho Admin
+        detail_info = "Không có dữ liệu"
+        if order.mode == 'buy': # Khách mua -> Admin cần biết ví khách để trả coin
+            w = Wallet.query.filter_by(id=order.user_wallet_id).first()
+            if w:
+                tag_info = f" | Tag: {w.tag}" if w.tag else ""
+                detail_info = f"<b>Addr:</b> {w.address}<br><b>Tên:</b> {w.name}{tag_info}"
+        else: # Khách bán -> Admin cần biết bank khách để trả tiền
+            b = Bank.query.filter_by(id=order.user_bank_id).first()
+            if b:
+                detail_info = f"<b>Bank:</b> {b.bank_name}<br><b>STK:</b> {b.account_number}<br><b>Tên:</b> {b.account_name}"
         orders_list.append({
-            "id": order.id,
-            "mode": order.mode,
-            "coin": order.coin,
-            "amount_vnd": order.amount_vnd,
-            "amount_coin": order.amount_coin,
-            "status": order.status,
-            "created_at": order.created_at.isoformat(),
-            "username": order.username,
-            "user_wallet_id": order.user_wallet_id,
-            "user_bank_id": order.user_bank_id
+            "id": order.id, "mode": order.mode, "coin": order.coin, "amount_vnd": order.amount_vnd,
+            "amount_coin": order.amount_coin, "status": order.status, "created_at": order.created_at.isoformat(),
+            "username": order.username, 
+            "detail_info": detail_info # [MỚI] Gửi thông tin chi tiết thay vì ID
         })
 
     # 2. [MỚI] Tính toán thống kê
