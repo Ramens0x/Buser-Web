@@ -730,8 +730,11 @@ $(document).ready(function () {
             },
             success: function (response) {
                 alert(response.message); // "Đã thêm ví thành công!"
-                // [MỚI] Quay lại trang chọn lựa
-                window.location.href = "checkout_select_wallet.html";
+                if (document.referrer && document.referrer.includes('profile.html')) {
+                    window.location.href = "profile.html#wallets";
+                } else {
+                    window.location.href = "checkout_select_wallet.html";
+                }
             },
             error: function (xhr) {
                 alert("Lỗi: " + xhr.responseJSON.message);
@@ -759,7 +762,11 @@ $(document).ready(function () {
             },
             success: function (response) {
                 alert(response.message);
-                window.location.href = "checkout_select_bank.html";
+                if (document.referrer && document.referrer.includes('profile.html')) {
+                    window.location.href = "profile.html#banks";
+                } else {
+                    window.location.href = "checkout_select_bank.html";
+                }
             },
             error: function (xhr) {
                 alert("Lỗi: " + xhr.responseJSON.message);

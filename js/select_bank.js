@@ -96,7 +96,7 @@ $(document).ready(function () {
                 // Xóa đơn hàng nháp
                 localStorage.removeItem('draft_order');
                 // Chuyển đến trang thanh toán
-                window.location.href = "checkout_payment_sell.html";
+                window.location.href = "checkout_payment_sell.html?id=" + response.order.id;
             },
             error: function (xhr) {
                 alert("Lỗi khi tạo đơn hàng: " + xhr.responseJSON.message);

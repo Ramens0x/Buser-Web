@@ -25,6 +25,33 @@ $(document).ready(function () {
         return integerPart + decimalPart;
     }
 
+    // --- Xử lý nút "Hủy Đơn" (Admin) ---
+    $(document).on('click', '.btn-cancel-admin', function () {
+        const orderId = $(this).data('id');
+        if (!confirm(`ADMIN: Bạn có chắc chắn muốn HỦY đơn hàng ${orderId} không?`)) {
+            return;
+        }
+        $.ajax({
+            url: `${API_URL}/api/admin/cancel-order`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ order_id: orderId }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            },
+            success: function (response) {
+                alert(response.message);
+                $(`#order-${orderId}`).fadeOut(500, function () {
+                    $(this).remove();
+                    loadTransactions();
+                });
+            },
+            error: function (xhr) {
+                alert("Lỗi: " + xhr.responseJSON.message);
+            }
+        });
+    });
+
     // --- Tải dữ liệu giao dịch ---
     function loadTransactions() {
         $.ajax({
@@ -68,16 +95,19 @@ $(document).ready(function () {
                 buyCount++;
                 const row = `
                     <tr id="order-${order.id}">
-                        <td><strong>${order.id}</strong></td>
+                        <td><a href="checkout_payment_buy.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
                         <td>${escapeHTML(order.username)}</td>
-                        <td>${numberFormat(order.amount_coin, 8)} ${order.coin.toUpperCase()}</td>
+                        <td>${numberFormat(order.amount_coin, 8)}</td>
+                        <td>${escapeHTML(order.coin.toUpperCase())}</td>
                         <td>
-                            (Tạm thời: Sẽ hiển thị chi tiết ví ở đây)
-                            <br>ID Ví: ${escapeHTML(order.user_wallet_id)}
+                         <br>ID Ví: ${escapeHTML(order.user_wallet_id)}
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}">
-                                <i class="fa fa-check"></i> Đã Gửi Coin
+                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Gửi Coin
+                            </button>
+                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}">...</button>
+                            <button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top: 5px;">
+                            <i class="fa fa-times"></i> Hủy đơn
                             </button>
                         </td>
                     </tr>`;
@@ -88,7 +118,7 @@ $(document).ready(function () {
                 sellCount++;
                 const row = `
                     <tr id="order-${order.id}">
-                        <td><strong>${order.id}</strong></td>
+                        <td><a href="checkout_payment_sell.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
                         <td>${escapeHTML(order.username)}</td>
                         <td>${numberFormat(order.amount_vnd, 0)} VNĐ</td>
                         <td>
@@ -98,6 +128,10 @@ $(document).ready(function () {
                         <td>
                             <button class="btn btn-sm btn-warning btn-complete" data-id="${order.id}">
                                 <i class="fa fa-check"></i> Đã Chuyển VNĐ
+                            </button>
+                            <button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}">...</button>
+                            <button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top: 5px;">
+                            <i class="fa fa-times"></i> Hủy đơn
                             </button>
                         </td>
                     </tr>`;

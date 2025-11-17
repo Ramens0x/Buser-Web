@@ -16,20 +16,10 @@ $(document).ready(function () {
         return;
     }
 
-    // --- Hàm định dạng số ---
-    function numberFormat(number = '0', decimalPlaces = 0) {
-        let numberStr = parseFloat(number).toFixed(decimalPlaces);
-        let parts = numberStr.split('.');
-        let integerPart = parts[0];
-        let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return integerPart + decimalPart;
-    }
-
     // --- Tải dữ liệu giao dịch ĐÃ HOÀN THÀNH ---
     function loadTransactionHistory() {
         $.ajax({
-            url: `${API_URL}/api/admin/transactions/history`, // GỌI API MỚI
+            url: `${API_URL}/api/admin/transactions/history`,
             type: 'GET',
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -57,12 +47,21 @@ $(document).ready(function () {
         }
 
         transactions.forEach(tx => {
+            // [MỚI] Xác định link dựa trên loại đơn (Mua hay Bán)
+            // API trả về tx.mode là "Mua" hoặc "Bán" (Tiếng Việt) hoặc "buy"/"sell"
+            let linkPage = 'checkout_payment_buy.html'; // Mặc định là trang Mua
+            if (tx.mode === 'Bán' || tx.mode === 'sell') {
+                linkPage = 'checkout_payment_sell.html'; // Chuyển sang trang Bán
+            }
+
+            // Tạo đường dẫn có ID (target="_blank" để mở tab mới)
+            const idLink = `<a href="${linkPage}?id=${escapeHTML(tx.id)}" target="_blank" style="font-weight: bold; text-decoration: underline;">${escapeHTML(tx.id)}</a>`;
+
             const row = `
                 <tr>
-                    <td><strong>${escapeHTML(tx.id)}</strong></td>
-                    <td>${tx.created_at}</td>
+                    <td>${idLink}</td> <td>${escapeHTML(tx.created_at)}</td>
                     <td>${escapeHTML(tx.username)}</td>
-                    <td>${tx.mode}</td>
+                    <td>${escapeHTML(tx.mode)}</td>
                     <td>${escapeHTML(tx.coin)}</td>
                     <td>${numberFormat(tx.amount_coin, 8)}</td>
                     <td>${numberFormat(tx.amount_vnd, 0)} VNĐ</td>

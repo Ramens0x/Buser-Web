@@ -445,6 +445,58 @@ def create_order():
         "payment_info": payment_info_dict
     }})
 
+# --- [MỚI] API LẤY CHI TIẾT ĐƠN HÀNG (CHO TRANG THANH TOÁN) ---
+@app.route("/api/order/<order_id>", methods=['GET'])
+def get_order_detail(order_id):
+    # Cho phép cả User (để xem đơn của mình) và Admin (để xem đơn khách)
+    user = get_user_from_request()
+    if not user:
+        return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+
+    order = Order.query.filter_by(id=order_id).first()
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Bảo mật: Nếu không phải Admin, User chỉ được xem đơn của chính mình
+    if user.role != 'Admin' and order.username != user.username:
+        return jsonify({"success": False, "message": "Bạn không có quyền xem đơn này"}), 403
+
+    # Trả về dữ liệu y hệt như lúc tạo đơn
+    payment_info = json.loads(order.payment_info) if order.payment_info else {}
+    
+    # Nếu là đơn MUA (Admin nhận tiền), cần tạo lại QR Code string để frontend hiển thị
+    # (Lưu ý: Logic này tái sử dụng từ create_order, thực tế nên tách hàm riêng, nhưng để đây cho gọn)
+    qr_data_string = ""
+    if order.mode == 'buy':
+        settings = load_settings()
+        admin_bin = settings.get('admin_bank_bin')
+        admin_account = settings.get('admin_account_number')
+        if admin_bin and admin_account:
+             # Tái tạo VietQR object nhanh để lấy string
+            viet_qr = VietQR()
+            viet_qr.set_beneficiary_organization(admin_bin, admin_account)
+            viet_qr.set_transaction_amount(str(int(order.amount_vnd)))
+            viet_qr.set_additional_data_field_template(order.id)
+            qr_data_string = viet_qr.build()
+
+    return jsonify({
+        "success": True,
+        "order": {
+            "id": order.id,
+            "username": order.username,
+            "mode": order.mode,
+            "coin": order.coin,
+            "status": order.status,
+            "created_at": order.created_at.isoformat(),
+            "amount_vnd": order.amount_vnd,
+            "amount_coin": order.amount_coin,
+            "user_wallet_id": order.user_wallet_id,
+            "user_bank_id": order.user_bank_id,
+            "payment_info": payment_info,
+            "qr_data_string": qr_data_string 
+        }
+    })
+
 # --- API ADMIN ---
 @app.route("/api/admin/settings", methods=['GET', 'POST'])
 def admin_settings():
@@ -571,6 +623,33 @@ def delete_user_bank():
     db.session.delete(bank_to_delete)
     db.session.commit()
     return jsonify({"success": True, "message": "Đã xóa ngân hàng thành công!"})
+
+@app.route("/api/user/cancel-order", methods=['POST'])
+def user_cancel_order():
+    user = get_user_from_request()
+    if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+    data = request.json
+    order_id = data.get('order_id')
+    order = Order.query.filter_by(id=order_id, username=user.username, status='pending').first()
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng hoặc đơn hàng đã được xử lý"}), 404
+    order.status = 'cancelled'
+    db.session.commit()
+    return jsonify({"success": True, "message": "Đã hủy đơn hàng thành công!"})
+
+@app.route("/api/admin/cancel-order", methods=['POST'])
+def admin_cancel_order():
+    user = get_user_from_request()
+    if not user or user.role != 'Admin':
+        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
+    data = request.json
+    order_id = data.get('order_id')
+    order = Order.query.filter_by(id=order_id, status='pending').first()
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng hoặc đơn hàng đã được xử lý"}), 404
+    order.status = 'cancelled'
+    db.session.commit()
+    return jsonify({"success": True, "message": f"Admin đã hủy đơn hàng {order_id}"})
 
     # --- [MỚI] API ADMIN ĐỂ XEM VÀ DUYỆT GIAO DỊCH ---
 @app.route("/api/admin/transactions", methods=['GET'])
