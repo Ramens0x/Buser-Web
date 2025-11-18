@@ -1,11 +1,28 @@
 // --- Hàm định dạng số ---
 function numberFormat(number = '0', decimalPlaces = 0) {
-    let numberStr = parseFloat(number).toFixed(decimalPlaces);
-    let parts = numberStr.split('.');
+    let val = parseFloat(number);
+    if (isNaN(val)) return "0";
+
+    // 1. Lấy số thập phân cố định
+    let fixed = val.toFixed(decimalPlaces); 
+    
+    // 2. Tách phần nguyên và phần thập phân
+    let parts = fixed.split('.');
     let integerPart = parts[0];
-    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+    let decimalPart = parts.length > 1 ? parts[1] : '';
+
+    // 3. Thêm dấu phẩy vào phần nguyên
     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return integerPart + decimalPart;
+
+    // 4. Xử lý phần thập phân: Xóa số 0 thừa ở cuối
+    if (decimalPlaces > 0) {
+        decimalPart = decimalPart.replace(/0+$/, ''); // Xóa 0 cuối
+        if (decimalPart.length > 0) {
+            return integerPart + '.' + decimalPart; // Nếu còn số thì ghép vào
+        }
+    }
+    
+    return integerPart; // Nếu không còn số thập phân
 }
 
 function escapeHTML(str) {

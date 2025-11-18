@@ -15,16 +15,6 @@ $(document).ready(function () {
         return;
     }
 
-    // --- Hàm định dạng số ---
-    function numberFormat(number = '0', decimalPlaces = 0) {
-        let numberStr = parseFloat(number).toFixed(decimalPlaces);
-        let parts = numberStr.split('.');
-        let integerPart = parts[0];
-        let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return integerPart + decimalPart;
-    }
-
     // --- Xử lý nút "Hủy Đơn" (Admin) ---
     $(document).on('click', '.btn-cancel-admin', function () {
         const btn = $(this); // [MỚI] Lưu lại nút đang bấm

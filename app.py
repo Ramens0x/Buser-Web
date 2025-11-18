@@ -251,22 +251,9 @@ def generate_qr_code_image(data):
     img = qr.make_image(fill_color="black", back_color="white")
     return img
 
-# --- API GIÁ & TÍNH TOÁN (ĐÃ SỬA LỖI THỤT LỀ) ---
+# --- API GIÁ & TÍNH TOÁN ---
 @app.route("/api/prices")
 def api_get_prices(): 
-    global current_rates
-    try:
-        price_bustabit_buy = requests.get(f"{API_DOMAIN}/get-rate-change-buy/bustabit-bet")
-        price_usdt_buy = requests.get(f"{API_DOMAIN}/get-rate-change-buy/win-coin")
-        price_bustabit_sell = requests.get(f"{API_DOMAIN}/get-rate-change-sell/bustabit-bet")
-        price_usdt_sell = requests.get(f"{API_DOMAIN}/get-rate-change-sell/win-coin")
-
-        if price_bustabit_buy.status_code == 200: current_rates['bustabit']['buy'] = float(price_bustabit_buy.text)
-        if price_bustabit_sell.status_code == 200: current_rates['bustabit']['sell'] = float(price_bustabit_sell.text)
-        if price_usdt_buy.status_code == 200: current_rates['usdt']['buy'] = float(price_usdt_buy.text)
-        if price_usdt_sell.status_code == 200: current_rates['usdt']['sell'] = float(price_usdt_sell.text)
-    except Exception as e:
-        pass # Bỏ qua lỗi và trả về giá trị cũ (nếu có)
     return jsonify(current_rates)
 
 @app.route("/api/calculate", methods=['POST'])
@@ -278,7 +265,7 @@ def api_calculate_swap():
     coin_type = data.get('coin', 'bustabit')
     
     if current_rates[coin_type]['buy'] == 0:
-        api_get_prices() # [SỬA LỖI] Gọi đúng tên hàm
+        api_get_prices() 
         
     amount_out = 0
     
@@ -464,7 +451,7 @@ def create_order():
     db.session.add(new_order)
     db.session.commit()
 
-    # --- gửi thông báo cho admin ---
+    # --- gửi thông báo cho admin (CHẠY NGẦM) ---
     try:
         if new_order.mode == 'buy':
             message = (
@@ -480,7 +467,7 @@ def create_order():
                 f"Nhận Coin: *{new_order.amount_coin:.8f} {new_order.coin.upper()}*\n"
                 f"Gửi VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*"
             )
-        send_telegram_notification(message, order_id=new_order.id)
+        eventlet.spawn(send_telegram_notification, message, order_id=new_order.id)
     except Exception as e:
         print(f"Lỗi khi tạo tin nhắn Telegram: {e}")
 
@@ -985,6 +972,24 @@ def handle_connect():
 def handle_disconnect():
     print("Một Client đã ngắt kết nối Socket.IO")
 
+def update_price_task():
+    global current_rates
+    try:
+        with requests.Session() as s:
+            r1 = s.get(f"{API_DOMAIN}/get-rate-change-buy/bustabit-bet", timeout=5)
+            r2 = s.get(f"{API_DOMAIN}/get-rate-change-sell/bustabit-bet", timeout=5)
+            r3 = s.get(f"{API_DOMAIN}/get-rate-change-buy/win-coin", timeout=5)
+            r4 = s.get(f"{API_DOMAIN}/get-rate-change-sell/win-coin", timeout=5)
+
+            if r1.status_code == 200: current_rates['bustabit']['buy'] = float(r1.text)
+            if r2.status_code == 200: current_rates['bustabit']['sell'] = float(r2.text)
+            if r3.status_code == 200: current_rates['usdt']['buy'] = float(r3.text)
+            if r4.status_code == 200: current_rates['usdt']['sell'] = float(r4.text)
+        
+        print(f"💹 Đã cập nhật giá mới lúc {datetime.now().strftime('%H:%M:%S')}")
+    except Exception as e:
+        print(f"⚠️ Lỗi cập nhật giá: {e}")
+
 # --- Chạy máy chủ ---
 if __name__ == '__main__':
     with app.app_context():
@@ -1005,11 +1010,19 @@ if __name__ == '__main__':
             db.session.commit()
             print(">>> Đã tạo tài khoản Admin (buser/sonhoang1) cố định <<<") 
             
+            try:
+            update_price_task()
+            
             scheduler = BackgroundScheduler()
-            # Chạy hàm clean_old_bills mỗi 24 giờ (1 ngày)
+            # 1. Dọn dẹp bill cũ (24h/lần)
             scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24)
+            # 2. Cập nhật giá (60s/lần) - GIÚP WEB NHANH HƠN
+            scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
+            
             scheduler.start()
-    print(">>> ✅ Đã kích hoạt bộ dọn dẹp Bill tự động (90 ngày) <<<")
+            print(">>> ✅ Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")
+        except Exception as e:
+            print(f"⚠️ Không thể khởi chạy Scheduler: {e}")
             
 print(">>> Khởi chạy Buser-Web server với Socket.IO tại http://127.0.0.1:5000 <<<")
 socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)

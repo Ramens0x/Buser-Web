@@ -75,6 +75,10 @@ $(document).ready(function () {
             return;
         }
 
+        const btn = $(this).find('button[type="submit"]');
+        const originalText = btn.html();
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+
         // Gộp thông tin nháp + bank đã chọn
         var orderData = {
             ...draftOrder,
@@ -91,15 +95,16 @@ $(document).ready(function () {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + token);
             },
             success: function (response) {
-                // Lưu đơn hàng đầy đủ
+
                 localStorage.setItem('current_order', JSON.stringify(response.order));
-                // Xóa đơn hàng nháp
+                
                 localStorage.removeItem('draft_order');
-                // Chuyển đến trang thanh toán
+
                 window.location.href = "checkout_payment_sell.html?id=" + response.order.id;
             },
             error: function (xhr) {
                 alert("Lỗi khi tạo đơn hàng: " + xhr.responseJSON.message);
+                btn.prop('disabled', false).html(originalText);
             }
         });
     });
