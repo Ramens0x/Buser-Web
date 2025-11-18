@@ -12,3 +12,4 @@ Flask-SocketIO
 eventlet
 Flask-Mail
 APScheduler
+gunicorn

@@ -27,12 +27,19 @@ $(document).ready(function () {
                     statusClass = 'approved';
                     statusText = '✅ Đã xác minh thành công';
                     statusIcon = 'fa-check-circle';
+                    $('#kyc-form').hide(); 
+                    $('#kyc-status-box').append('<div class="alert alert-success">Tài khoản của bạn đã được xác minh!</div>');
+                
+                } else if (kyc.status === 'pending') {
+                    statusClass = 'pending';
+                    statusText = '⏳ Đang chờ duyệt';
+                
                     $('#kyc-form :input').prop('disabled', true);
-                    $('#btn-submit-kyc').text('Đã xác minh').prop('disabled', true);
+                    $('#btn-submit-kyc').text('Đang chờ xét duyệt...').prop('disabled', true);
+                
                 } else if (kyc.status === 'rejected') {
                     statusClass = 'rejected';
-                    statusText = '❌ Bị từ chối';
-                    statusIcon = 'fa-times-circle';
+                    statusText = '❌ Bị từ chối - Hãy gửi lại';
                 }
 
                 $('#kyc-status-box').show().html(`

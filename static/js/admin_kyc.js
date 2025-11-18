@@ -16,7 +16,7 @@ $(document).ready(function () {
     // Tải danh sách KYC
     function loadKycList() {
         $.ajax({
-            url: `${API_URL}/api/admin/kyc-list`,
+            url: `${API_URL}/api/admin/kyc-requests`,
             type: 'GET',
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -25,12 +25,12 @@ $(document).ready(function () {
                 const tableBody = $('#kyc-table-body');
                 tableBody.empty();
 
-                if (res.kyc_list.length === 0) {
+                if (res.requests.length === 0) {
                     tableBody.html('<tr><td colspan="7" class="text-center">Chưa có yêu cầu KYC nào.</td></tr>');
                     return;
                 }
 
-                res.kyc_list.forEach(kyc => {
+                res.requests.forEach(kyc => {
                     let statusClass = 'status-pending';
                     let statusText = 'Chờ duyệt';
                     let actionButtons = `
@@ -76,11 +76,11 @@ $(document).ready(function () {
 
         // Tìm KYC trong danh sách đã load
         $.ajax({
-            url: `${API_URL}/api/admin/kyc-list`,
+            url: `${API_URL}/api/admin/kyc-requests`,
             type: 'GET',
             beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
-                const kyc = res.kyc_list.find(k => k.id === kycId);
+                const kyc = res.requests.find(k => k.id === kycId);
                 if (!kyc) return;
 
                 $('#modal-username').text(kyc.username);

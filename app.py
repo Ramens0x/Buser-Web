@@ -24,7 +24,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # --- [MỚI] CẤU HÌNH CSDL ---
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 UPLOAD_FOLDER = 'uploads/bills'
 KYC_UPLOAD_FOLDER = 'uploads/kyc'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
@@ -68,11 +68,21 @@ limiter = Limiter(
     app=app
 )
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}}, expose_headers=["Authorization"])
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///buser.db')
+# Lấy địa chỉ Database từ biến môi trường
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///buser.db')
+
+# Sửa lỗi tương thích cho Render (chuyển postgres:// thành postgresql://)
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-that-you-should-change')
 db = SQLAlchemy(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, 
+    cors_allowed_origins=["http://yourdomain.com"],
+    async_mode='eventlet'
+)
 
 # --- Định nghĩa file ---
 CONFIG_FILE = "config.json"
@@ -1135,7 +1145,7 @@ def get_kyc_image_file(filename):
     return send_file(os.path.join(KYC_UPLOAD_FOLDER, filename))
 
 # 5. Admin duyệt/từ chối KYC
-@app.route("/api/admin/kyc/review", methods=['POST'])
+@app.route("/api/admin/kyc-review", methods=['POST'])
 def admin_review_kyc():
     user = get_user_from_request()
     if not user or user.role != 'Admin': return jsonify({"success": False}), 403
@@ -1151,6 +1161,28 @@ def admin_review_kyc():
     db.session.commit()
     
     return jsonify({"success": True, "message": f"Đã {action} yêu cầu KYC."})
+
+from flask import render_template, send_from_directory
+
+@app.route('/')
+def serve_index():
+    return render_template('index.html')
+
+@app.route('/<path:filename>')
+def serve_html(filename):
+    if filename.endswith('.html'):
+        return render_template(filename)
+    return "Page not found", 404
+
+def cancel_expired_orders():
+    cutoff_time = datetime.now() - timedelta(hours=1)
+    expired = Order.query.filter(
+        Order.status == 'pending',
+        Order.created_at < cutoff_time
+    ).all()
+    for order in expired:
+        order.status = 'cancelled'
+    db.session.commit()
 
 # --- Chạy máy chủ ---
 if __name__ == '__main__':
@@ -1172,7 +1204,7 @@ if __name__ == '__main__':
             db.session.commit()
             print(">>> Đã tạo tài khoản Admin (buser/sonhoang1) cố định <<<") 
             
-            try:
+        try:
             update_price_task()
             
             scheduler = BackgroundScheduler()
@@ -1180,7 +1212,7 @@ if __name__ == '__main__':
             scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24)
             # 2. Cập nhật giá (60s/lần) - GIÚP WEB NHANH HƠN
             scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
-            
+            scheduler.add_job(func=cancel_expired_orders, trigger="interval", minutes=15)
             scheduler.start()
             print(">>> ✅ Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")
         except Exception as e:
