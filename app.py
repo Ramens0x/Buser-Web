@@ -26,13 +26,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # --- [MỚI] CẤU HÌNH CSDL ---
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads/bills'
+KYC_UPLOAD_FOLDER = 'uploads/kyc'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Giới hạn 5MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa có
+os.makedirs(KYC_UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_kyc_file(filename):
+    ALLOWED = {'png', 'jpg', 'jpeg'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED
 
 def clean_old_bills():
     try:
@@ -72,7 +78,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 CONFIG_FILE = "config.json"
 API_DOMAIN = "https://bottabot.com"
 
-# --- [MỚI] ĐỊNH NGHĨA CÁC BẢNG CSDL (MODELS) ---
+# --- ĐỊNH NGHĨA CÁC BẢNG CSDL (MODELS) ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -83,6 +89,7 @@ class User(db.Model):
     reset_expiry = db.Column(db.DateTime, nullable=True)
     wallets = db.relationship('Wallet', backref='owner', lazy=True)
     banks = db.relationship('Bank', backref='owner', lazy=True)
+    kyc = db.relationship('KYC', backref='user', uselist=False, lazy=True)
 
 class Wallet(db.Model):
     id = db.Column(db.String(10), primary_key=True, default=lambda: secrets.token_hex(4))
@@ -99,6 +106,19 @@ class Bank(db.Model):
     account_number = db.Column(db.String(50), nullable=False)
     account_name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class KYC(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    full_name = db.Column(db.String(100), nullable=False)
+    id_number = db.Column(db.String(20), nullable=False)  # Số CMND/CCCD
+    id_front_image = db.Column(db.String(200), nullable=True)  # Ảnh mặt trước
+    id_back_image = db.Column(db.String(200), nullable=True)   # Ảnh mặt sau
+    selfie_image = db.Column(db.String(200), nullable=True)    # Ảnh selfie cầm CMND
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending/approved/rejected
+    submitted_at = db.Column(db.DateTime, default=datetime.now)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    admin_note = db.Column(db.Text, nullable=True)
 
 class Order(db.Model):
     id = db.Column(db.String(20), primary_key=True)
@@ -989,6 +1009,148 @@ def update_price_task():
         print(f"💹 Đã cập nhật giá mới lúc {datetime.now().strftime('%H:%M:%S')}")
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
+
+# ==========================================
+# [MỚI] CÁC API KYC (XÁC MINH DANH TÍNH)
+# ==========================================
+
+# 1. User gửi yêu cầu KYC
+@app.route("/api/user/submit-kyc", methods=['POST'])
+def submit_kyc():
+    user = get_user_from_request()
+    if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+    
+    # Kiểm tra nếu đã có yêu cầu đang chờ hoặc đã duyệt
+    existing_kyc = KYC.query.filter_by(user_id=user.id).first()
+    if existing_kyc and existing_kyc.status in ['pending', 'approved']:
+        return jsonify({"success": False, "message": "Bạn đã gửi yêu cầu hoặc tài khoản đã xác minh."}), 400
+
+    full_name = request.form.get('full_name')
+    id_number = request.form.get('id_number')
+    
+    # Kiểm tra file
+    if 'id_front' not in request.files or 'id_back' not in request.files or 'selfie' not in request.files:
+        return jsonify({"success": False, "message": "Vui lòng tải lên đủ 3 ảnh"}), 400
+
+    file_front = request.files['id_front']
+    file_back = request.files['id_back']
+    file_selfie = request.files['selfie']
+
+    if not all([allowed_kyc_file(f.filename) for f in [file_front, file_back, file_selfie]]):
+         return jsonify({"success": False, "message": "Chỉ chấp nhận file ảnh (PNG, JPG, JPEG)"}), 400
+
+    try:
+        # Tạo tên file an toàn
+        ts = datetime.now().strftime('%Y%m%d%H%M%S')
+        fname_front = secure_filename(f"{user.username}_{ts}_front.jpg")
+        fname_back = secure_filename(f"{user.username}_{ts}_back.jpg")
+        fname_selfie = secure_filename(f"{user.username}_{ts}_selfie.jpg")
+
+        # Lưu file
+        file_front.save(os.path.join(KYC_UPLOAD_FOLDER, fname_front))
+        file_back.save(os.path.join(KYC_UPLOAD_FOLDER, fname_back))
+        file_selfie.save(os.path.join(KYC_UPLOAD_FOLDER, fname_selfie))
+
+        # Lưu vào DB (Update nếu bị từ chối trước đó, hoặc tạo mới)
+        if existing_kyc:
+            existing_kyc.full_name = full_name
+            existing_kyc.id_number = id_number
+            existing_kyc.id_front_image = fname_front
+            existing_kyc.id_back_image = fname_back
+            existing_kyc.selfie_image = fname_selfie
+            existing_kyc.status = 'pending'
+            existing_kyc.submitted_at = datetime.now()
+            existing_kyc.admin_note = None
+        else:
+            new_kyc = KYC(user_id=user.id, full_name=full_name, id_number=id_number,
+                          id_front_image=fname_front, id_back_image=fname_back, selfie_image=fname_selfie, status='pending')
+            db.session.add(new_kyc)
+        
+        db.session.commit()
+
+        # Gửi thông báo Telegram cho Admin
+        try:
+            msg = f"🛡️ *YÊU CẦU KYC MỚI*\nUser: {user.username}\nTên: {full_name}"
+            send_telegram_notification(msg)
+        except: pass
+
+        return jsonify({"success": True, "message": "Đã gửi hồ sơ KYC thành công! Vui lòng chờ duyệt."})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+# 2. User lấy trạng thái KYC
+@app.route("/api/user/kyc-status", methods=['GET'])
+def get_kyc_status():
+    user = get_user_from_request()
+    if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
+    kyc = KYC.query.filter_by(user_id=user.id).first()
+    if not kyc: return jsonify({"success": True, "kyc": None})
+    return jsonify({
+        "success": True,
+        "kyc": {
+            "status": kyc.status,
+            "admin_note": kyc.admin_note,
+            "submitted_at": kyc.submitted_at.strftime("%d/%m/%Y %H:%M")
+        }
+    })
+
+# 3. Admin lấy danh sách KYC
+@app.route("/api/admin/kyc-requests", methods=['GET'])
+def admin_get_kyc_requests():
+    user = get_user_from_request()
+    if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Cấm truy cập"}), 403
+    
+    # Lấy danh sách, sắp xếp pending lên đầu
+    reqs = KYC.query.order_by(
+        db.case(
+            (KYC.status == 'pending', 1),
+            (KYC.status == 'approved', 2),
+            (KYC.status == 'rejected', 3)
+        ),
+        KYC.submitted_at.desc()
+    ).all()
+    
+    result = []
+    for k in reqs:
+        u = User.query.get(k.user_id)
+        result.append({
+            "id": k.id, 
+            "username": u.username if u else "N/A",
+            "full_name": k.full_name, 
+            "id_number": k.id_number,
+            "status": k.status,
+            "submitted_at": k.submitted_at.strftime("%d/%m/%Y"),
+            "id_front": k.id_front_image, # Tên file ảnh
+            "id_back": k.id_back_image,
+            "selfie": k.selfie_image,
+            "admin_note": k.admin_note
+        })
+    return jsonify({"success": True, "requests": result})
+
+# 4. API xem ảnh KYC (Bảo mật: Chỉ Admin xem được)
+@app.route("/api/kyc-image/<path:filename>")
+def get_kyc_image_file(filename):
+    user = get_user_from_request()
+    if not user or user.role != 'Admin': return "Cấm truy cập", 403
+    return send_file(os.path.join(KYC_UPLOAD_FOLDER, filename))
+
+# 5. Admin duyệt/từ chối KYC
+@app.route("/api/admin/kyc/review", methods=['POST'])
+def admin_review_kyc():
+    user = get_user_from_request()
+    if not user or user.role != 'Admin': return jsonify({"success": False}), 403
+    
+    data = request.json
+    kyc = KYC.query.get(data.get('kyc_id'))
+    if not kyc: return jsonify({"success": False, "message": "Không tìm thấy"}), 404
+    
+    action = data.get('action')
+    kyc.status = 'approved' if action == 'approve' else 'rejected'
+    kyc.admin_note = data.get('note', '')
+    kyc.reviewed_at = datetime.now()
+    db.session.commit()
+    
+    return jsonify({"success": True, "message": f"Đã {action} yêu cầu KYC."})
 
 # --- Chạy máy chủ ---
 if __name__ == '__main__':

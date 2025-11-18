@@ -1,0 +1,114 @@
+$(document).ready(function () {
+    function getAuthToken() {
+        const loginDataString = localStorage.getItem('buser_login_data');
+        if (!loginDataString) return null;
+        try { return JSON.parse(loginDataString).token; } catch (e) { return null; }
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Kiểm tra trạng thái KYC hiện tại
+    $.ajax({
+        url: `${API_URL}/api/user/kyc-status`,
+        type: 'GET',
+        beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+        success: function (res) {
+            if (res.kyc) {
+                const kyc = res.kyc;
+                let statusClass = 'pending';
+                let statusText = '⏳ Đang chờ duyệt';
+                let statusIcon = 'fa-clock-o';
+
+                if (kyc.status === 'approved') {
+                    statusClass = 'approved';
+                    statusText = '✅ Đã xác minh thành công';
+                    statusIcon = 'fa-check-circle';
+                    $('#kyc-form :input').prop('disabled', true);
+                    $('#btn-submit-kyc').text('Đã xác minh').prop('disabled', true);
+                } else if (kyc.status === 'rejected') {
+                    statusClass = 'rejected';
+                    statusText = '❌ Bị từ chối';
+                    statusIcon = 'fa-times-circle';
+                }
+
+                $('#kyc-status-box').show().html(`
+                    <div class="kyc-status ${statusClass}">
+                        <h4><i class="fa ${statusIcon}"></i> ${statusText}</h4>
+                        <p><strong>Ngày gửi:</strong> ${kyc.submitted_at}</p>
+                        ${kyc.admin_note ? `<p><strong>Ghi chú:</strong> ${escapeHTML(kyc.admin_note)}</p>` : ''}
+                    </div>
+                `);
+            }
+        }
+    });
+
+    // Preview ảnh khi chọn
+    $('#id_front').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview_front').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    $('#id_back').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview_back').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    $('#selfie').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview_selfie').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Submit form
+    $('#kyc-form').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        // Validate
+        if (!formData.get('id_front').name || !formData.get('id_back').name || !formData.get('selfie').name) {
+            alert('Vui lòng tải lên đủ 3 ảnh!');
+            return;
+        }
+
+        $('#btn-submit-kyc').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang tải lên...');
+
+        $.ajax({
+            url: `${API_URL}/api/user/submit-kyc`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+            success: function (res) {
+                alert('✅ Gửi xác minh thành công! Chúng tôi sẽ xét duyệt trong 24h.');
+                location.reload();
+            },
+            error: function (xhr) {
+                alert('❌ Lỗi: ' + xhr.responseJSON.message);
+                $('#btn-submit-kyc').prop('disabled', false).html('<i class="fa fa-check-circle"></i> Gửi Xác Minh');
+            }
+        });
+    });
+});
