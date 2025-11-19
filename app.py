@@ -1,6 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 from flask import Flask, jsonify, request, send_file
+from flask import render_template, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -1161,7 +1162,7 @@ def serve_kyc_image(filename):
     if not user or user.role != 'Admin':
         return "Forbidden", 403
         
-        return send_from_directory(KYC_UPLOAD_FOLDER, filename) 
+    return send_from_directory(KYC_UPLOAD_FOLDER, filename) 
 
 # 5. Admin duyệt/từ chối KYC
 @app.route("/api/admin/kyc-review", methods=['POST'])
@@ -1181,7 +1182,7 @@ def admin_review_kyc():
     
     return jsonify({"success": True, "message": f"Đã {action} yêu cầu KYC."})
 
-from flask import render_template, send_from_directory
+
 
 @app.route('/')
 def serve_index():

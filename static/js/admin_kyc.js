@@ -84,8 +84,8 @@ $(document).ready(function () {
 
                 $('#modal-username').text(kyc.username);
                 $('#modal-img-front').attr('src', `${API_URL}/api/kyc-image/${kyc.id_front}?token=${token}`);
-                $('#modal-img-back').attr('src', `${API_URL}/api/kyc-image/${kyc.id_back_image}?token=${token}`);
-                $('#modal-img-selfie').attr('src', `${API_URL}/api/kyc-image/${kyc.selfie_image}?token=${token}`);
+                $('#modal-img-back').attr('src', `${API_URL}/api/kyc-image/${kyc.id_back}?token=${token}`);
+                $('#modal-img-selfie').attr('src', `${API_URL}/api/kyc-image/${kyc.selfie}?token=${token}`);
                 $('#modal-admin-note').val(kyc.admin_note || '');
 
                 // Ẩn nút nếu đã duyệt/từ chối
