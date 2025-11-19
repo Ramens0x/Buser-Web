@@ -95,8 +95,10 @@ $(document).ready(function () {
             actionBtns += `<br><button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top:5px;"><i class="fa fa-times"></i> Hủy đơn</button>`;
 
             let billLink = '';
-            if (order.bill_image) {
+            if (order.bill_image && order.bill_image !== 'null' && order.bill_image !== '') {
                 billLink = `<br><a href="${API_URL}/api/admin/bill/${order.bill_image}" target="_blank" class="btn btn-xs btn-info" style="margin-top:5px;"><i class="fa fa-picture-o"></i> Xem Bill</a>`;
+            } else {
+                billLink = `<br><small style="color:#999;">Chưa có bill</small>`;
             }
 
             const row = `

@@ -29,6 +29,7 @@ UPLOAD_FOLDER = 'uploads/bills'
 KYC_UPLOAD_FOLDER = 'uploads/kyc'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Giới hạn 5MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa có
 os.makedirs(KYC_UPLOAD_FOLDER, exist_ok=True)
@@ -414,7 +415,9 @@ def api_forgot_password():
         user.reset_expiry = expiry_time
         db.session.commit()
         
-        reset_link = f"http://127.0.0.1:5500/reset-password.html?token={token}"
+        # Cách 1: Tự động lấy domain hiện tại
+        domain = request.host_url.rstrip('/')
+        reset_link = f"{domain}/reset-password.html?token={token}"
         send_reset_email(email, reset_link)
         
     return jsonify({"success": True, "message": "Nếu email tồn tại, vui lòng kiểm tra hộp thư (kể cả mục Spam)."})
@@ -1105,8 +1108,8 @@ def get_kyc_status():
     })
 
 # 3. Admin lấy danh sách KYC
-@app.route("/api/admin/kyc-requests", methods=['GET'])
-def admin_get_kyc_requests():
+@app.route("/api/admin/kyc-list", methods=['GET'])
+def admin_get_kyc_list():
     user = get_user_from_request()
     if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Cấm truy cập"}), 403
     
@@ -1137,12 +1140,28 @@ def admin_get_kyc_requests():
         })
     return jsonify({"success": True, "requests": result})
 
-# 4. API xem ảnh KYC (Bảo mật: Chỉ Admin xem được)
-@app.route("/api/kyc-image/<path:filename>")
-def get_kyc_image_file(filename):
+# 4. API xem ảnh KYC (Bảo mật: Cho phép Token trên URL cho thẻ img)
+@app.route("/api/kyc-image/<path:filename>") 
+def serve_kyc_image(filename):
+    # Cách 1: Kiểm tra Header (cho Ajax call nếu có)
     user = get_user_from_request()
-    if not user or user.role != 'Admin': return "Cấm truy cập", 403
-    return send_file(os.path.join(KYC_UPLOAD_FOLDER, filename))
+
+    # Cách 2: Nếu không có Header, kiểm tra Token trên URL (?token=...)
+    if not user:
+        token = request.args.get('token')
+        if token:
+            try:
+                payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+                username = payload.get('username')
+                user = User.query.filter_by(username=username.lower()).first()
+            except:
+                pass
+
+    # Kiểm tra quyền Admin
+    if not user or user.role != 'Admin':
+        return "Forbidden", 403
+        
+        return send_from_directory(KYC_UPLOAD_FOLDER, filename) 
 
 # 5. Admin duyệt/từ chối KYC
 @app.route("/api/admin/kyc-review", methods=['POST'])
@@ -1219,4 +1238,4 @@ if __name__ == '__main__':
             print(f"⚠️ Không thể khởi chạy Scheduler: {e}")
             
 print(">>> Khởi chạy Buser-Web server với Socket.IO tại http://127.0.0.1:5000 <<<")
-socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)
+socketio.run(app, debug=False, port=5000, allow_unsafe_werkzeug=False)

@@ -13,3 +13,4 @@ eventlet
 Flask-Mail
 APScheduler
 gunicorn
+psycopg2-binary
