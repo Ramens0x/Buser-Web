@@ -23,6 +23,7 @@ from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask_migrate import Migrate
 
 # --- [MỚI] CẤU HÌNH CSDL ---
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -81,6 +82,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-that-you-should-change')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 socketio = SocketIO(app, 
     cors_allowed_origins=["http://yourdomain.com"],
     async_mode='eventlet'
@@ -153,7 +155,7 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
-        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "Buser", "admin_bustabit_id": "Buser", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "8444897137:AAGu2JzXx6IRa3t4srJkpYH4ozA2bGXw3vI","TELEGRAM_CHAT_ID": "398872968"}
+        default_settings = {"admin_bank_bin": "Vietinbank", "admin_account_number": "100867591184", "admin_account_name": "HOANG NGOC SON", "admin_bustabit_id": "Buser", "admin_usdt_wallet": "0xA8E1a006DE24bF600Bf930B3d9C2FCd66a2fbb66","TELEGRAM_BOT_TOKEN": "8444897137:AAGu2JzXx6IRa3t4srJkpYH4ozA2bGXw3vI","TELEGRAM_CHAT_ID": "398872968"}
         save_settings(default_settings)
         app_settings = default_settings
         return default_settings
@@ -1024,9 +1026,17 @@ def update_price_task():
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
 
-# ==========================================
-# [MỚI] CÁC API KYC (XÁC MINH DANH TÍNH)
-# ==========================================
+# Hàm kiểm tra ảnh thật
+def is_valid_image(file_stream):
+    try:
+        img = Image.open(file_stream)
+        img.verify() # Kiểm tra xem có phải ảnh lỗi hay fake không
+        file_stream.seek(0) # Reset con trỏ file về đầu để lưu sau này
+        return True
+    except Exception:
+        return False
+
+# CÁC API KYC (XÁC MINH DANH TÍNH)
 
 # 1. User gửi yêu cầu KYC
 @app.route("/api/user/submit-kyc", methods=['POST'])
@@ -1047,8 +1057,14 @@ def submit_kyc():
         return jsonify({"success": False, "message": "Vui lòng tải lên đủ 3 ảnh"}), 400
 
     file_front = request.files['id_front']
+    if not is_valid_image(file_front):
+         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
     file_back = request.files['id_back']
+    if not is_valid_image(file_back):
+         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
     file_selfie = request.files['selfie']
+    if not is_valid_image(file_selfie):
+         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
 
     if not all([allowed_kyc_file(f.filename) for f in [file_front, file_back, file_selfie]]):
          return jsonify({"success": False, "message": "Chỉ chấp nhận file ảnh (PNG, JPG, JPEG)"}), 400
