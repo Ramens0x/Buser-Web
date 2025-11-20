@@ -156,7 +156,7 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
-        default_settings = {"admin_bank_bin": "Vietinbank", "admin_account_number": "100867591184", "admin_account_name": "HOANG NGOC SON", "admin_bustabit_id": "Buser", "admin_usdt_wallet": "0xA8E1a006DE24bF600Bf930B3d9C2FCd66a2fbb66","TELEGRAM_BOT_TOKEN": "8444897137:AAGu2JzXx6IRa3t4srJkpYH4ozA2bGXw3vI","TELEGRAM_CHAT_ID": "398872968"}
+        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "", "admin_bustabit_id": "", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "","TELEGRAM_CHAT_ID": ""}
         save_settings(default_settings)
         app_settings = default_settings
         return default_settings
@@ -456,6 +456,49 @@ def api_reset_password():
     user.reset_expiry = None
     db.session.commit()
     return jsonify({"success": True, "message": "Đặt lại mật khẩu thành công!"})
+
+@app.route("/api/send-contact", methods=['POST'])
+@limiter.limit("3 per hour") # Chống spam: Chỉ cho gửi 3 mail/giờ/IP
+def send_contact_email():
+    data = request.json
+    name = data.get('name')
+    user_email = data.get('email')
+    subject = data.get('subject')
+    message_content = data.get('message')
+    
+    if not all([name, user_email, subject, message_content]):
+        return jsonify({"success": False, "message": "Vui lòng điền đầy đủ thông tin"}), 400
+        
+    try:
+        # Gửi email đến cho Admin (Chính là email cấu hình trong .env)
+        admin_email = app.config['MAIL_USERNAME']
+        
+        msg = Message(
+            subject=f"[LIÊN HỆ BUSER] {subject}",
+            sender=admin_email,
+            recipients=[admin_email], # Gửi cho chính mình
+            reply_to=user_email # Để khi bấm Reply sẽ trả lời cho khách
+        )
+        
+        msg.body = f"""
+        📩 CÓ TIN NHẮN LIÊN HỆ MỚI TỪ WEBSITE:
+        
+        - Họ tên: {name}
+        - Email khách: {user_email}
+        - Tiêu đề: {subject}
+        
+        --------------------------------
+        NỘI DUNG:
+        {message_content}
+        --------------------------------
+        """
+        
+        mail.send(msg)
+        return jsonify({"success": True, "message": "Đã gửi liên hệ thành công"})
+        
+    except Exception as e:
+        print(f"Lỗi gửi mail liên hệ: {e}")
+        return jsonify({"success": False, "message": "Lỗi server, vui lòng thử lại sau"}), 500
 
 # --- API TẠO ĐƠN HÀNG (DÙNG CSDL) ---
 @app.route("/api/create-order", methods=['POST'])

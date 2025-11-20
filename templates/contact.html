@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liên Hệ - Buser.com</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body style="background-color: #f9f9f9;">
+
+    <header>
+        <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#navbar-main">
+                        <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM</a>
+                </div>
+                <div class="collapse navbar-collapse" id="navbar-main">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="active"><a href="contact.html" style="color: #fff;"><i class="fa fa-envelope"></i> Liên hệ</a></li>
+                        
+                        <li id="menu-register"><a href="register.html" style="color: #fff;"><i class="fa fa-user-plus"></i> Đăng ký</a></li>
+                        <li id="menu-login"><a href="login.html" style="color: #fff;"><i class="fa fa-user-circle"></i> Đăng nhập</a></li>
+                        <li id="menu-profile" style="display: none;"><a href="profile.html" style="color: #fff;"><i class="fa fa-user"></i> Hồ sơ</a></li>
+                        <li id="menu-logout" style="display: none;"><a href="#" id="btn-logout" style="color: #fff;"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" style="margin-top: 30px; min-height: 500px;">
+        <h2 class="text-center" style="margin-bottom: 30px; text-transform: uppercase; color: #2882C0;">Liên Hệ Với Chúng Tôi</h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4 style="margin:0;"><i class="fa fa-info-circle"></i> Giới Thiệu BUSER</h4></div>
+                    <div class="panel-body">
+                        <p><strong>BUSER.COM : </strong> AN TOÀN - BẢO MẬT - UY TÍN</p>
+                        <hr>
+                        <h4><i class="fa fa-map-marker"></i> Thông tin liên hệ:</h4>
+                        <p><strong>Địa chỉ:</strong> Hà Nội</p>
+                        <p><strong>Hotline:</strong> 0334.XXX.XXX</p>
+                        <p><strong>Email:</strong> BuserTool@gmail.com</p>
+                        <p><strong>Thời gian làm việc:</strong> 24/7 (Kể cả Lễ, Tết)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><h4 style="margin:0;"><i class="fa fa-paper-plane"></i> Gửi Tin Nhắn Hỗ Trợ</h4></div>
+                    <div class="panel-body">
+                        <form id="contact-form">
+                            <div class="form-group">
+                                <label>Họ tên của bạn:</label>
+                                <input type="text" class="form-control" name="name" placeholder="Nhập họ tên" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email của bạn:</label>
+                                <input type="email" class="form-control" name="email" placeholder="Nhập email để chúng tôi phản hồi" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tiêu đề:</label>
+                                <input type="text" class="form-control" name="subject" placeholder="Vd: Hỗ trợ đơn hàng #123..." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nội dung tin nhắn:</label>
+                                <textarea class="form-control" name="message" rows="5" placeholder="Nhập nội dung cần hỗ trợ..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-send"></i> Gửi Tin Nhắn</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="buser-footer" style="margin-top: 50px; background-color: #222; color: #ccc; padding-top: 40px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 style="color: #fff; border-bottom: 2px solid #2882C0; display: inline-block; padding-bottom: 5px;">BUSER.COM</h4>
+                    <p>Hệ thống mua bán tiền điện tử tự động, uy tín.</p>
+                    <p>Email: BuserTool@gmail.com</p>
+                </div>
+                <div class="col-md-6 text-right">
+                   <p>© Copyright 2025 Buser.com</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/main.js"></script>
+
+    <script>
+        // Xử lý gửi form liên hệ
+        $('#contact-form').on('submit', function(e){
+            e.preventDefault();
+            
+            var btn = $(this).find('button[type="submit"]');
+            var originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang gửi...');
+
+            var data = {
+                name: $('input[name="name"]').val(),
+                email: $('input[name="email"]').val(),
+                subject: $('input[name="subject"]').val(),
+                message: $('textarea[name="message"]').val()
+            };
+
+            $.ajax({
+                url: API_URL + "/api/send-contact",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    alert("✅ Gửi tin nhắn thành công! Chúng tôi sẽ phản hồi sớm nhất.");
+                    $('#contact-form')[0].reset();
+                    btn.prop('disabled', false).html(originalText);
+                },
+                error: function(xhr) {
+                    alert("❌ Lỗi: " + (xhr.responseJSON ? xhr.responseJSON.message : "Không thể gửi tin nhắn"));
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

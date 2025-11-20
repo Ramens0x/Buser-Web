@@ -4,11 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buser.com - Mua Bán Nhanh</title>
-
+    <title>Buser.com - Mua Bán Nhanh Chóng</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
@@ -26,6 +24,7 @@
                 </div>
                 <div class="collapse navbar-collapse" id="navbar-main">
                     <ul class="nav navbar-nav navbar-right">
+                        <li><a href="contact.html" style="color: #fff;"><i class="fa fa-envelope"></i> Liên hệ</a></li>
                         <li id="menu-register"><a href="register.html" style="color: #fff;"><i
                                     class="fa fa-user-plus"></i> Đăng ký</a></li>
                         <li id="menu-login"><a href="login.html" style="color: #fff;"><i class="fa fa-user-circle"></i>
@@ -43,41 +42,10 @@
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container-fluid" style="margin-top: 20px;">
         <div class="row">
 
-            <div class="col-sm-4" id="cot-trai">
-                <div classa="panel panel-success">
-                    <div class="panel-heading">
-                        <i class="fa fa-btc"></i> BẢNG GIÁ GIAO DỊCH
-                    </div>
-                    <table class="table table-hover table-striped" id="table-conten-rate">
-                        <tbody>
-                            <tr class="rate_header">
-                                <th><i class="fa fa-btc"></i> Coins</th>
-                                <th>Mua</th>
-                                <th>Bán</th>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <img src="/static/img/bus-310x310.png" class="icon">
-                                    Bits (BTC)
-                                </th>
-                                <th><span class="rate_buy" id="bustabit-buy">Đang tải...</span></th>
-                                <th><span class="rate_sell" id="bustabit-sell">Đang tải...</span></th>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <img src="/static/img/tether-usdt-logo.png" class="icon">
-                                    USDT - BEP20
-                                </th>
-                                <th><span class="rate_buy" id="usdt-buy">Đang tải...</span></th>
-                                <th><span class="rate_sell" id="usdt-sell">Đang tải...</span></th>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
+            <div class="col-md-3" id="cot-trai">
                 <div class="panel panel-default mHistory">
                     <div class="panel-heading" style="background-color: #f5f5f5; color: #333; border-color: #ddd;">
                         <i class="fa fa-bar-chart"></i> Lịch Sử Giao Dịch
@@ -88,13 +56,13 @@
                                 <tr>
                                     <th class="w_60">Loại</th>
                                     <th>Đồng</th>
-                                    <th class="center">Số lượng</th>
-                                    <th class="center">Thời gian</th>
+                                    <th class="center">SL</th>
+                                    <th class="center">Giờ</th>
                                 </tr>
                             </thead>
                             <tbody id="history-table-body">
                                 <tr>
-                                    <td colspan="4" class="text-center">Đang tải lịch sử giao dịch...</td>
+                                    <td colspan="4" class="text-center">Đang tải...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -102,7 +70,7 @@
                 </div>
             </div>
 
-            <div class="col-sm-8" id="cot-phai">
+            <div class="col-md-6" id="cot-giua">
                 <div class="panel panel-default" id="swap-form-panel">
                     <div class="panel-body">
                         <ul class="nav nav-tabs nav-justified" id="buy-sell-tabs">
@@ -117,20 +85,17 @@
                                     <div class="input-group-btn" id="coin-container">
                                         <button type="button" class="btn btn-default dropdown-toggle"
                                             data-toggle="dropdown">
-                                            <img src="/static/img/bus-310x310.png" class="icon"
-                                                id="coin-icon">
+                                            <img src="/static/img/bus-310x310.png" class="icon" id="coin-icon">
                                             <span id="coin-text">Bits (BTC)</span> <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-right" id="coin-list">
                                             <li><a href="#" data-coin="bustabit"
                                                     data-icon="/static/img/bus-310x310.png"><img
-                                                        src="/static/img/bus-310x310.png"
-                                                        class="icon"> Bits (BTC)</a>
+                                                        src="/static/img/bus-310x310.png" class="icon"> Bits (BTC)</a>
                                             </li>
                                             <li><a href="#" data-coin="usdt"
                                                     data-icon="/static/img/tether-usdt-logo.png"><img
-                                                        src="/static/img/tether-usdt-logo.png"
-                                                        class="icon"> USDT (BEP20)</a></li>
+                                                        src="/static/img/tether-usdt-logo.png" class="icon"> USDT (BEP20)</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -167,20 +132,219 @@
                 </div>
             </div>
 
+            <div class="col-md-3" id="cot-phai">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <i class="fa fa-btc"></i> BẢNG GIÁ GIAO DỊCH
+                    </div>
+                    <table class="table table-hover table-striped" id="table-conten-rate">
+                        <tbody>
+                            <tr class="rate_header">
+                                <th><i class="fa fa-btc"></i> Coins</th>
+                                <th>Mua</th>
+                                <th>Bán</th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <img src="/static/img/bus-310x310.png" class="icon"> Bits
+                                </th>
+                                <th><span class="rate_buy" id="bustabit-buy">...</span></th>
+                                <th><span class="rate_sell" id="bustabit-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <img src="/static/img/tether-usdt-logo.png" class="icon"> USDT
+                                </th>
+                                <th><span class="rate_buy" id="usdt-buy">...</span></th>
+                                <th><span class="rate_sell" id="usdt-sell">...</span></th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
-
-    <footer class="container-fluid text-center"
-        style="background-color: #f2f2f2; padding: 20px; margin-top: 30px; border-top: 1px solid #ddd;">
-        <p>© Copyright 2025. All Rights Reserved - Buser.com</p>
+    <footer class="buser-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>BUSER.COM</h4>
+                    <p>Hệ thống mua bán tiền điện tử tự động, uy tín và nhanh chóng hàng đầu Việt Nam. Hỗ trợ 24/7.</p>
+                    <p><i class="fa fa-map-marker"></i> Địa chỉ: Hà Nội, Việt Nam</p>
+                    <p><i class="fa fa-envelope"></i> Email: BuserTool@Gmail.com</p>
+                    <p><i class="fa fa-phone"></i> Hotline: 0334.XXX.XXX</p>
+                </div>
+                <div class="col-md-6">
+                    <h4>THÔNG TIN & CHÍNH SÁCH</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" data-toggle="modal" data-target="#feeModal"><i class="fa fa-angle-right"></i> Phí giao dịch</a></li>
+                        <li><a href="#" data-toggle="modal" data-target="#termsModal"><i class="fa fa-angle-right"></i> Chính sách và Điều khoản sử dụng</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom text-center">
+            <p>© Copyright 2025 Buser.com - All Rights Reserved.</p>
+        </div>
     </footer>
+
+    <div class="modal fade" id="termsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2882C0; color: white;">
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">&times;</button>
+                    <h4 class="modal-title">ĐIỀU KHOẢN SỬ DỤNG BUSER.COM</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Để tiếp tục đăng ký, bạn phải đồng ý với các điều khoản sau:</p>
+                    <textarea class="form-control" rows="15" readonly style="background: white; font-size: 13px;">
+1. GIỚI THIỆU
+Điều Khoản Sử Dụng (gọi tắt là "Điều Khoản") này được hiểu là Bản Hợp đồng giữa Bạn (Khách hàng) và BUSER, được áp dụng khi bạn sử dụng dịch vụ của BUSER.
+
+Bạn cần đọc và đồng ý với tất các các quy định trong Bản Điều Khoản này trước khi sử dụng BUSER. Nếu không đồng ý với bất cứ quy định nào thì Bạn không nên sử dụng BUSER. Khi đã sử dụng BUSER thì có nghĩa là Bạn đã hoàn toàn tự nguyện đồng ý với tất cả các quy định trong Bản thỏa thuận này.
+
+2. ĐIỀU KIỆN THAM GIA VÀ QUY ĐỊNH
+Dịch vụ chỉ dành cho những người dùng đảm bảo rằng đủ các điều kiện sau:
+(i) Bạn ít nhất 18 tuổi hoặc đủ tuổi hợp pháp để lập hợp đồng ràng buộc theo luật hiện hành.
+(ii) Bạn có đầy đủ năng lực pháp lý và đủ quyền hạn để tham gia vào các Điều khoản này.
+(iii) Việc bạn sử dụng Dịch vụ sẽ không vi phạm bất kỳ và tất cả các luật và quy định áp dụng cho bạn, bao gồm nhưng không giới hạn ở các quy định về chống rửa tiền, chống tham nhũng và chống tài trợ khủng bố.
+Quy định như sau
+(i) Hệ thống thanh toán điện tử và/hoặc ngân hàng chịu hoàn toàn trách nhiệm về số tiền mà khách hàng ký gửi tại hệ thống của mình. BUSER không phải là một bên trong thỏa thuận giữa hệ thống thanh toán điện tử và/hoặc ngân hàng với khách hàng của mình, và do đó cũng không chịu trách nhiệm với các sai phạm của khách hàng có thể có đối với hệ thống thanh toán điện tử và/hoặc ngân hàng.
+(ii) Quyền và nghĩa vụ khách hàng và hệ thống thanh toán điện tử, ngân hàng được điều chỉnh bởi các quy tắc, thỏa thuận chấp nhận trong hệ thống thanh toán điện tử, ngân hàng tương ứng.
+(iii) Khi bạn thực hiện trao đổi trên BUSER, thì đơn hàng của bạn chỉ có giá trị giữa bạn và BUSER, BUSER hoàn toàn không chịu trách nhiệm khi bạn gửi thông tin đơn hàng của bạn cho người thứ 3.
+(iv) BUSER có quyền thay đổi nội dung Điều Khoản này và có trách nhiệm báo trước cho bạn thông qua website và/hoặc email trước khi chính thức áp dụng.
+
+3. HOẠT ĐỘNG BỊ CẤM
+Mọi hoạt động sử dụng Dịch vụ của chúng tôi liên quan đến bất kỳ loại hình sau đây đều bị cấm:
+- Rửa tiền, lừa đảo, tài trợ khủng bố hoặc bất kỳ loại tội phạm tài chính nào khác.
+- Mua bán vũ khí trái phép, ma túy, dược phẩm giả.
+- Các hoạt động cờ bạc trái phép, mô hình Ponzi, đa cấp lừa đảo.
+- Nội dung đồi trụy, khiêu dâm.
+- Ngân hàng vỏ bọc hoặc tổ chức tài chính không có hiện diện thực tế.
+Trong trường hợp chúng tôi nghi ngờ tài khoản của bạn liên quan đến hoạt động bị cấm, chúng tôi có quyền khóa tài khoản và báo cơ quan chức năng mà không cần báo trước.
+
+4. GIAO DỊCH & XỬ LÝ
+- Khách hàng có trách nhiệm cung cấp thông tin hợp lệ và chính xác. BUSER không chịu trách nhiệm nếu bạn chuyển sai ví hoặc sai thông tin.
+- Khách hàng chịu trách nhiệm chuyển tiền điện tử, tiền mật mã phải chính xác vào tài khoản, địa chỉ mà BUSER thông báo ở trang Thanh Toán, BUSER không chịu trách nhiệm với các t hanh toán không đúng với thông tin đã đưa ra.
+- BUSER chịu trách nhiệm xử lý và hoàn thành các giao dịch trên hệ thống.
+- BUSER có quyền từ chối xử lý các giao dịch mà các thông tin nằm trong giao dịch có dấu hiệu lừa đảo, vi phạm pháp luật.
+- BUSER không gửi tiền điện tử, tiền mật mã, chuyển khoản qua ngân hàng cho bên thứ ba. Tất cả thông tin tài khoản dùng để giao dịch phải là sở hữu thuộc về bạn.
+- BUSER có quyền thay đổi các tỷ giá, khoản phí, ... tùy theo thời điểm thị trường mà không cần báo trước.Việc thay đổi này có hiệu lực ngay lập tức.
+- BUSER không chịu trách nhiệm về thiệt hại do sự chậm trễ của hệ thống ngân hàng hoặc Blockchain.
+- BUSER không chịu trách nhiệm cho bất kỳ thiệt hại nào xảy ra đối với khách hàng trong thời gian bảo trì, nâng cấp hệ thống.
+- BUSER không chịu trách nhiệm đối với khách hàng trong các trường hợp bất khả kháng như: thiên tai, mất điện, hư hỏng phần cứng, mất dữ liệu không thể khôi phục, tin tặc tấn công vào hệ thống.
+- Mỗi đơn hàng đều có khoảng thời hạn thanh toán. Bạn phải thanh toán trước thời hạn đó, nếu chậm trễ hệ thống có quyền tự động cập nhật thay đổi tỷ giá.
+- Tất cả giao dịch yêu cầu khách hàng chuyển tiền (VND) phải được chuyển khoản qua Internet Banking với nội dung chính xác như hệ thống yêu cầu. Chúng tôi không chấp nhận giao dịch chuyển khoản qua ATM, Nộp tiền mặt trực tiếp tại quầy nếu không có sự thỏa thuận trước với chúng tôi.
+
+5. HỦY LỆNH - HOÀN TIỀN
+BUSER sẽ hủy giao dịch và hoàn tiền nếu phát hiện:
+- Hoạt động gian lận, lừa đảo, rửa tiền.
+- Người gửi tiền không khớp với tên tài khoản trên hệ thống.
+- Khách hàng gửi tiền cho bên thứ ba.
+- Mục đích giao dịch không rõ ràng hoặc có dấu hiệu mờ ám.
+- Trong một số trường hợp BUSER cần xác minh tính minh bạch của giao dịch, BUSER sẽ yêu cầu một số tài liệu, hình ảnh có liên quan đến giao dịch. Nếu BUSER phát hiện ra tài liệu, hình ảnh bạn cung cấp không chính xác, có dấu hiệu làm giả, BUSER sẽ tạm giữ Đơn Hàng của bạn và nhờ đến sự trợ giúp từ phía pháp luật.
+- BUSER bảo lưu quyền hoàn lại tiền mà không cần công bố lý do.
+- BUSER bảo lưu quyền từ chối cung cấp dịch vụ cho bất cứ cá nhân tổ chức nào mà không cần nêu lý do.
+
+6. LIÊN HỆ
+Nếu bạn có thắc mắc, vui lòng liên hệ: BuserTool@Gmail.com
+                    </textarea>
+                    
+                    <div class="checkbox" style="margin-top: 15px;">
+                        <label>
+                            <input type="checkbox" id="agreeCheckbox"> <strong>Tôi đã đọc kỹ và đồng ý với điều khoản sử dụng của hệ thống.</strong>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-block" id="btn-register-terms" disabled>Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="feeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2882C0; color: white;">
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">&times;</button>
+                    <h4 class="modal-title">BIỂU PHÍ GIAO DỊCH BUSER.COM</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead style="background-color: #f5f5f5;">
+                                <tr>
+                                    <th class="text-center">Tên Coin</th>
+                                    <th class="text-center">Loại GD</th>
+                                    <th class="text-center">Phí / Điều kiện</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="2" style="vertical-align: middle; text-align: center; font-weight: bold;">Bits (BTC)</td>
+                                    <td class="text-center">MUA</td>
+                                    <td>
+                                        <p style="margin:0; color: #d9534f;">50.000 VNĐ <span style="color: #333; font-size: 12px;">(Nếu < 20.000 Bits)</span></p>
+                                        <p style="margin:0; color: #5cb85c;">MIỄN PHÍ <span style="color: #333; font-size: 12px;">(Nếu > 20.000 Bits)</span></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">BÁN</td>
+                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
+                                </tr>
+
+                                <tr>
+                                    <td rowspan="2" style="vertical-align: middle; text-align: center; font-weight: bold;">USDT (BEP20)</td>
+                                    <td class="text-center">MUA</td>
+                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">BÁN</td>
+                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info" style="margin-bottom: 0;">
+                        <strong><i class="fa fa-info-circle"></i> Lưu ý:</strong>
+                        <ul style="padding-left: 20px; margin-top: 5px;">
+                            <li>Phí rút VNĐ về ngân hàng: <strong>Miễn phí</strong>.</li>
+                            <li>Phí nạp Coin vào hệ thống: <strong>Miễn phí</strong>.</li>
+                            <li>Người mua chịu phí rút Coin (Network Fee) nếu mua số lượng nhỏ.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng (Close)</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
     <script src="/static/js/config.js"></script>
     <script src="/static/js/main.js"></script>
 
-</body>
+    <script>
+        $(document).ready(function(){
+            $('#agreeCheckbox').change(function(){
+                if($(this).is(':checked')){
+                    $('#btn-register-terms').prop('disabled', false);
+                } else {
+                    $('#btn-register-terms').prop('disabled', true);
+                }
+            });
 
+            $('#btn-register-terms').click(function(){
+                window.location.href = 'register.html';
+            });
+        });
+    </script>
+
+</body>
 </html>
