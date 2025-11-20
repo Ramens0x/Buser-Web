@@ -9,6 +9,7 @@ from flask_limiter.util import get_remote_address
 import requests 
 import json
 import os
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
@@ -24,6 +25,8 @@ from flask_mail import Mail, Message
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_migrate import Migrate
+
+load_dotenv()
 
 # --- [MỚI] CẤU HÌNH CSDL ---
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -58,12 +61,11 @@ def clean_old_bills():
         if count > 0: print(f"🧹 Đã xóa {count} bill cũ.")
     except Exception as e: print(f"❌ Lỗi dọn dẹp: {e}")
 
-# Lưu ý: Với Gmail, mật khẩu phải là "Mật khẩu ứng dụng" (App Password), không phải mật khẩu đăng nhập thường.
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'email_cua_ban@gmail.com'  # <-- Thay email của bạn
-app.config['MAIL_PASSWORD'] = 'mat_khau_ung_dung_16_ky_tu' # <-- Thay mật khẩu ứng dụng
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD') # <-- Thay mật khẩu ứng dụng
 mail = Mail(app)
 # ☝️ KẾT THÚC KHỐI CẤU HÌNH
 limiter = Limiter(
@@ -74,7 +76,6 @@ CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}}, ex
 # Lấy địa chỉ Database từ biến môi trường
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///buser.db')
 
-# Sửa lỗi tương thích cho Render (chuyển postgres:// thành postgresql://)
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -163,6 +164,13 @@ def load_settings():
         with open(CONFIG_FILE, 'r') as f:
             app_settings = json.load(f); return app_settings
     except json.JSONDecodeError: return app_settings
+
+    if os.environ.get('TELEGRAM_BOT_TOKEN'):
+        app_settings['TELEGRAM_BOT_TOKEN'] = os.environ.get('TELEGRAM_BOT_TOKEN')
+    if os.environ.get('TELEGRAM_CHAT_ID'):
+        app_settings['TELEGRAM_CHAT_ID'] = os.environ.get('TELEGRAM_CHAT_ID')
+        
+    return app_settings
 def save_settings(settings):
     global app_settings
     with open(CONFIG_FILE, 'w') as f: json.dump(settings, f, indent=4)
@@ -524,6 +532,8 @@ def upload_bill():
     
     file = request.files['bill_image']
     order_id = request.form.get('order_id')
+    if not is_valid_image(file):
+        return jsonify({"success": False, "message": "File không hợp lệ hoặc bị lỗi!"}), 400
     
     if file and allowed_file(file.filename):
         filename = secure_filename(f"{order_id}_{user.username}_{file.filename}")
@@ -627,6 +637,10 @@ def send_telegram_notification(message, order_id=None):
     """
     Gửi thông báo Telegram có nút tương tác
     """
+
+    token = os.environ.get('TELEGRAM_BOT_TOKEN') or app_settings.get('TELEGRAM_BOT_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID') or app_settings.get('TELEGRAM_CHAT_ID')
+
     global app_settings
     token = app_settings.get('TELEGRAM_BOT_TOKEN')
     chat_id = app_settings.get('TELEGRAM_CHAT_ID')
@@ -643,14 +657,13 @@ def send_telegram_notification(message, order_id=None):
         'parse_mode': 'Markdown'
         }
     
-    # Bạn có thể đổi 127.0.0.1:5500 thành tên miền thật khi deploy
-
     if order_id:
         payload['reply_markup'] = {
             'inline_keyboard': [[
                 {
                     'text': '✅ Xem chi tiết Dashboard',
-                    'url': f'http://127.0.0.1:5500/admin_dashboard.html' 
+                    domain = os.environ.get('SITE_DOMAIN', 'http://your-domain.com')
+                    'url': f'{domain}/admin_dashboard.html'
                 }
             ]]
          }
