@@ -10,6 +10,7 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
+from price_service import price_service
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
@@ -85,13 +86,13 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-that
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 socketio = SocketIO(app, 
-    cors_allowed_origins=["http://yourdomain.com"],
+    cors_allowed_origins=["http://Buser.com"],
     async_mode='eventlet'
 )
 
 # --- Định nghĩa file ---
 CONFIG_FILE = "config.json"
-API_DOMAIN = "https://bottabot.com"
+
 
 # --- ĐỊNH NGHĨA CÁC BẢNG CSDL (MODELS) ---
 class User(db.Model):
@@ -1065,20 +1066,20 @@ def handle_disconnect():
     print("Một Client đã ngắt kết nối Socket.IO")
 
 def update_price_task():
+    """Cập nhật giá tự động (không còn gọi Bottabot)"""
     global current_rates
     try:
-        with requests.Session() as s:
-            r1 = s.get(f"{API_DOMAIN}/get-rate-change-buy/bustabit-bet", timeout=5)
-            r2 = s.get(f"{API_DOMAIN}/get-rate-change-sell/bustabit-bet", timeout=5)
-            r3 = s.get(f"{API_DOMAIN}/get-rate-change-buy/win-coin", timeout=5)
-            r4 = s.get(f"{API_DOMAIN}/get-rate-change-sell/win-coin", timeout=5)
-
-            if r1.status_code == 200: current_rates['bustabit']['buy'] = float(r1.text)
-            if r2.status_code == 200: current_rates['bustabit']['sell'] = float(r2.text)
-            if r3.status_code == 200: current_rates['usdt']['buy'] = float(r3.text)
-            if r4.status_code == 200: current_rates['usdt']['sell'] = float(r4.text)
+        all_prices = price_service.get_all_prices()
         
-        print(f"💹 Đã cập nhật giá mới lúc {datetime.now().strftime('%H:%M:%S')}")
+        if 'bustabit' in all_prices:
+            current_rates['bustabit'] = all_prices['bustabit']
+        if 'usdt' in all_prices:
+            current_rates['usdt'] = all_prices['usdt']
+        
+        print(f"💹 Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
+        print(f"   BTC Mua: {current_rates['bustabit']['buy']:,.0f} | Bán: {current_rates['bustabit']['sell']:,.0f}")
+        print(f"   USDT Mua: {current_rates['usdt']['buy']:,.0f} | Bán: {current_rates['usdt']['sell']:,.0f}")
+
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
 
@@ -1275,6 +1276,220 @@ def cancel_expired_orders():
     for order in expired:
         order.status = 'cancelled'
     db.session.commit()
+
+@app.route("/api/bitcoin", methods=['GET'])
+def api_bitcoin_price():
+    """API: Lấy giá Bitcoin (BTC) theo VND"""
+    rates = price_service.get_rate_buy_sell('btc')
+    if rates:
+        return jsonify({
+            "success": True,
+            "coin": "Bitcoin (BTC)",
+            "buy": rates['buy'],
+            "sell": rates['sell'],
+            "mid": (rates['buy'] + rates['sell']) / 2,
+            "timestamp": rates['timestamp']
+        })
+    return jsonify({"success": False, "message": "Không thể lấy giá BTC"}), 500
+
+@app.route("/api/usdt", methods=['GET'])
+def api_usdt_price():
+    """API: Lấy giá USDT theo VND"""
+    rates = price_service.get_rate_buy_sell('usdt')
+    if rates:
+        return jsonify({
+            "success": True,
+            "coin": "USDT",
+            "buy": rates['buy'],
+            "sell": rates['sell'],
+            "mid": (rates['buy'] + rates['sell']) / 2,
+            "timestamp": rates['timestamp']
+        })
+    return jsonify({"success": False, "message": "Không thể lấy giá USDT"}), 500
+
+@app.route("/api/ethereum", methods=['GET'])
+@app.route("/api/eth", methods=['GET'])
+def api_eth_price():
+    """API: Lấy giá Ethereum (ETH) theo VND"""
+    rates = price_service.get_rate_buy_sell('eth')
+    if rates:
+        return jsonify({
+            "success": True,
+            "coin": "Ethereum (ETH)",
+            "buy": rates['buy'],
+            "sell": rates['sell'],
+            "mid": (rates['buy'] + rates['sell']) / 2,
+            "timestamp": rates['timestamp']
+        })
+    return jsonify({"success": False, "message": "Không thể lấy giá ETH"}), 500
+
+@app.route("/api/bnb", methods=['GET'])
+def api_bnb_price():
+    """API: Lấy giá BNB theo VND"""
+    rates = price_service.get_rate_buy_sell('bnb')
+    if rates:
+        return jsonify({
+            "success": True,
+            "coin": "BNB",
+            "buy": rates['buy'],
+            "sell": rates['sell'],
+            "mid": (rates['buy'] + rates['sell']) / 2,
+            "timestamp": rates['timestamp']
+        })
+    return jsonify({"success": False, "message": "Không thể lấy giá BNB"}), 500
+
+@app.route("/api/doge", methods=['GET'])
+def api_doge_price():
+    """API: Lấy giá Dogecoin theo VND"""
+    rates = price_service.get_rate_buy_sell('doge')
+    if rates:
+        return jsonify({
+            "success": True,
+            "coin": "Dogecoin (DOGE)",
+            "buy": rates['buy'],
+            "sell": rates['sell'],
+            "mid": (rates['buy'] + rates['sell']) / 2,
+            "timestamp": rates['timestamp']
+        })
+    return jsonify({"success": False, "message": "Không thể lấy giá DOGE"}), 500
+
+@app.route("/api/get-rate-buy-sell", methods=['GET'])
+def api_get_rate_buy_sell():
+    """
+    API: Lấy giá mua/bán tất cả coin (Giống Bottabot format)
+    Query params: ?coin=btc hoặc không có (lấy tất cả)
+    """
+    coin = request.args.get('coin', '').lower()
+    
+    if coin:
+        # Lấy 1 coin cụ thể
+        rates = price_service.get_rate_buy_sell(coin)
+        if rates:
+            return jsonify(rates)
+        return jsonify({"error": f"Coin {coin} not found"}), 404
+    else:
+        # Lấy tất cả
+        all_prices = price_service.get_all_prices()
+        return jsonify({
+            "success": True,
+            "data": all_prices,
+            "timestamp": datetime.now().isoformat()
+        })
+
+@app.route("/api/all-prices", methods=['GET'])
+def api_all_prices():
+    """API: Lấy tất cả giá coin (Format đơn giản)"""
+    all_prices = price_service.get_all_prices()
+    return jsonify(all_prices)
+
+@app.route("/api/start", methods=['GET'])
+def api_start():
+    """
+    API: Health check + Thông tin hệ thống
+    Giống endpoint /start của Bottabot
+    """
+    all_prices = price_service.get_all_prices()
+    return jsonify({
+        "status": "online",
+        "service": "Buser Price Service",
+        "version": "2.0",
+        "data_source": "Binance API + Forex API",
+        "available_coins": list(all_prices.keys()),
+        "prices": all_prices,
+        "timestamp": datetime.now().isoformat()
+    })
+
+@app.route("/api/usd-vnd-rate", methods=['GET'])
+def api_usd_vnd_rate():
+    """API: Lấy tỷ giá USD/VND hiện tại"""
+    rate = price_service.fetch_usd_vnd_rate()
+    return jsonify({
+        "success": True,
+        "rate": rate,
+        "format": "1 USD = X VND",
+        "timestamp": datetime.now().isoformat()
+    })
+
+# ====================================
+# [MỚI] API ADMIN: Quản lý Spread
+# ====================================
+
+@app.route("/api/admin/update-spread", methods=['POST'])
+def admin_update_spread():
+    """API Admin: Cập nhật spread cho coin"""
+    user = get_user_from_request()
+    if not user or user.role != 'Admin':
+        return jsonify({"success": False, "message": "Không có quyền"}), 403
+    
+    data = request.json
+    coin = data.get('coin', '').lower()
+    buy_percent = float(data.get('buy_percent', 1.5))
+    sell_percent = float(data.get('sell_percent', 1.5))
+    
+    try:
+        price_service.update_spread(coin, buy_percent, sell_percent)
+        return jsonify({
+            "success": True,
+            "message": f"Đã cập nhật spread cho {coin}",
+            "coin": coin,
+            "buy_percent": buy_percent,
+            "sell_percent": sell_percent
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route("/api/admin/get-spread", methods=['GET'])
+def admin_get_spread():
+    """API Admin: Xem spread hiện tại"""
+    user = get_user_from_request()
+    if not user or user.role != 'Admin':
+        return jsonify({"success": False, "message": "Không có quyền"}), 403
+    
+    return jsonify({
+        "success": True,
+        "spread_config": price_service.spread_config
+    })
+
+# ====================================
+# [MỚI] API Debug (Kiểm tra giá raw)
+# ====================================
+
+@app.route("/api/debug/crypto-price-usd", methods=['GET'])
+def debug_crypto_price_usd():
+    """Debug: Xem giá crypto gốc (USD) từ Binance"""
+    coin = request.args.get('coin', 'btc').lower()
+    price_usd = price_service.get_crypto_price_usd(coin)
+    
+    if price_usd:
+        return jsonify({
+            "coin": coin,
+            "price_usd": price_usd,
+            "source": "Binance API",
+            "timestamp": datetime.now().isoformat()
+        })
+    return jsonify({"error": "Cannot fetch price"}), 500
+
+@app.route("/api/debug/cache-status", methods=['GET'])
+def debug_cache_status():
+    """Debug: Xem trạng thái cache"""
+    with price_service.cache_lock:
+        crypto_cache = {}
+        for coin, data in price_service.cache['crypto_prices'].items():
+            age = (datetime.now() - data['timestamp']).seconds
+            crypto_cache[coin] = {
+                'price_usd': data['price'],
+                'age_seconds': age
+            }
+        
+        usd_vnd_age = None
+        if price_service.cache['usd_vnd_timestamp']:
+            usd_vnd_age = (datetime.now() - price_service.cache['usd_vnd_timestamp']).seconds
+        
+        return jsonify({
+            "crypto_cache": crypto_cache,
+            "usd_vnd_rate": price_service.cache['usd_vnd_rate'],
+            "usd_vnd_age_seconds": usd_vnd_age
+        })
 
 # --- Chạy máy chủ ---
 if __name__ == '__main__':
