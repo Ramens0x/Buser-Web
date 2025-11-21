@@ -701,12 +701,13 @@ def send_telegram_notification(message, order_id=None):
         'parse_mode': 'Markdown'
         }
     
+    domain = os.environ.get('SITE_DOMAIN', 'http://127.0.0.1:5000')
+
     if order_id:
         payload['reply_markup'] = {
             'inline_keyboard': [[
                 {
                     'text': '✅ Xem chi tiết Dashboard',
-                    domain = os.environ.get('SITE_DOMAIN', 'http://your-domain.com')
                     'url': f'{domain}/admin_dashboard.html'
                 }
             ]]
