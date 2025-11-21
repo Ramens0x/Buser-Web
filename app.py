@@ -86,7 +86,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-that
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 socketio = SocketIO(app, 
-    cors_allowed_origins=["http://Buser.com"],
+    cors_allowed_origins="*",
     async_mode='eventlet'
 )
 
