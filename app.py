@@ -681,11 +681,12 @@ def send_telegram_notification(message, order_id=None):
     """
     Gửi thông báo Telegram có nút tương tác
     """
+    global app_settings
 
     token = os.environ.get('TELEGRAM_BOT_TOKEN') or app_settings.get('TELEGRAM_BOT_TOKEN')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID') or app_settings.get('TELEGRAM_CHAT_ID')
 
-    global app_settings
+
     token = app_settings.get('TELEGRAM_BOT_TOKEN')
     chat_id = app_settings.get('TELEGRAM_CHAT_ID')
     
@@ -708,6 +709,7 @@ def send_telegram_notification(message, order_id=None):
             'inline_keyboard': [[
                 {
                     'text': '✅ Xem chi tiết Dashboard',
+                    
                     'url': f'{domain}/admin_dashboard.html'
                 }
             ]]
@@ -1499,18 +1501,21 @@ if __name__ == '__main__':
         load_settings()
 
         
-        admin_user = User.query.filter_by(username='buser').first()
+        env_admin_user = os.environ.get('ADMIN_USERNAME', 'admin')
+        env_admin_pass = os.environ.get('ADMIN_PASSWORD', 'Buseradmin1@')
+
+        admin_user = User.query.filter_by(username=env_admin_user).first()
         if not admin_user:
-            admin_pass = generate_password_hash("sonhoang1") 
+            hashed_pass = generate_password_hash(env_admin_pass) 
             admin_user = User(
-                username="buser",
-                email="admin@buser.com",
-                password=admin_pass,
+                username=env_admin_user,
+                email=f"{env_admin_user}@buser.com",
+                password=hashed_pass,
                 role="Admin"
             )
             db.session.add(admin_user)
             db.session.commit()
-            print(">>> Đã tạo tài khoản Admin (buser/sonhoang1) cố định <<<") 
+            print(f">>> Đã tạo tài khoản Admin ({env_admin_user}/******) từ cấu hình .env <<<")
             
         try:
             update_price_task()
