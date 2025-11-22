@@ -2,8 +2,9 @@
 __pycache__/
 *.pyc
 
-# File CSDL (Rất quan trọng! Không đẩy CSDL lên)
+# File CSDL 
 buser.db
+*.sqlite3
 
 # File cấu hình chứa bí mật (TOKEN, MẬT KHẨU)
 config.json
@@ -12,6 +13,19 @@ config.json
 .env
 venv/
 env/
+.venv/
 
+# Chặn toàn bộ thư mục uploads (bao gồm cả bills và kyc bên trong)
 uploads
 bills
+kyc
+# File nhật ký 
+*.log
+buser.log
+
+# --- HỆ THỐNG & IDE (RÁC) ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+instance/
