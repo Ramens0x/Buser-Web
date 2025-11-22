@@ -181,6 +181,13 @@ def load_settings():
         "liquidity_eth": 1,
         "liquidity_bnb": 1,
         "liquidity_sol": 1,
+        "coin_fees": {
+        "bustabit": 0,  
+        "ether": 0,     
+        "usdt": 0,      
+        "sol": 0,       
+        "bnb": 0       
+        },
         "fee_html_content": """
                 <tr>
                     <td class="text-center">Bits (BTC)</td>
@@ -341,30 +348,44 @@ def api_calculate_swap():
     amount_in = float(data.get('amount', 0))
     direction = data.get('direction', 'from') 
     mode = data.get('mode', 'sell')
-    coin_type = data.get('coin', 'bustabit')
+    coin_type = data.get('coin', 'bustabit, ether, usdt, sol, bnb') 
     
-    if current_rates[coin_type]['buy'] == 0:
-        api_get_prices() 
+    settings = load_settings()
+    coin_fees = settings.get('coin_fees', {})
+    
+    current_fee = float(coin_fees.get(coin_type, 0))
+
+    if current_rates.get(coin_type, {}).get('buy', 0) == 0:
+        from price_service import price_service
+        all_prices = price_service.get_all_prices()
+        if all_prices:
+            current_rates.update(all_prices)
         
     amount_out = 0
     
     try:
         if mode == 'buy':
             rate = current_rates[coin_type]['buy']
-            if direction == 'from':
-                amount_out = amount_in / rate if rate > 0 else 0
-            else:
-                amount_out = amount_in * rate
+            if rate > 0:
+                if direction == 'from': 
+                    net_vnd = amount_in - current_fee
+                    if net_vnd < 0: net_vnd = 0
+                    amount_out = net_vnd / rate
+                else:
+                    amount_out = (amount_in * rate) + current_fee
+
         elif mode == 'sell':
             rate = current_rates[coin_type]['sell']
-            if direction == 'from':
-                amount_out = amount_in * rate
-            else:
-                amount_out = amount_in / rate if rate > 0 else 0
+            if rate > 0:
+                if direction == 'from':
+                    amount_out = amount_in * rate
+                else:
+                    amount_out = amount_in / rate
                 
         return jsonify({'amount_out': amount_out})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Calc Error: {e}")
+        return jsonify({"amount_out": 0}), 200
 
 # --- API USER (ĐÃ CẬP NHẬT DÙNG CSDL) ---
 @app.route("/api/register", methods=['POST'])
@@ -1106,17 +1127,15 @@ def handle_disconnect():
     print("Một Client đã ngắt kết nối Socket.IO")
 
 def update_price_task():
-    """Cập nhật giá tự động (không còn gọi Bottabot)"""
+    """Cập nhật giá tự động"""
     global current_rates
     try:
         all_prices = price_service.get_all_prices()
         
-        if 'bustabit' in all_prices:
-            current_rates['bustabit'] = all_prices['bustabit']
-        if 'usdt' in all_prices:
-            current_rates['usdt'] = all_prices['usdt']
+        if all_prices:
+            current_rates = all_prices 
         
-        logger.info(f"Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
+        logger.info(f"[INFO] Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
         
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
@@ -1605,8 +1624,7 @@ if __name__ == '__main__':
             scheduler = BackgroundScheduler()
             # 1. Dọn dẹp bill cũ (24h/lần)
             scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24)
-            # 2. Cập nhật giá (60s/lần) - GIÚP WEB NHANH HƠN
-            scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
+            scheduler.add_job(func=update_price_task, trigger="interval", seconds=30)
             scheduler.add_job(func=cancel_expired_orders, trigger="interval", minutes=15)
             scheduler.start()
             print(">>> Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")

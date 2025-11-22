@@ -11,3 +11,407 @@
 2025-11-22 20:44:26,078 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:45:26 +07)" executed successfully
 2025-11-22 20:45:26,066 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:46:26 +07)" (scheduled at 2025-11-22 20:45:26.052628+07:00)
 2025-11-22 20:45:36,147 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:46:26 +07)" executed successfully
+2025-11-22 20:46:24,437 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:46:24,440 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:46:24,441 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:46:24,443 - INFO - Added job "clean_old_bills" to job store "default"
+2025-11-22 20:46:24,444 - INFO - Added job "update_price_task" to job store "default"
+2025-11-22 20:46:24,444 - INFO - Added job "cancel_expired_orders" to job store "default"
+2025-11-22 20:46:24,444 - INFO - Scheduler started
+2025-11-22 20:47:24,448 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:47:24 +07)" (scheduled at 2025-11-22 20:47:24.440483+07:00)
+2025-11-22 20:47:32,781 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:48:24 +07)" executed successfully
+2025-11-22 20:48:24,442 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:49:24 +07)" (scheduled at 2025-11-22 20:48:24.440483+07:00)
+2025-11-22 20:48:24,453 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:49:24 +07)" executed successfully
+2025-11-22 20:49:24,448 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:50:24 +07)" (scheduled at 2025-11-22 20:49:24.440483+07:00)
+2025-11-22 20:49:36,757 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:50:24 +07)" executed successfully
+2025-11-22 20:50:24,448 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:51:24 +07)" (scheduled at 2025-11-22 20:50:24.440483+07:00)
+2025-11-22 20:50:25,157 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:51:24 +07)" executed successfully
+2025-11-22 20:51:24,443 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:52:24 +07)" (scheduled at 2025-11-22 20:51:24.440483+07:00)
+2025-11-22 20:51:31,963 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:52:24 +07)" executed successfully
+2025-11-22 20:52:24,455 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:53:24 +07)" (scheduled at 2025-11-22 20:52:24.440483+07:00)
+2025-11-22 20:52:25,053 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:53:24 +07)" executed successfully
+2025-11-22 20:53:24,450 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:54:24 +07)" (scheduled at 2025-11-22 20:53:24.440483+07:00)
+2025-11-22 20:53:32,614 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:54:24 +07)" executed successfully
+2025-11-22 20:54:24,456 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:55:24 +07)" (scheduled at 2025-11-22 20:54:24.440483+07:00)
+2025-11-22 20:54:25,056 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:55:24 +07)" executed successfully
+2025-11-22 20:55:24,448 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:56:24 +07)" (scheduled at 2025-11-22 20:55:24.440483+07:00)
+2025-11-22 20:55:32,546 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:56:24 +07)" executed successfully
+2025-11-22 20:56:24,451 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:57:24 +07)" (scheduled at 2025-11-22 20:56:24.440483+07:00)
+2025-11-22 20:56:24,464 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:57:24 +07)" executed successfully
+2025-11-22 20:57:24,445 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:58:24 +07)" (scheduled at 2025-11-22 20:57:24.440483+07:00)
+2025-11-22 20:57:33,392 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:58:24 +07)" executed successfully
+2025-11-22 20:58:13,473 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:14,038 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:14,817 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:15,217 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:15,973 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:16,753 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:16,943 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:17,173 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:17,342 - ERROR - Exception on /api/calculate [POST]
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 346, in api_calculate_swap
+    if current_rates[coin_type]['buy'] == 0:
+       ~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'ether'
+2025-11-22 20:58:24,451 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:59:24 +07)" (scheduled at 2025-11-22 20:58:24.440483+07:00)
+2025-11-22 20:58:24,481 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:59:24 +07)" executed successfully
+2025-11-22 20:59:24,450 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:00:24 +07)" (scheduled at 2025-11-22 20:59:24.440483+07:00)
+2025-11-22 20:59:32,803 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:00:24 +07)" executed successfully
+2025-11-22 21:00:24,453 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:01:24 +07)" (scheduled at 2025-11-22 21:00:24.440483+07:00)
+2025-11-22 21:00:24,471 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:01:24 +07)" executed successfully
+2025-11-22 21:01:24,452 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:02:24 +07)" (scheduled at 2025-11-22 21:01:24.440483+07:00)
+2025-11-22 21:01:24,462 - INFO - Running job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 21:01:24 +07)" (scheduled at 2025-11-22 21:01:24.440973+07:00)
+2025-11-22 21:01:24,508 - ERROR - Job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 21:01:24 +07)" raised an exception
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\apscheduler\executors\base.py", line 131, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 1323, in cancel_expired_orders
+    expired = Order.query.filter(
+              ^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\model.py", line 23, in __get__
+    cls, session=cls.__fsa__.session()  # type: ignore[arg-type]
+                 ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\orm\scoping.py", line 218, in __call__
+    sess = self.registry()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\util\_collections.py", line 634, in __call__
+    key = self.scopefunc()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\session.py", line 111, in _app_ctx_id
+    return id(app_ctx._get_current_object())  # type: ignore[attr-defined]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-11-22 21:01:32,682 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:02:24 +07)" executed successfully
+2025-11-22 21:02:24,456 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:03:24 +07)" (scheduled at 2025-11-22 21:02:24.440483+07:00)
+2025-11-22 21:02:24,495 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:03:24 +07)" executed successfully
+2025-11-22 21:03:24,452 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:04:24 +07)" (scheduled at 2025-11-22 21:03:24.440483+07:00)
+2025-11-22 21:03:32,652 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:04:24 +07)" executed successfully
+2025-11-22 21:04:24,454 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:05:24 +07)" (scheduled at 2025-11-22 21:04:24.440483+07:00)
+2025-11-22 21:04:24,491 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:05:24 +07)" executed successfully
+2025-11-22 21:05:24,444 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:06:24 +07)" (scheduled at 2025-11-22 21:05:24.440483+07:00)
+2025-11-22 21:05:32,684 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:06:24 +07)" executed successfully
+2025-11-22 21:06:24,446 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:07:24 +07)" (scheduled at 2025-11-22 21:06:24.440483+07:00)
+2025-11-22 21:06:24,469 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:07:24 +07)" executed successfully
+2025-11-22 21:07:24,449 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:08:24 +07)" (scheduled at 2025-11-22 21:07:24.440483+07:00)
+2025-11-22 21:07:32,791 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:08:24 +07)" executed successfully
+2025-11-22 21:08:24,441 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:09:24 +07)" (scheduled at 2025-11-22 21:08:24.440483+07:00)
+2025-11-22 21:08:24,512 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:09:24 +07)" executed successfully
+2025-11-22 21:09:24,447 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:10:24 +07)" (scheduled at 2025-11-22 21:09:24.440483+07:00)
+2025-11-22 21:09:33,378 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:10:24 +07)" executed successfully
+2025-11-22 21:10:24,442 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:11:24 +07)" (scheduled at 2025-11-22 21:10:24.440483+07:00)
+2025-11-22 21:10:24,456 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:11:24 +07)" executed successfully
+2025-11-22 21:11:24,446 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:12:24 +07)" (scheduled at 2025-11-22 21:11:24.440483+07:00)
+2025-11-22 21:11:33,093 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:12:24 +07)" executed successfully
+2025-11-22 21:12:24,442 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:13:24 +07)" (scheduled at 2025-11-22 21:12:24.440483+07:00)
+2025-11-22 21:12:24,478 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:13:24 +07)" executed successfully
+2025-11-22 21:13:24,449 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:14:24 +07)" (scheduled at 2025-11-22 21:13:24.440483+07:00)
+2025-11-22 21:13:32,665 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:14:24 +07)" executed successfully
+2025-11-22 21:14:24,455 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:15:24 +07)" (scheduled at 2025-11-22 21:14:24.440483+07:00)
+2025-11-22 21:14:24,473 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:15:24 +07)" executed successfully
+2025-11-22 21:15:24,446 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:16:24 +07)" (scheduled at 2025-11-22 21:15:24.440483+07:00)
+2025-11-22 21:15:32,866 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:16:24 +07)" executed successfully
+2025-11-22 21:16:24,457 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:17:24 +07)" (scheduled at 2025-11-22 21:16:24.440483+07:00)
+2025-11-22 21:16:24,481 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 21:17:24 +07)" executed successfully
+2025-11-22 21:16:24,482 - INFO - Running job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 21:31:24 +07)" (scheduled at 2025-11-22 21:16:24.440973+07:00)
+2025-11-22 21:16:24,491 - ERROR - Job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 21:31:24 +07)" raised an exception
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\apscheduler\executors\base.py", line 131, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 1323, in cancel_expired_orders
+    expired = Order.query.filter(
+              ^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\model.py", line 23, in __get__
+    cls, session=cls.__fsa__.session()  # type: ignore[arg-type]
+                 ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\orm\scoping.py", line 218, in __call__
+    sess = self.registry()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\util\_collections.py", line 634, in __call__
+    key = self.scopefunc()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\session.py", line 111, in _app_ctx_id
+    return id(app_ctx._get_current_object())  # type: ignore[attr-defined]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-11-22 22:07:07,744 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 22:07:07,745 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 22:07:07,746 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 22:07:07,749 - INFO - Added job "clean_old_bills" to job store "default"
+2025-11-22 22:07:07,750 - INFO - Added job "update_price_task" to job store "default"
+2025-11-22 22:07:07,750 - INFO - Added job "cancel_expired_orders" to job store "default"
+2025-11-22 22:07:07,750 - INFO - Scheduler started
+2025-11-22 22:08:07,760 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:08:07 +07)" (scheduled at 2025-11-22 22:08:07.745763+07:00)
+2025-11-22 22:08:17,119 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:09:07 +07)" executed successfully
+2025-11-22 22:09:07,752 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:10:07 +07)" (scheduled at 2025-11-22 22:09:07.745763+07:00)
+2025-11-22 22:09:07,767 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:10:07 +07)" executed successfully
+2025-11-22 22:10:07,760 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:11:07 +07)" (scheduled at 2025-11-22 22:10:07.745763+07:00)
+2025-11-22 22:10:16,420 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:11:07 +07)" executed successfully
+2025-11-22 22:11:07,752 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:12:07 +07)" (scheduled at 2025-11-22 22:11:07.745763+07:00)
+2025-11-22 22:11:07,760 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:12:07 +07)" executed successfully
+2025-11-22 22:12:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:13:07 +07)" (scheduled at 2025-11-22 22:12:07.745763+07:00)
+2025-11-22 22:12:16,078 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:13:07 +07)" executed successfully
+2025-11-22 22:13:07,757 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:14:07 +07)" (scheduled at 2025-11-22 22:13:07.745763+07:00)
+2025-11-22 22:13:07,767 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:14:07 +07)" executed successfully
+2025-11-22 22:14:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:15:07 +07)" (scheduled at 2025-11-22 22:14:07.745763+07:00)
+2025-11-22 22:14:17,419 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:15:07 +07)" executed successfully
+2025-11-22 22:15:07,760 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:16:07 +07)" (scheduled at 2025-11-22 22:15:07.745763+07:00)
+2025-11-22 22:15:07,774 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:16:07 +07)" executed successfully
+2025-11-22 22:16:07,758 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:17:07 +07)" (scheduled at 2025-11-22 22:16:07.745763+07:00)
+2025-11-22 22:16:16,426 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:17:07 +07)" executed successfully
+2025-11-22 22:17:07,748 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:18:07 +07)" (scheduled at 2025-11-22 22:17:07.745763+07:00)
+2025-11-22 22:17:07,757 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:18:07 +07)" executed successfully
+2025-11-22 22:18:07,754 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:19:07 +07)" (scheduled at 2025-11-22 22:18:07.745763+07:00)
+2025-11-22 22:18:07,763 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:19:07 +07)" executed successfully
+2025-11-22 22:19:07,747 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:20:07 +07)" (scheduled at 2025-11-22 22:19:07.745763+07:00)
+2025-11-22 22:19:07,759 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:20:07 +07)" executed successfully
+2025-11-22 22:20:07,751 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:21:07 +07)" (scheduled at 2025-11-22 22:20:07.745763+07:00)
+2025-11-22 22:20:07,760 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:21:07 +07)" executed successfully
+2025-11-22 22:21:07,747 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:22:07 +07)" (scheduled at 2025-11-22 22:21:07.745763+07:00)
+2025-11-22 22:21:07,756 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:22:07 +07)" executed successfully
+2025-11-22 22:22:07,752 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:23:07 +07)" (scheduled at 2025-11-22 22:22:07.745763+07:00)
+2025-11-22 22:22:07,756 - INFO - Running job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 22:22:07 +07)" (scheduled at 2025-11-22 22:22:07.746412+07:00)
+2025-11-22 22:22:07,765 - ERROR - Job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 22:22:07 +07)" raised an exception
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\apscheduler\executors\base.py", line 131, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 1321, in cancel_expired_orders
+    expired = Order.query.filter(
+              ^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\model.py", line 23, in __get__
+    cls, session=cls.__fsa__.session()  # type: ignore[arg-type]
+                 ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\orm\scoping.py", line 218, in __call__
+    sess = self.registry()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\util\_collections.py", line 634, in __call__
+    key = self.scopefunc()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\session.py", line 111, in _app_ctx_id
+    return id(app_ctx._get_current_object())  # type: ignore[attr-defined]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-11-22 22:22:19,558 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:23:07 +07)" executed successfully
+2025-11-22 22:23:07,754 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:24:07 +07)" (scheduled at 2025-11-22 22:23:07.745763+07:00)
+2025-11-22 22:23:07,763 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:24:07 +07)" executed successfully
+2025-11-22 22:24:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:25:07 +07)" (scheduled at 2025-11-22 22:24:07.745763+07:00)
+2025-11-22 22:24:07,764 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:25:07 +07)" executed successfully
+2025-11-22 22:25:07,759 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:26:07 +07)" (scheduled at 2025-11-22 22:25:07.745763+07:00)
+2025-11-22 22:25:07,856 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:26:07 +07)" executed successfully
+2025-11-22 22:26:07,761 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:27:07 +07)" (scheduled at 2025-11-22 22:26:07.745763+07:00)
+2025-11-22 22:26:20,390 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:27:07 +07)" executed successfully
+2025-11-22 22:27:07,756 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:28:07 +07)" (scheduled at 2025-11-22 22:27:07.745763+07:00)
+2025-11-22 22:27:07,765 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:28:07 +07)" executed successfully
+2025-11-22 22:28:07,752 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:29:07 +07)" (scheduled at 2025-11-22 22:28:07.745763+07:00)
+2025-11-22 22:28:22,009 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:29:07 +07)" executed successfully
+2025-11-22 22:29:07,749 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:30:07 +07)" (scheduled at 2025-11-22 22:29:07.745763+07:00)
+2025-11-22 22:29:07,758 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:30:07 +07)" executed successfully
+2025-11-22 22:30:07,753 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:31:07 +07)" (scheduled at 2025-11-22 22:30:07.745763+07:00)
+2025-11-22 22:30:21,640 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:31:07 +07)" executed successfully
+2025-11-22 22:31:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:32:07 +07)" (scheduled at 2025-11-22 22:31:07.745763+07:00)
+2025-11-22 22:31:07,765 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:32:07 +07)" executed successfully
+2025-11-22 22:32:07,749 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:33:07 +07)" (scheduled at 2025-11-22 22:32:07.745763+07:00)
+2025-11-22 22:32:21,054 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:33:07 +07)" executed successfully
+2025-11-22 22:33:07,759 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:34:07 +07)" (scheduled at 2025-11-22 22:33:07.745763+07:00)
+2025-11-22 22:33:17,767 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:34:07 +07)" executed successfully
+2025-11-22 22:34:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:35:07 +07)" (scheduled at 2025-11-22 22:34:07.745763+07:00)
+2025-11-22 22:34:07,765 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:35:07 +07)" executed successfully
+2025-11-22 22:35:07,746 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:36:07 +07)" (scheduled at 2025-11-22 22:35:07.745763+07:00)
+2025-11-22 22:35:22,901 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:36:07 +07)" executed successfully
+2025-11-22 22:36:07,758 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:37:07 +07)" (scheduled at 2025-11-22 22:36:07.745763+07:00)
+2025-11-22 22:36:07,767 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:37:07 +07)" executed successfully
+2025-11-22 22:37:07,750 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:38:07 +07)" (scheduled at 2025-11-22 22:37:07.745763+07:00)
+2025-11-22 22:37:07,759 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:38:07 +07)" executed successfully
+2025-11-22 22:37:07,759 - INFO - Running job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 22:52:07 +07)" (scheduled at 2025-11-22 22:37:07.746412+07:00)
+2025-11-22 22:37:07,763 - ERROR - Job "cancel_expired_orders (trigger: interval[0:15:00], next run at: 2025-11-22 22:52:07 +07)" raised an exception
+Traceback (most recent call last):
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\apscheduler\executors\base.py", line 131, in run_job
+    retval = job.func(*job.args, **job.kwargs)
+  File "C:\Users\HSON\Desktop\Buser-Web\app.py", line 1321, in cancel_expired_orders
+    expired = Order.query.filter(
+              ^^^^^^^^^^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\model.py", line 23, in __get__
+    cls, session=cls.__fsa__.session()  # type: ignore[arg-type]
+                 ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\orm\scoping.py", line 218, in __call__
+    sess = self.registry()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\sqlalchemy\util\_collections.py", line 634, in __call__
+    key = self.scopefunc()
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\flask_sqlalchemy\session.py", line 111, in _app_ctx_id
+    return id(app_ctx._get_current_object())  # type: ignore[attr-defined]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\HSON\Desktop\Buser-Web\venv\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-11-22 22:38:07,755 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:39:07 +07)" (scheduled at 2025-11-22 22:38:07.745763+07:00)
+2025-11-22 22:38:07,805 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:39:07 +07)" executed successfully
+2025-11-22 22:39:07,751 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:40:07 +07)" (scheduled at 2025-11-22 22:39:07.745763+07:00)
+2025-11-22 22:39:07,763 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:40:07 +07)" executed successfully
+2025-11-22 22:40:07,760 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:41:07 +07)" (scheduled at 2025-11-22 22:40:07.745763+07:00)
+2025-11-22 22:40:15,913 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:41:07 +07)" executed successfully
+2025-11-22 22:41:07,756 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:42:07 +07)" (scheduled at 2025-11-22 22:41:07.745763+07:00)
+2025-11-22 22:41:07,785 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 22:42:07 +07)" executed successfully

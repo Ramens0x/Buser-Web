@@ -258,8 +258,19 @@ body {
 
 /* Chỉnh lại hiển thị Modal text */
 #termsModal textarea {
-    resize: none; 
+    resize: none;
     border: 1px solid #ddd;
     background-color: #f9f9f9;
     color: #333;
+}
+
+/* Ngăn bảng giá xuống dòng */
+#table-conten-rate th {
+    white-space: nowrap;
+    /* Bắt buộc hiển thị trên 1 dòng */
+    font-size: 13px;
+    /* Giảm nhẹ cỡ chữ nếu cần */
+    padding-left: 5px;
+    /* Căn chỉnh lại lề chút cho gọn */
+    padding-right: 5px;
 }

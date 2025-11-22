@@ -51,62 +51,77 @@ $(document).ready(function () {
     // --- Hàm gọi API lấy giá (Cập nhật Bảng giá) ---
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
-            if (data.ether) {
-                $('#ether-buy').text(numberFormat(data.ether.buy, 0) + ' ₫');
-                $('#ether-sell').text(numberFormat(data.ether.sell, 0) + ' ₫');
-            }
             if (data.bustabit) {
                 $('#bustabit-buy').text(numberFormat(data.bustabit.buy, 0) + ' ₫');
                 $('#bustabit-sell').text(numberFormat(data.bustabit.sell, 0) + ' ₫');
             }
+
+            if (data.ether) {
+                $('#ether-buy').text(numberFormat(data.ether.buy, 0) + ' ₫');
+                $('#ether-sell').text(numberFormat(data.ether.sell, 0) + ' ₫');
+            }
+
             if (data.btc) {
                 $('#btc-buy').text(numberFormat(data.btc.buy, 0) + ' ₫');
                 $('#btc-sell').text(numberFormat(data.btc.sell, 0) + ' ₫');
             }
+
             if (data.usdt) {
                 $('#usdt-buy').text(numberFormat(data.usdt.buy, 0) + ' ₫');
                 $('#usdt-sell').text(numberFormat(data.usdt.sell, 0) + ' ₫');
             }
+
             if (data.eth) {
                 $('#eth-buy').text(numberFormat(data.eth.buy, 0) + ' ₫');
                 $('#eth-sell').text(numberFormat(data.eth.sell, 0) + ' ₫');
             }
+
             if (data.bnb) {
                 $('#bnb-buy').text(numberFormat(data.bnb.buy, 0) + ' ₫');
                 $('#bnb-sell').text(numberFormat(data.bnb.sell, 0) + ' ₫');
             }
+
             if (data.doge) {
                 $('#doge-buy').text(numberFormat(data.doge.buy, 0) + ' ₫');
                 $('#doge-sell').text(numberFormat(data.doge.sell, 0) + ' ₫');
             }
+
             if (data.sol) {
                 $('#sol-buy').text(numberFormat(data.sol.buy, 0) + ' ₫');
                 $('#sol-sell').text(numberFormat(data.sol.sell, 0) + ' ₫');
             }
+
             if (data.ada) {
                 $('#ada-buy').text(numberFormat(data.ada.buy, 0) + ' ₫');
                 $('#ada-sell').text(numberFormat(data.ada.sell, 0) + ' ₫');
             }
+
             if (data.xrp) {
                 $('#xrp-buy').text(numberFormat(data.xrp.buy, 0) + ' ₫');
                 $('#xrp-sell').text(numberFormat(data.xrp.sell, 0) + ' ₫');
             }
+
             if (data.xlm) {
                 $('#xlm-buy').text(numberFormat(data.xlm.buy, 0) + ' ₫');
                 $('#xlm-sell').text(numberFormat(data.xlm.sell, 0) + ' ₫');
             }
+
             if (data.ltc) {
                 $('#ltc-buy').text(numberFormat(data.ltc.buy, 0) + ' ₫');
                 $('#ltc-sell').text(numberFormat(data.ltc.sell, 0) + ' ₫');
             }
+
             if (data.cake) {
                 $('#cake-buy').text(numberFormat(data.cake.buy, 0) + ' ₫');
                 $('#cake-sell').text(numberFormat(data.cake.sell, 0) + ' ₫');
             }
+
             if (data.near) {
-                $('#cake-buy').text(numberFormat(data.cake.buy, 0) + ' ₫');
-                $('#cake-sell').text(numberFormat(data.cake.sell, 0) + ' ₫');
+                $('#near-buy').text(numberFormat(data.near.buy, 0) + ' ₫');
+                $('#near-sell').text(numberFormat(data.near.sell, 0) + ' ₫');
             }
+
+            // Cập nhật tỷ giá bên dưới form
             updateRateDisplay(data);
         }).fail(function () {
             console.error("Không thể kết nối đến API backend " + API_URL);
@@ -392,7 +407,7 @@ $(document).ready(function () {
     function loadPersonalHistory() {
         const token = getAuthToken();
         if (!token) {
-            $('#personal-history-body').html('<tr><td colspan="6" class="text-center">Lỗi: Bạn chưa đăng nhập.</td></tr>');
+            $('#personal-history-body').html(`<tr><td colspan="6" class="text-center">Lỗi: Bạn chưa đăng nhập.</td></tr>`);
             return;
         }
 
@@ -405,22 +420,18 @@ $(document).ready(function () {
             success: function (response) {
                 const historyBody = $('#personal-history-body');
                 if (response.success && response.transactions.length > 0) {
-                    historyBody.empty(); // Xóa "Đang tải..."
+                    historyBody.empty();
                     response.transactions.forEach(tx => {
-                        // Định dạng số
                         const amountCoin = numberFormat(tx.amount_coin, 8);
                         const amountVND = numberFormat(tx.amount_vnd, 0);
-                        // Tô màu trạng thái
-                        let statusClass = 'label-success'; // Hoàn thành
+                        let statusClass = 'label-success';
                         if (tx.status_vi.includes('Đang chờ')) {
-                            statusClass = 'label-warning'; // Đang chờ
+                            statusClass = 'label-warning';
                         } else if (tx.status_vi.includes('Đã hủy')) {
-                            statusClass = 'label-danger'; // Hủy
+                            statusClass = 'label-danger';
                         }
 
                         let linkPage = tx.mode === 'Mua' ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
-                        // Lưu ý: API trả về tx.mode là tiếng Việt hoặc Anh tùy lúc, kiểm tra kỹ. 
-                        // Trong app.py ta để "Mua"/"Bán".
                         if (tx.mode === 'buy' || tx.mode === 'Buy') linkPage = 'checkout_payment_buy.html';
                         if (tx.mode === 'sell' || tx.mode === 'Sell') linkPage = 'checkout_payment_sell.html';
                         if (tx.mode === 'Bán') linkPage = 'checkout_payment_sell.html';
@@ -818,6 +829,13 @@ $(document).ready(function () {
                     $('input[name="liquidity_eth"]').val(response.settings.liquidity_eth);
                     $('input[name="liquidity_bnb"]').val(response.settings.liquidity_bnb);
                     $('input[name="liquidity_sol"]').val(response.settings.liquidity_sol);
+                    if (response.settings.coin_fees) {
+                        $('input[name="fee_bustabit"]').val(response.settings.coin_fees.bustabit);
+                        $('input[name="fee_ether"]').val(response.settings.coin_fees.ether);
+                        $('input[name="fee_usdt"]').val(response.settings.coin_fees.usdt);
+                        $('input[name="fee_sol"]').val(response.settings.coin_fees.sol);
+                        $('input[name="fee_bnb"]').val(response.settings.coin_fees.bnb);
+                    }
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
                 }
             },
@@ -844,6 +862,13 @@ $(document).ready(function () {
             liquidity_eth: $('input[name="liquidity_eth"]').val(),
             liquidity_bnb: $('input[name="liquidity_bnb"]').val(),
             liquidity_sol: $('input[name="liquidity_sol"]').val(),
+            coin_fees: {
+                bustabit: $('input[name="fee_bustabit"]').val(),
+                ether: $('input[name="fee_ether"]').val(),
+                usdt: $('input[name="fee_usdt"]').val(),
+                sol: $('input[name="fee_sol"]').val(),
+                bnb: $('input[name="fee_bnb"]').val()
+            },
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
         };
         $.ajax({
