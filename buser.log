@@ -1,0 +1,13 @@
+2025-11-22 20:42:26,051 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:42:26,052 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:42:26,053 - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-11-22 20:42:26,086 - INFO - Added job "clean_old_bills" to job store "default"
+2025-11-22 20:42:26,088 - INFO - Added job "update_price_task" to job store "default"
+2025-11-22 20:42:26,089 - INFO - Added job "cancel_expired_orders" to job store "default"
+2025-11-22 20:42:26,089 - INFO - Scheduler started
+2025-11-22 20:43:26,055 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:43:26 +07)" (scheduled at 2025-11-22 20:43:26.052628+07:00)
+2025-11-22 20:43:34,702 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:44:26 +07)" executed successfully
+2025-11-22 20:44:26,062 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:45:26 +07)" (scheduled at 2025-11-22 20:44:26.052628+07:00)
+2025-11-22 20:44:26,078 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:45:26 +07)" executed successfully
+2025-11-22 20:45:26,066 - INFO - Running job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:46:26 +07)" (scheduled at 2025-11-22 20:45:26.052628+07:00)
+2025-11-22 20:45:36,147 - INFO - Job "update_price_task (trigger: interval[0:01:00], next run at: 2025-11-22 20:46:26 +07)" executed successfully

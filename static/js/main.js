@@ -200,9 +200,9 @@ $(document).ready(function () {
             $('#buy-sell-tabs a[href="#sell-tab"]').parent().addClass('active');
         }
 
-        $('#coin-balance').text('Số dư: --- ' + currentCoin.toUpperCase());
-        $('#input-coin').val('---');
-        $('#input-vnd').val('---');
+        $('#coin-balance').text('Số dư: 0.00 ' + currentCoin.toUpperCase());
+        $('#input-coin').val('0.00');
+        $('#input-vnd').val('0.00');
         updatePrices();
     }
 
@@ -242,24 +242,62 @@ $(document).ready(function () {
             }
         });
     }
+    // --- HÀM 1: CẬP NHẬT HIỂN THỊ TỶ GIÁ (Dưới nút Tiếp tục) ---
+    function updateRateDisplay(rates) {
+        let rate = 0;
+        let coinName = 'USDT';
 
+        if (currentCoin === 'bustabit' || currentCoin === 'btc') {
+            coinName = 'Bits (BTC)';
+        } else if (currentCoin === 'ether' || currentCoin === 'eth') {
+            coinName = 'Ethos (ETH)';
+        } else if (currentCoin === 'bnb') {
+            coinName = 'BNB';
+        } else if (currentCoin === 'sol') {
+            coinName = 'SOL';
+        } else {
+            coinName = 'USDT';
+        }
+
+        if (rates[currentCoin]) {
+            if (currentMode === 'buy') {
+                rate = rates[currentCoin].buy;
+            } else {
+                rate = rates[currentCoin].sell;
+            }
+        } else {
+            rate = 0;
+        }
+
+        let text = `Với giá: 1 ${coinName} = ${numberFormat(rate, 0)} VNĐ`;
+        $('#rate-display').text(text);
+    }
+
+    // --- HÀM 2: CẬP NHẬT HIỂN THỊ SỐ DƯ (Chữ nhỏ trong ô nhập) ---
     function updateBalanceDisplay() {
         if (!window.siteLiquidity) return;
 
-        // Cập nhật số dư VNĐ
         $('#input-vnd').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(window.siteLiquidity.vnd, 0)} VNĐ`);
 
-        // Cập nhật số dư Coin (Tùy coin đang chọn)
         let coinBal = 0;
         let unit = currentCoin.toUpperCase();
 
         if (currentCoin === 'bustabit' || currentCoin === 'btc') {
-            coinBal = window.siteLiquidity.btc; // Bits/BTC
+            coinBal = window.siteLiquidity.btc;
             unit = 'Bits';
         } else if (currentCoin === 'usdt') {
             coinBal = window.siteLiquidity.usdt;
+        } else if (currentCoin === 'ether' || currentCoin === 'eth') {
+            coinBal = window.siteLiquidity.eth;
+            unit = 'Ethos (ETH)';
+        } else if (currentCoin === 'sol' || currentCoin === 'sol') {
+            coinBal = window.siteLiquidity.sol;
+            unit = 'Solana (SOL)';
+        } else if (currentCoin === 'bnb' || currentCoin === 'bnb') {
+            coinBal = window.siteLiquidity.eth;
+            unit = 'BNB (BEP20)';
         } else {
-            coinBal = 0; // Mặc định cho coin mới nếu chưa set
+            coinBal = 0;
         }
 
         $('#input-coin').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(coinBal, 2)} ${unit}`);

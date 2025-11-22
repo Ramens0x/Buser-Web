@@ -1116,7 +1116,7 @@ def update_price_task():
         if 'usdt' in all_prices:
             current_rates['usdt'] = all_prices['usdt']
         
-        logger.info(f"💹 Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
+        logger.info(f"Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
         
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
@@ -1461,9 +1461,7 @@ def api_usd_vnd_rate():
         "timestamp": datetime.now().isoformat()
     })
 
-# ====================================
-# [MỚI] API ADMIN: Quản lý Spread
-# ====================================
+# API ADMIN: Quản lý Spread
 
 @app.route("/api/admin/update-spread", methods=['POST'])
 def admin_update_spread():
@@ -1611,9 +1609,9 @@ if __name__ == '__main__':
             scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
             scheduler.add_job(func=cancel_expired_orders, trigger="interval", minutes=15)
             scheduler.start()
-            print(">>> ✅ Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")
+            print(">>> Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")
         except Exception as e:
-            print(f"⚠️ Không thể khởi chạy Scheduler: {e}")
+            print(f" Không thể khởi chạy Scheduler: {e}")
             
 print(">>> Khởi chạy Buser-Web server với Socket.IO tại http://127.0.0.1:5000 <<<")
 socketio.run(app, debug=False, port=5000, allow_unsafe_werkzeug=False)
