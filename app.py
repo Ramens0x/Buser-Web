@@ -27,6 +27,18 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_migrate import Migrate
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('buser.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 # --- [MỚI] CẤU HÌNH CSDL ---
@@ -148,6 +160,11 @@ class Order(db.Model):
     payment_info = db.Column(db.Text, nullable=True) 
     user_wallet_id = db.Column(db.String(10), nullable=True)
     user_bank_id = db.Column(db.String(10), nullable=True)
+    __table_args__ = (
+        db.Index('idx_status', 'status'),
+        db.Index('idx_username', 'username'),
+        db.Index('idx_created_at', 'created_at'),
+    )
 
 # --- Biến tạm ---
 current_rates = {'bustabit': {'buy': 0, 'sell': 0}, 'usdt': {'buy': 0, 'sell': 0}}
@@ -519,6 +536,7 @@ def send_contact_email():
 
 # --- API TẠO ĐƠN HÀNG (DÙNG CSDL) ---
 @app.route("/api/create-order", methods=['POST'])
+@limiter.limit("10 per minute")
 def create_order():
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
@@ -706,7 +724,7 @@ def send_telegram_notification(message, order_id=None):
     token = app_settings.get('TELEGRAM_BOT_TOKEN')
     chat_id = app_settings.get('TELEGRAM_CHAT_ID')
     
-    if not token or not chat_id or token == "":
+    if not token or not chat_id or str(token).strip() == "" or str(chat_id).strip() == "":
         print(">>> LƯU Ý: Chưa cấu hình Telegram Bot. Bỏ qua thông báo.")
         return
     
@@ -1095,19 +1113,30 @@ def update_price_task():
         if 'usdt' in all_prices:
             current_rates['usdt'] = all_prices['usdt']
         
-        print(f"💹 Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
-        print(f"   BTC Mua: {current_rates['bustabit']['buy']:,.0f} | Bán: {current_rates['bustabit']['sell']:,.0f}")
-        print(f"   USDT Mua: {current_rates['usdt']['buy']:,.0f} | Bán: {current_rates['usdt']['sell']:,.0f}")
-
+        logger.info(f"💹 Giá đã cập nhật lúc {datetime.now().strftime('%H:%M:%S')}")
+        
     except Exception as e:
         print(f"⚠️ Lỗi cập nhật giá: {e}")
 
 # Hàm kiểm tra ảnh thật
 def is_valid_image(file_stream):
     try:
+        # Kiểm tra kích thước file
+        file_stream.seek(0, 2)  # Di chuyển đến cuối file
+        size = file_stream.tell()
+        file_stream.seek(0)  # Quay lại đầu
+        
+        if size > 5 * 1024 * 1024:  # 5MB
+            return False
+        
         img = Image.open(file_stream)
-        img.verify() # Kiểm tra xem có phải ảnh lỗi hay fake không
-        file_stream.seek(0) # Reset con trỏ file về đầu để lưu sau này
+        img.verify()
+        
+        # Kiểm tra định dạng thực
+        if img.format not in ['JPEG', 'PNG', 'GIF']:
+            return False
+        
+        file_stream.seek(0)
         return True
     except Exception:
         return False
@@ -1523,6 +1552,25 @@ def debug_cache_status():
             "usd_vnd_rate": price_service.cache['usd_vnd_rate'],
             "usd_vnd_age_seconds": usd_vnd_age
         })
+
+@app.route("/api/health", methods=['GET'])
+def health_check():
+    """API kiểm tra trạng thái hệ thống"""
+    try:
+        # Kiểm tra database
+        db.session.execute('SELECT 1')
+        
+        # Kiểm tra giá
+        prices = price_service.get_all_prices()
+        
+        return jsonify({
+            "status": "ok",
+            "database": "connected",
+            "prices": "active" if len(prices) > 0 else "error",
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # --- Chạy máy chủ ---
 if __name__ == '__main__':

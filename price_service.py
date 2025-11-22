@@ -25,15 +25,16 @@ class PriceService:
             'doge': {'buy': 1.02, 'sell': 0.98},
             'sol': {'buy': 1.015, 'sell': 0.985},
             'ada': {'buy': 1.02, 'sell': 0.98},
-            'xrp': {'buy': 1.02, 'sell': 0.98}
-            'xlm': {'buy': 1.02, 'sell': 0.98}
-            'ltc': {'buy': 1.02, 'sell': 0.98}
-            'cake': {'buy': 1.02, 'sell': 0.98}
+            'xrp': {'buy': 1.02, 'sell': 0.98},
+            'xlm': {'buy': 1.02, 'sell': 0.98},
+            'ltc': {'buy': 1.02, 'sell': 0.98},
+            'cake': {'buy': 1.02, 'sell': 0.98},
+            'near': {'buy': 1.02, 'sell': 0.98}
 
         }
         
         # Timeout cho cache
-        self.crypto_cache_seconds = 15  # 15 giây
+        self.crypto_cache_seconds = 60  # 60 giây
         self.forex_cache_seconds = 3600  # 1 giờ
         
         # Danh sách API forex (fallback)
@@ -66,7 +67,8 @@ class PriceService:
             'xrp': 'XRPUSDT',
             'xlm': 'XLMUSDT',
             'ltc': 'LTCUSDT',
-            'cake': 'CAKEUSDT'
+            'cake': 'CAKEUSDT',
+            'near': 'NEARUSDT'
         }
         
         print("✅ PriceService initialized")
@@ -206,7 +208,7 @@ class PriceService:
             return base_vnd
 
     def get_rate_buy_sell(self, coin_key):
-        """Trả về giá mua/bán (giống API Bottabot)"""
+        """Trả về giá mua/bán"""
         buy_price = self.convert_to_vnd(coin_key, mode='buy')
         sell_price = self.convert_to_vnd(coin_key, mode='sell')
         
