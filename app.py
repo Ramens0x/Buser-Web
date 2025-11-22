@@ -157,7 +157,23 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
-        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "", "admin_bustabit_id": "", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "","TELEGRAM_CHAT_ID": ""}
+        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "", "admin_bustabit_id": "", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "","TELEGRAM_CHAT_ID": "",
+        "liquidity_vnd": 50000000,
+        "liquidity_usdt": 10000,
+        "liquidity_btc": 1,
+        "fee_html_content": """
+                <tr>
+                    <td class="text-center">Bits (BTC)</td>
+                    <td class="text-center">MUA</td>
+                    <td><span style="color:red">50.000đ</span> (< 20k Bits) | <span style="color:green">FREE</span> (> 20k Bits)</td>
+                </tr>
+                <tr>
+                    <td class="text-center">USDT</td>
+                    <td class="text-center">MUA/BÁN</td>
+                    <td style="color:green">MIỄN PHÍ</td>
+                </tr>
+            """
+        }
         save_settings(default_settings)
         app_settings = default_settings
         return default_settings
@@ -1451,6 +1467,20 @@ def admin_get_spread():
     return jsonify({
         "success": True,
         "spread_config": price_service.spread_config
+    })
+
+@app.route("/api/site-config", methods=['GET'])
+def get_site_config():
+    """API lấy thông tin cấu hình công khai (Số dư, Phí)"""
+    settings = load_settings()
+    return jsonify({
+        "success": True,
+        "liquidity": {
+            "vnd": settings.get('liquidity_vnd', 0),
+            "usdt": settings.get('liquidity_usdt', 0),
+            "btc": settings.get('liquidity_btc', 0)
+        },
+        "fee_table": settings.get('fee_html_content', '')
     })
 
 # ====================================

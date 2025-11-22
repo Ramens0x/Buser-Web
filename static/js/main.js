@@ -59,6 +59,14 @@ $(document).ready(function () {
                 $('#usdt-buy').text(numberFormat(data.usdt.buy, 0) + ' ₫');
                 $('#usdt-sell').text(numberFormat(data.usdt.sell, 0) + ' ₫');
             }
+            if (data.eth) {
+                $('#eth-buy').text(numberFormat(data.eth.buy, 0) + ' ₫');
+                $('#eth-sell').text(numberFormat(data.eth.sell, 0) + ' ₫');
+            }
+            if (data.bnb) {
+                $('#bnb-buy').text(numberFormat(data.bnb.buy, 0) + ' ₫');
+                $('#bnb-sell').text(numberFormat(data.bnb.sell, 0) + ' ₫');
+            }
             updateRateDisplay(data);
         }).fail(function () {
             console.error("Không thể kết nối đến API backend " + API_URL);
@@ -179,6 +187,50 @@ $(document).ready(function () {
         }
     });
 
+    function loadSiteConfig() {
+        $.ajax({
+            url: API_URL + "/api/site-config",
+            type: 'GET',
+            success: function(res) {
+                if (res.success) {
+                    // 1. Cập nhật bảng phí
+                    if (res.fee_table) {
+                        $('#fee-table-body').html(res.fee_table);
+                    }
+    
+                    // 2. Cập nhật số dư hiển thị (Liquidity)
+                    // Lưu vào biến toàn cục để dùng khi đổi tab/coin
+                    window.siteLiquidity = res.liquidity; 
+                    updateBalanceDisplay();
+                }
+            }
+        });
+    }
+    
+    function updateBalanceDisplay() {
+        if (!window.siteLiquidity) return;
+        
+        // Cập nhật số dư VNĐ
+        $('#input-vnd').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(window.siteLiquidity.vnd, 0)} VNĐ`);
+        
+        // Cập nhật số dư Coin (Tùy coin đang chọn)
+        let coinBal = 0;
+        let unit = currentCoin.toUpperCase();
+        
+        if (currentCoin === 'bustabit' || currentCoin === 'btc') {
+            coinBal = window.siteLiquidity.btc; // Bits/BTC
+            unit = 'Bits';
+        } else if (currentCoin === 'usdt') {
+            coinBal = window.siteLiquidity.usdt;
+        } else {
+            coinBal = 0; // Mặc định cho coin mới nếu chưa set
+        }
+        
+        $('#input-coin').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(coinBal, 2)} ${unit}`);
+    }
+    
+    loadSiteConfig();
+
     $('#coin-list a').on('click', function (e) {
         e.preventDefault();
         let coinText = $(this).text();
@@ -194,6 +246,7 @@ $(document).ready(function () {
         updatePrices();
         // Tính toán lại dựa trên ô VNĐ (vì ô Coin bị reset)
         calculateSwap('vnd', parseFloat($('#input-vnd').val().replace(/,/g, '')) || 0);
+        updateBalanceDisplay();
     });
 
     // --- HÀM HỖ TRỢ XÁC THỰC ---
@@ -685,6 +738,10 @@ $(document).ready(function () {
                     $('input[name="admin_usdt_wallet"]').val(response.settings.admin_usdt_wallet);
                     $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
                     $('input[name="telegram_chat_id"]').val(response.settings.TELEGRAM_CHAT_ID || '');
+                    $('input[name="liquidity_vnd"]').val(response.settings.liquidity_vnd);
+                    $('input[name="liquidity_usdt"]').val(response.settings.liquidity_usdt);
+                    $('input[name="liquidity_btc"]').val(response.settings.liquidity_btc);
+                    $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
                 }
             },
             error: function (xhr) {
@@ -703,7 +760,11 @@ $(document).ready(function () {
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
             admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
             TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
-            TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val()
+            TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val(),
+            liquidity_vnd: $('input[name="liquidity_vnd"]').val(),
+            liquidity_usdt: $('input[name="liquidity_usdt"]').val(),
+            liquidity_btc: $('input[name="liquidity_btc"]').val(),
+            fee_html_content: $('textarea[name="fee_html_content"]').val(),
         };
         $.ajax({
             url: API_URL + "/api/admin/settings",
@@ -728,10 +789,7 @@ $(document).ready(function () {
         loadPublicHistory();
     }
 
-    /* ============================================
-    PHẦN MỚI: XỬ LÝ CÁC TRANG "ADD" (THÊM MỚI)
-    ============================================
-    */
+    
     // --- XỬ LÝ FORM THÊM VÍ (add-wallet.html) ---
     $('#add-wallet-form').on('submit', function (e) {
         e.preventDefault();

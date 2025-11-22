@@ -16,12 +16,20 @@ class PriceService:
         
         # Cấu hình spread (biên độ mua/bán)
         self.spread_config = {
+            'ether': {'buy': 1.015, 'sell': 0.985},
             'bustabit': {'buy': 1.015, 'sell': 0.985},  # +1.5% mua, -1.5% bán
             'btc': {'buy': 1.015, 'sell': 0.985},
             'usdt': {'buy': 1.01, 'sell': 0.99},        # +1% mua, -1% bán
             'eth': {'buy': 1.015, 'sell': 0.985},
             'bnb': {'buy': 1.015, 'sell': 0.985},
-            'doge': {'buy': 1.02, 'sell': 0.98}
+            'doge': {'buy': 1.02, 'sell': 0.98},
+            'sol': {'buy': 1.015, 'sell': 0.985},
+            'ada': {'buy': 1.02, 'sell': 0.98},
+            'xrp': {'buy': 1.02, 'sell': 0.98}
+            'xlm': {'buy': 1.02, 'sell': 0.98}
+            'ltc': {'buy': 1.02, 'sell': 0.98}
+            'cake': {'buy': 1.02, 'sell': 0.98}
+
         }
         
         # Timeout cho cache
@@ -44,6 +52,7 @@ class PriceService:
         
         # Map coin symbols
         self.coin_map = {
+            'ether': 'ETHUSDT',
             'bustabit': 'BTCUSDT',  # Bustabit = Bitcoin
             'btc': 'BTCUSDT',
             'bitcoin': 'BTCUSDT',
@@ -51,7 +60,13 @@ class PriceService:
             'eth': 'ETHUSDT',
             'ethereum': 'ETHUSDT',
             'bnb': 'BNBUSDT',
-            'doge': 'DOGEUSDT'
+            'doge': 'DOGEUSDT',
+            'sol': 'SOLUSDT',
+            'ada': 'ADAUSDT',
+            'xrp': 'XRPUSDT',
+            'xlm': 'XLMUSDT',
+            'ltc': 'LTCUSDT',
+            'cake': 'CAKEUSDT'
         }
         
         print("✅ PriceService initialized")
@@ -173,6 +188,9 @@ class PriceService:
         if coin_key == 'usdt':
             # USDT đã là USD → VND trực tiếp
             base_vnd = price_usd * usd_vnd
+        elif coin_key == 'bustabit' or coin_key == 'bits':
+            #Kiểm tra nếu là Bustabit 1 BTC = 1,000,000 Bits => Giá 1 Bit = Giá BTC / 1 triệu
+            base_vnd = (price_usd * usd_vnd) / 1000000
         else:
             # BTC, ETH, etc. → USD → VND
             base_vnd = price_usd * usd_vnd

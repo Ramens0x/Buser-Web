@@ -89,13 +89,24 @@
                                             <span id="coin-text">Bits (BTC)</span> <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-right" id="coin-list">
+
                                             <li><a href="#" data-coin="bustabit"
                                                     data-icon="/static/img/bus-310x310.png"><img
                                                         src="/static/img/bus-310x310.png" class="icon"> Bits (BTC)</a>
                                             </li>
+
+                                            <li><a href="#" data-coin="ether" data-icon="/static/img/ether.jpg"><img src="/static/img/ether.jpg" class="icon"> Ethos (ETH)</a></li>
+                                            
                                             <li><a href="#" data-coin="usdt"
                                                     data-icon="/static/img/tether-usdt-logo.png"><img
-                                                        src="/static/img/tether-usdt-logo.png" class="icon"> USDT (BEP20)</a></li>
+                                                        src="/static/img/tether-usdt-logo.png" class="icon"> USDT (BEP20)</a>
+                                            </li>
+
+                                            <li><a href="#" data-coin="sol" data-icon="https://cryptologos.cc/logos/solana-sol-logo.png">
+                                                <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="icon"> Solana (SOL)
+                                            </a></li>
+
+                                            <li><a href="#" data-coin="bnb" data-icon="https://cryptologos.cc/logos/bnb-bnb-logo.png?v=026"><img src="https://cryptologos.cc/logos/bnb-bnb-logo.png?v=026" class="icon" width="20"> BNB (BEP20)</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -146,6 +157,37 @@
                             </tr>
                             <tr>
                                 <th>
+                                    <img src="/static/img/bitcoin-logo.png" class="icon"> Bitcoin (BTC)
+                                </th>
+                                <th><span class="rate_buy" id="BTC-buy">...</span></th>
+                                <th><span class="rate_sell" id="BTC-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=026" class="icon" width="20"> ETH (ERC20)</th>
+                                <th><span class="rate_buy" id="eth-buy">...</span></th>
+                                <th><span class="rate_sell" id="eth-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th><img src="https://cryptologos.cc/logos/bnb-bnb-logo.png?v=026" class="icon" width="20"> BNB (BEP20)</th>
+                                <th><span class="rate_buy" id="bnb-buy">...</span></th>
+                                <th><span class="rate_sell" id="bnb-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="icon"> Solana (SOL)
+                                </th>
+                                <th><span class="rate_buy" id="sol-buy">...</span></th>
+                                <th><span class="rate_sell" id="sol-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <img src="/static/img/tether-usdt-logo.png" class="icon"> USDT (BEP20)
+                                </th>
+                                <th><span class="rate_buy" id="usdt-buy">...</span></th>
+                                <th><span class="rate_sell" id="usdt-sell">...</span></th>
+                            </tr>
+                            <tr>
+                                <th>
                                     <img src="/static/img/bus-310x310.png" class="icon"> Bits
                                 </th>
                                 <th><span class="rate_buy" id="bustabit-buy">...</span></th>
@@ -153,11 +195,12 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <img src="/static/img/tether-usdt-logo.png" class="icon"> USDT
+                                    <img src="/static/img/ether.jpg" class="icon"> Ethos
                                 </th>
-                                <th><span class="rate_buy" id="usdt-buy">...</span></th>
-                                <th><span class="rate_sell" id="usdt-sell">...</span></th>
+                                <th><span class="rate_buy" id="ether-buy">...</span></th>
+                                <th><span class="rate_sell" id="ether-sell">...</span></th>
                             </tr>
+                            
                         </tbody>
                     </table>
                 </div>
@@ -282,29 +325,8 @@ Nếu bạn có thắc mắc, vui lòng liên hệ: BuserTool@Gmail.com
                                     <th class="text-center">Phí / Điều kiện</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td rowspan="2" style="vertical-align: middle; text-align: center; font-weight: bold;">Bits (BTC)</td>
-                                    <td class="text-center">MUA</td>
-                                    <td>
-                                        <p style="margin:0; color: #d9534f;">50.000 VNĐ <span style="color: #333; font-size: 12px;">(Nếu < 20.000 Bits)</span></p>
-                                        <p style="margin:0; color: #5cb85c;">MIỄN PHÍ <span style="color: #333; font-size: 12px;">(Nếu > 20.000 Bits)</span></p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center">BÁN</td>
-                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
-                                </tr>
-
-                                <tr>
-                                    <td rowspan="2" style="vertical-align: middle; text-align: center; font-weight: bold;">USDT (BEP20)</td>
-                                    <td class="text-center">MUA</td>
-                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center">BÁN</td>
-                                    <td style="color: #5cb85c; font-weight: bold;">MIỄN PHÍ</td>
-                                </tr>
+                            <tbody id="fee-table-body">
+                                <tr><td colspan="3" class="text-center">Đang tải bảng phí...</td></tr>
                             </tbody>
                         </table>
                     </div>
