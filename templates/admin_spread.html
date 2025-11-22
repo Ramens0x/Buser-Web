@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,33 +15,40 @@
             padding: 15px;
             min-height: 80vh;
         }
+
         .admin-sidebar .nav-pills>li>a {
             color: #333;
             font-weight: bold;
             border-radius: 4px;
         }
+
         .admin-sidebar .nav-pills>li>a:hover {
             background-color: #eee;
         }
+
         .admin-sidebar .nav-pills>li.active>a {
             background-color: #2882C0;
             color: #fff;
         }
+
         .admin-main-content {
             padding: 20px;
         }
+
         .price-box {
             background: #fff;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .price-live {
             font-size: 24px;
             font-weight: bold;
             color: #2882C0;
         }
+
         .spread-input {
             max-width: 100px;
         }
@@ -72,19 +80,22 @@
                     <li><a href="admin_history.html"><i class="fa fa-history"></i> Lịch sử Giao dịch</a></li>
                     <li><a href="admin_users.html"><i class="fa fa-users"></i> Quản lý Người dùng</a></li>
                     <li><a href="admin_kyc.html"><i class="fa fa-id-card"></i> Quản lý KYC</a></li>
-                    <li class="active"><a href="admin_spread.html"><i class="fa fa-line-chart"></i> Quản lý Giá & Spread</a></li>
+                    <li class="active"><a href="admin_spread.html"><i class="fa fa-line-chart"></i> Quản lý Giá &
+                            Spread</a></li>
                     <li><a href="admin_settings.html"><i class="fa fa-cogs"></i> Cài đặt Thanh toán</a></li>
                 </ul>
             </div>
 
             <div class="col-sm-9 admin-main-content">
                 <h2>📊 Quản Lý Giá & Spread (Biên Độ)</h2>
-                
+
                 <div class="alert alert-info">
                     <strong>Hướng dẫn:</strong>
                     <ul style="margin-bottom: 0;">
-                        <li><strong>Spread Mua:</strong> % tăng giá khi khách mua (VD: 1.5% = khách trả cao hơn 1.5%)</li>
-                        <li><strong>Spread Bán:</strong> % giảm giá khi khách bán (VD: 1.5% = bạn trả thấp hơn 1.5%)</li>
+                        <li><strong>Spread Mua:</strong> % tăng giá khi khách mua (VD: 1.5% = khách trả cao hơn 1.5%)
+                        </li>
+                        <li><strong>Spread Bán:</strong> % giảm giá khi khách bán (VD: 1.5% = bạn trả thấp hơn 1.5%)
+                        </li>
                         <li>Giá được cập nhật tự động mỗi 15 giây từ <strong>Binance + Forex API</strong></li>
                     </ul>
                 </div>
@@ -115,7 +126,9 @@
                                 </tr>
                             </thead>
                             <tbody id="spread-table-body">
-                                <tr><td colspan="7" class="text-center">Đang tải...</td></tr>
+                                <tr>
+                                    <td colspan="7" class="text-center">Đang tải...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -127,8 +140,10 @@
                         <h4 style="margin:0;"><i class="fa fa-database"></i> Trạng Thái Cache (Debug)</h4>
                     </div>
                     <div class="panel-body">
-                        <pre id="cache-status" style="background:#f9f9f9; padding:10px; border-radius:5px;">Đang tải...</pre>
-                        <button class="btn btn-sm btn-info" onclick="loadCacheStatus()"><i class="fa fa-refresh"></i> Làm mới</button>
+                        <pre id="cache-status"
+                            style="background:#f9f9f9; padding:10px; border-radius:5px;">Đang tải...</pre>
+                        <button class="btn btn-sm btn-info" onclick="loadCacheStatus()"><i class="fa fa-refresh"></i>
+                            Làm mới</button>
                     </div>
                 </div>
             </div>
@@ -157,7 +172,7 @@
             $.ajax({
                 url: `${API_URL}/api/usd-vnd-rate`,
                 type: 'GET',
-                success: function(res) {
+                success: function (res) {
                     $('#usd-vnd-rate').text(numberFormat(res.rate, 0) + ' VNĐ');
                 }
             });
@@ -168,8 +183,8 @@
             $.ajax({
                 url: `${API_URL}/api/admin/get-spread`,
                 type: 'GET',
-                beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
-                success: function(res) {
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+                success: function (res) {
                     renderSpreadTable(res.spread_config);
                 }
             });
@@ -181,7 +196,7 @@
             $.ajax({
                 url: `${API_URL}/api/all-prices`,
                 type: 'GET',
-                success: function(prices) {
+                success: function (prices) {
                     currentPrices = prices;
                     renderSpreadTable();
                 }
@@ -197,19 +212,19 @@
             $.ajax({
                 url: `${API_URL}/api/admin/get-spread`,
                 type: 'GET',
-                beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
-                success: function(res) {
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+                success: function (res) {
                     const spreadConfig = res.spread_config;
                     const tableBody = $('#spread-table-body');
                     tableBody.empty();
 
-                    const coins = ['bustabit', 'usdt', 'btc', 'eth', 'bnb', 'doge'];
-                    
+                    const coins = ['ether', 'bustabit', 'usdt', 'btc', 'eth', 'bnb', 'doge', 'sol', 'ada', 'xrp', 'xlm', 'ltc', 'cake', 'near'];
+
                     coins.forEach(coin => {
                         const prices = currentPrices[coin];
                         if (!prices) return;
 
-                        const spread = spreadConfig[coin] || {buy: 1.015, sell: 0.985};
+                        const spread = spreadConfig[coin] || { buy: 1.015, sell: 0.985 };
                         const buyPercent = ((spread.buy - 1) * 100).toFixed(2);
                         const sellPercent = ((1 - spread.sell) * 100).toFixed(2);
 
@@ -255,14 +270,14 @@
                     buy_percent: buyPercent,
                     sell_percent: sellPercent
                 }),
-                beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
-                success: function(res) {
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+                success: function (res) {
                     alert(`✅ ${res.message}`);
                     setTimeout(() => {
                         loadCurrentPrices();
                     }, 1000);
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     alert('❌ Lỗi: ' + xhr.responseJSON.message);
                 }
             });
@@ -272,7 +287,7 @@
             $.ajax({
                 url: `${API_URL}/api/debug/cache-status`,
                 type: 'GET',
-                success: function(res) {
+                success: function (res) {
                     $('#cache-status').text(JSON.stringify(res, null, 2));
                 }
             });
@@ -290,4 +305,5 @@
         }, 30000);
     </script>
 </body>
+
 </html>

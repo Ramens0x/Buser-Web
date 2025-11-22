@@ -4,8 +4,8 @@ function numberFormat(number = '0', decimalPlaces = 0) {
     if (isNaN(val)) return "0";
 
     // 1. Lấy số thập phân cố định
-    let fixed = val.toFixed(decimalPlaces); 
-    
+    let fixed = val.toFixed(decimalPlaces);
+
     // 2. Tách phần nguyên và phần thập phân
     let parts = fixed.split('.');
     let integerPart = parts[0];
@@ -21,7 +21,7 @@ function numberFormat(number = '0', decimalPlaces = 0) {
             return integerPart + '.' + decimalPart; // Nếu còn số thì ghép vào
         }
     }
-    
+
     return integerPart; // Nếu không còn số thập phân
 }
 
@@ -51,9 +51,17 @@ $(document).ready(function () {
     // --- Hàm gọi API lấy giá (Cập nhật Bảng giá) ---
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
+            if (data.ether) {
+                $('#ether-buy').text(numberFormat(data.ether.buy, 0) + ' ₫');
+                $('#ether-sell').text(numberFormat(data.ether.sell, 0) + ' ₫');
+            }
             if (data.bustabit) {
                 $('#bustabit-buy').text(numberFormat(data.bustabit.buy, 0) + ' ₫');
                 $('#bustabit-sell').text(numberFormat(data.bustabit.sell, 0) + ' ₫');
+            }
+            if (data.btc) {
+                $('#btc-buy').text(numberFormat(data.btc.buy, 0) + ' ₫');
+                $('#btc-sell').text(numberFormat(data.btc.sell, 0) + ' ₫');
             }
             if (data.usdt) {
                 $('#usdt-buy').text(numberFormat(data.usdt.buy, 0) + ' ₫');
@@ -66,6 +74,38 @@ $(document).ready(function () {
             if (data.bnb) {
                 $('#bnb-buy').text(numberFormat(data.bnb.buy, 0) + ' ₫');
                 $('#bnb-sell').text(numberFormat(data.bnb.sell, 0) + ' ₫');
+            }
+            if (data.doge) {
+                $('#doge-buy').text(numberFormat(data.doge.buy, 0) + ' ₫');
+                $('#doge-sell').text(numberFormat(data.doge.sell, 0) + ' ₫');
+            }
+            if (data.sol) {
+                $('#sol-buy').text(numberFormat(data.sol.buy, 0) + ' ₫');
+                $('#sol-sell').text(numberFormat(data.sol.sell, 0) + ' ₫');
+            }
+            if (data.ada) {
+                $('#ada-buy').text(numberFormat(data.ada.buy, 0) + ' ₫');
+                $('#ada-sell').text(numberFormat(data.ada.sell, 0) + ' ₫');
+            }
+            if (data.xrp) {
+                $('#xrp-buy').text(numberFormat(data.xrp.buy, 0) + ' ₫');
+                $('#xrp-sell').text(numberFormat(data.xrp.sell, 0) + ' ₫');
+            }
+            if (data.xlm) {
+                $('#xlm-buy').text(numberFormat(data.xlm.buy, 0) + ' ₫');
+                $('#xlm-sell').text(numberFormat(data.xlm.sell, 0) + ' ₫');
+            }
+            if (data.ltc) {
+                $('#ltc-buy').text(numberFormat(data.ltc.buy, 0) + ' ₫');
+                $('#ltc-sell').text(numberFormat(data.ltc.sell, 0) + ' ₫');
+            }
+            if (data.cake) {
+                $('#cake-buy').text(numberFormat(data.cake.buy, 0) + ' ₫');
+                $('#cake-sell').text(numberFormat(data.cake.sell, 0) + ' ₫');
+            }
+            if (data.near) {
+                $('#cake-buy').text(numberFormat(data.cake.buy, 0) + ' ₫');
+                $('#cake-sell').text(numberFormat(data.cake.sell, 0) + ' ₫');
             }
             updateRateDisplay(data);
         }).fail(function () {
@@ -160,10 +200,9 @@ $(document).ready(function () {
             $('#buy-sell-tabs a[href="#sell-tab"]').parent().addClass('active');
         }
 
-        $('#coin-balance').text('Số dư: 1000000 ' + currentCoin.toUpperCase());
-        $('#input-coin').val('0.00');
-        $('#input-vnd').val('0.00');
-        // Cập nhật tỷ giá hiển thị
+        $('#coin-balance').text('Số dư: --- ' + currentCoin.toUpperCase());
+        $('#input-coin').val('---');
+        $('#input-vnd').val('---');
         updatePrices();
     }
 
@@ -191,32 +230,29 @@ $(document).ready(function () {
         $.ajax({
             url: API_URL + "/api/site-config",
             type: 'GET',
-            success: function(res) {
+            success: function (res) {
                 if (res.success) {
                     // 1. Cập nhật bảng phí
                     if (res.fee_table) {
                         $('#fee-table-body').html(res.fee_table);
                     }
-    
-                    // 2. Cập nhật số dư hiển thị (Liquidity)
-                    // Lưu vào biến toàn cục để dùng khi đổi tab/coin
-                    window.siteLiquidity = res.liquidity; 
+                    window.siteLiquidity = res.liquidity;
                     updateBalanceDisplay();
                 }
             }
         });
     }
-    
+
     function updateBalanceDisplay() {
         if (!window.siteLiquidity) return;
-        
+
         // Cập nhật số dư VNĐ
         $('#input-vnd').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(window.siteLiquidity.vnd, 0)} VNĐ`);
-        
+
         // Cập nhật số dư Coin (Tùy coin đang chọn)
         let coinBal = 0;
         let unit = currentCoin.toUpperCase();
-        
+
         if (currentCoin === 'bustabit' || currentCoin === 'btc') {
             coinBal = window.siteLiquidity.btc; // Bits/BTC
             unit = 'Bits';
@@ -225,10 +261,10 @@ $(document).ready(function () {
         } else {
             coinBal = 0; // Mặc định cho coin mới nếu chưa set
         }
-        
+
         $('#input-coin').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(coinBal, 2)} ${unit}`);
     }
-    
+
     loadSiteConfig();
 
     $('#coin-list a').on('click', function (e) {
@@ -741,6 +777,9 @@ $(document).ready(function () {
                     $('input[name="liquidity_vnd"]').val(response.settings.liquidity_vnd);
                     $('input[name="liquidity_usdt"]').val(response.settings.liquidity_usdt);
                     $('input[name="liquidity_btc"]').val(response.settings.liquidity_btc);
+                    $('input[name="liquidity_eth"]').val(response.settings.liquidity_eth);
+                    $('input[name="liquidity_bnb"]').val(response.settings.liquidity_bnb);
+                    $('input[name="liquidity_sol"]').val(response.settings.liquidity_sol);
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
                 }
             },
@@ -764,6 +803,9 @@ $(document).ready(function () {
             liquidity_vnd: $('input[name="liquidity_vnd"]').val(),
             liquidity_usdt: $('input[name="liquidity_usdt"]').val(),
             liquidity_btc: $('input[name="liquidity_btc"]').val(),
+            liquidity_eth: $('input[name="liquidity_eth"]').val(),
+            liquidity_bnb: $('input[name="liquidity_bnb"]').val(),
+            liquidity_sol: $('input[name="liquidity_sol"]').val(),
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
         };
         $.ajax({
@@ -789,7 +831,7 @@ $(document).ready(function () {
         loadPublicHistory();
     }
 
-    
+
     // --- XỬ LÝ FORM THÊM VÍ (add-wallet.html) ---
     $('#add-wallet-form').on('submit', function (e) {
         e.preventDefault();

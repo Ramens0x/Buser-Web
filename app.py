@@ -178,6 +178,9 @@ def load_settings():
         "liquidity_vnd": 50000000,
         "liquidity_usdt": 10000,
         "liquidity_btc": 1,
+        "liquidity_eth": 1,
+        "liquidity_bnb": 1,
+        "liquidity_sol": 1,
         "fee_html_content": """
                 <tr>
                     <td class="text-center">Bits (BTC)</td>
@@ -1507,7 +1510,10 @@ def get_site_config():
         "liquidity": {
             "vnd": settings.get('liquidity_vnd', 0),
             "usdt": settings.get('liquidity_usdt', 0),
-            "btc": settings.get('liquidity_btc', 0)
+            "btc": settings.get('liquidity_btc', 0),
+            "eth": settings.get('liquidity_eth', 0),
+            "bnb": settings.get('liquidity_bnb', 0),
+            "sol": settings.get('liquidity_sol', 0)
         },
         "fee_table": settings.get('fee_html_content', '')
     })

@@ -174,7 +174,6 @@ class PriceService:
     def convert_to_vnd(self, coin_key, mode='mid'):
         """
         Convert giá crypto sang VND
-        mode: 'mid' (giá gốc), 'buy' (giá mua), 'sell' (giá bán)
         """
         coin_key = coin_key.lower()
         
@@ -188,10 +187,8 @@ class PriceService:
         
         # Convert
         if coin_key == 'usdt':
-            # USDT đã là USD → VND trực tiếp
             base_vnd = price_usd * usd_vnd
-        elif coin_key == 'bustabit' or coin_key == 'bits':
-            #Kiểm tra nếu là Bustabit 1 BTC = 1,000,000 Bits => Giá 1 Bit = Giá BTC / 1 triệu
+        elif coin_key in ['bustabit', 'bits', 'ether', 'ethos']:
             base_vnd = (price_usd * usd_vnd) / 1000000
         else:
             # BTC, ETH, etc. → USD → VND
@@ -224,7 +221,7 @@ class PriceService:
     def get_all_prices(self):
         """Trả về tất cả giá coin"""
         result = {}
-        for coin in ['bustabit', 'usdt', 'btc', 'eth', 'bnb', 'doge']:
+        for coin in ['ether','bustabit', 'btc', 'usdt', 'eth', 'bnb', 'doge', 'sol', 'ada', 'xrp', 'xlm', 'ltc', 'cake', 'near']:
             rates = self.get_rate_buy_sell(coin)
             if rates:
                 result[coin] = {
