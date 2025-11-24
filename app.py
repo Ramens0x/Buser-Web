@@ -174,21 +174,26 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
-        default_settings = {"admin_bank_bin": "", "admin_account_number": "", "admin_account_name": "", "admin_bustabit_id": "", "admin_usdt_wallet": "","TELEGRAM_BOT_TOKEN": "","TELEGRAM_CHAT_ID": "",
-        "liquidity_vnd": 50000000,
-        "liquidity_usdt": 10000,
-        "liquidity_btc": 1,
-        "liquidity_eth": 1,
-        "liquidity_bnb": 1,
-        "liquidity_sol": 1,
-        "coin_fees": {
-        "bustabit": 0,  
-        "ether": 0,     
-        "usdt": 0,      
-        "sol": 0,       
-        "bnb": 0       
-        },
-        "fee_html_content": """
+        default_settings = {
+            "admin_bank_bin": "970415", "admin_account_number": "100867591184","admin_account_name": "HOANG NGOC SON", "admin_bank_name": "Vietinbank",
+            "admin_bustabit_id": "",
+            "admin_usdt_wallet": "",
+            "TELEGRAM_BOT_TOKEN": "",
+            "TELEGRAM_CHAT_ID": "",
+            "liquidity_vnd": 50000000,
+            "liquidity_usdt": 10000,
+            "liquidity_btc": 1,
+            "liquidity_eth": 1,
+            "liquidity_bnb": 1,
+            "liquidity_sol": 1,
+            "coin_fees": {
+                "bustabit": 0,  
+                "ether": 0,     
+                "usdt": 0,      
+                "sol": 0,       
+                "bnb": 0       
+                },
+            "fee_html_content": """
                 <tr>
                     <td class="text-center">Bits (BTC)</td>
                     <td class="text-center">MUA</td>
@@ -199,7 +204,8 @@ def load_settings():
                     <td class="text-center">MUA/BÁN</td>
                     <td style="color:green">MIỄN PHÍ</td>
                 </tr>
-            """
+            """,
+            "maintenance_mode": "off"
         }
         save_settings(default_settings)
         app_settings = default_settings
@@ -569,6 +575,37 @@ def create_order():
     mode, coin_type = data.get('mode'), data.get('coin')
     amount_from, amount_to = float(data.get('amount_from', 0)), float(data.get('amount_to', 0))
     wallet_id, bank_id = data.get('wallet_id'), data.get('bank_id')
+
+    # Xác định số tiền VNĐ trong giao dịch: Nếu Mua: Khách trả VNĐ (amount_from) Nếu Bán: Khách nhận VNĐ (amount_to)/ Cấu hình hạn mức bắt buộc KYC (100 triệu)
+    transaction_vnd = amount_from if mode == 'buy' else amount_to
+    KYC_LIMIT = 100000000
+    if transaction_vnd >= KYC_LIMIT:
+        # Kiểm tra xem user đã KYC chưa
+        kyc_record = KYC.query.filter_by(user_id=user.id).first()
+        
+        # Nếu chưa gửi KYC hoặc chưa được duyệt -> Chặn lại
+        if not kyc_record or kyc_record.status != 'approved':
+            return jsonify({
+                "success": False, 
+                "message": f"Giao dịch từ {KYC_LIMIT:,.0f} VNĐ trở lên yêu cầu tài khoản phải xác minh danh tính (KYC) thành công!"
+            }), 403
+    
+    if mode == 'buy':
+        settings = load_settings()
+        limit = 0
+        
+        if coin_type in ['bustabit', 'btc']: limit = float(settings.get('liquidity_btc', 0))
+        elif coin_type == 'usdt': limit = float(settings.get('liquidity_usdt', 0))
+        elif coin_type in ['ether', 'eth']: limit = float(settings.get('liquidity_eth', 0))
+        elif coin_type == 'bnb': limit = float(settings.get('liquidity_bnb', 0))
+        elif coin_type == 'sol': limit = float(settings.get('liquidity_sol', 0))
+        else: limit = 1000000 
+        
+        if amount_coin > limit:
+            return jsonify({
+                "success": False, 
+                "message": f"Số lượng mua vượt quá thanh khoản hiện có của hệ thống ({limit:,.4f} {coin_type.upper()})."
+            }), 400
     
     transaction_id = generate_random_id()
     while Order.query.filter_by(id=transaction_id).first():
@@ -582,7 +619,7 @@ def create_order():
         viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(transaction_id);
         qr_data_string = viet_qr.build()
         payment_info_dict = {"bank": f"Bank (BIN: {admin_bin})", "account_number": admin_account, "account_name": admin_name, "amount": int(amount_from), "content": transaction_id, "qr_data_string": qr_data_string}
-    else: # mode == 'sell'
+    else: 
         wallet_address = (settings.get('admin_bustabit_id') if coin_type == 'bustabit' else settings.get('admin_usdt_wallet'))
         payment_info_dict = {"memo": "", "wallet_address": wallet_address, "network": "Bustabit" if coin_type == 'bustabit' else "BEP20 (BSC)"}
     
@@ -1329,12 +1366,31 @@ def admin_review_kyc():
 
 @app.route('/')
 def serve_index():
+    settings = load_settings()
+    if settings.get('maintenance_mode') == 'on':
+        return render_template('maintenance.html')
     return render_template('index.html')
 
 @app.route('/<path:filename>')
 def serve_html(filename):
+    settings = load_settings()
+    allowed_pages = [
+        'login.html', 
+        'admin_dashboard.html', 
+        'admin_history.html', 
+        'admin_users.html', 
+        'admin_kyc.html', 
+        'admin_spread.html', 
+        'admin_settings.html',
+        'index.html'
+    ]
     if filename.endswith('.html'):
+        if settings.get('maintenance_mode') == 'on':
+            if filename not in allowed_pages:
+                return render_template('maintenance.html')
+        
         return render_template(filename)
+        
     return "Page not found", 404
 
 def cancel_expired_orders():

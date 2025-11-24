@@ -158,7 +158,6 @@ $(document).ready(function () {
             return;
         }
 
-        // Logic mới: direction 'from'/'to' giờ phụ thuộc vào inputType và currentMode
         let calculationDirection = 'from';
         if (currentMode === 'buy' && inputType === 'coin') {
             calculationDirection = 'to'; // Mua, gõ vào ô Coin (To)
@@ -182,13 +181,12 @@ $(document).ready(function () {
             }),
             success: function (data) {
                 if (inputType === 'coin') {
-                    // Gõ vào ô Coin, cập nhật ô VNĐ
                     $('#input-vnd').val(numberFormat(data.amount_out, 0));
-                } else { // inputType === 'vnd'
-                    // Gõ vào ô VNĐ, cập nhật ô Coin
+                } else { 
                     $('#input-coin').val(numberFormat(data.amount_out, 8));
                 }
                 isCalculating = false;
+                validateLiquidity();
             },
             error: function () {
                 console.error("Lỗi khi tính toán swap.");
@@ -816,6 +814,7 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
+                    $('select[name="maintenance_mode"]').val(response.settings.maintenance_mode || 'off');
                     $('input[name="admin_bank_bin"]').val(response.settings.admin_bank_bin);
                     $('input[name="admin_account_number"]').val(response.settings.admin_account_number);
                     $('input[name="admin_account_name"]').val(response.settings.admin_account_name);
@@ -849,6 +848,7 @@ $(document).ready(function () {
     $('#settings-form').on('submit', function (e) {
         e.preventDefault();
         var settingsData = {
+            maintenance_mode: $('select[name="maintenance_mode"]').val(),
             admin_bank_bin: $('input[name="admin_bank_bin"]').val(),
             admin_account_number: $('input[name="admin_account_number"]').val(),
             admin_account_name: $('input[name="admin_account_name"]').val(),
@@ -967,4 +967,43 @@ $(document).ready(function () {
             }
         });
     });
+
+    // --- HÀM KIỂM TRA GIỚI HẠN MUA ---
+    function validateLiquidity() {
+        if (currentMode !== 'buy') {
+            $('#btn-submit-swap').prop('disabled', false).text('Tiếp tục');
+            $('#input-coin').css('border-color', '#ccc');
+            $('#liquidity-warning').remove(); 
+            return true;
+        }
+
+        if (!window.siteLiquidity) return true;
+
+        let amountCoin = parseFloat($('#input-coin').val().replace(/,/g, '')) || 0;
+        let limit = 0;
+
+        if (currentCoin === 'bustabit' || currentCoin === 'btc') limit = window.siteLiquidity.btc;
+        else if (currentCoin === 'usdt') limit = window.siteLiquidity.usdt;
+        else if (currentCoin === 'ether' || currentCoin === 'eth') limit = window.siteLiquidity.eth;
+        else if (currentCoin === 'bnb') limit = window.siteLiquidity.bnb;
+        else if (currentCoin === 'sol') limit = window.siteLiquidity.sol;
+        else limit = 1000000; // Các coin chưa config thì không giới hạn
+
+        if (amountCoin > limit) {
+            $('#btn-submit-swap').prop('disabled', true).text('Vượt quá số dư hệ thống');
+            $('#input-coin').css('border-color', 'red');
+            
+            if ($('#liquidity-warning').length === 0) {
+                $('#input-coin').parent().after('<div id="liquidity-warning" style="color:red; font-size:12px; margin-top:5px;">Xin lỗi, hệ thống chỉ còn ' + numberFormat(limit, 2) + ' ' + currentCoin.toUpperCase() + '</div>');
+            } else {
+                $('#liquidity-warning').text('Xin lỗi, hệ thống chỉ còn ' + numberFormat(limit, 2) + ' ' + currentCoin.toUpperCase());
+            }
+            return false;
+        } else {
+            $('#btn-submit-swap').prop('disabled', false).text('Tiếp tục');
+            $('#input-coin').css('border-color', '#ccc');
+            $('#liquidity-warning').remove();
+            return true;
+        }
+    }
 });
