@@ -1,28 +1,20 @@
-// --- Hàm định dạng số ---
 function numberFormat(number = '0', decimalPlaces = 0) {
     let val = parseFloat(number);
     if (isNaN(val)) return "0";
-
-    // 1. Lấy số thập phân cố định
     let fixed = val.toFixed(decimalPlaces);
-
-    // 2. Tách phần nguyên và phần thập phân
     let parts = fixed.split('.');
     let integerPart = parts[0];
     let decimalPart = parts.length > 1 ? parts[1] : '';
-
-    // 3. Thêm dấu phẩy vào phần nguyên
     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    // 4. Xử lý phần thập phân: Xóa số 0 thừa ở cuối
     if (decimalPlaces > 0) {
-        decimalPart = decimalPart.replace(/0+$/, ''); // Xóa 0 cuối
+        decimalPart = decimalPart.replace(/0+$/, '');
         if (decimalPart.length > 0) {
-            return integerPart + '.' + decimalPart; // Nếu còn số thì ghép vào
+            return integerPart + '.' + decimalPart;
         }
     }
 
-    return integerPart; // Nếu không còn số thập phân
+    return integerPart;
 }
 
 function escapeHTML(str) {
@@ -43,12 +35,11 @@ function escapeHTML(str) {
 
 $(document).ready(function () {
 
-    // --- Biến toàn cục ---
     let currentMode = 'buy';
     let currentCoin = 'bustabit';
     let isCalculating = false;
+    let adminBanks = [];
 
-    // --- Hàm gọi API lấy giá (Cập nhật Bảng giá) ---
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
             if (data.bustabit) {
@@ -182,7 +173,7 @@ $(document).ready(function () {
             success: function (data) {
                 if (inputType === 'coin') {
                     $('#input-vnd').val(numberFormat(data.amount_out, 0));
-                } else { 
+                } else {
                     $('#input-coin').val(numberFormat(data.amount_out, 8));
                 }
                 isCalculating = false;
@@ -803,21 +794,42 @@ $(document).ready(function () {
         });
     });
 
+    function renderBankTable() {
+        const tbody = $('#bank-list-table tbody');
+        tbody.empty();
+        adminBanks.forEach((bank, index) => {
+            const row = `
+                <tr>
+                    <td><input type="text" class="form-control input-sm" value="${bank.bank_name}" onchange="updateBank(${index}, 'bank_name', this.value)" placeholder="VD: Vietcombank"></td>
+                    <td><input type="text" class="form-control input-sm" value="${bank.bin}" onchange="updateBank(${index}, 'bin', this.value)" placeholder="970436"></td>
+                    <td><input type="text" class="form-control input-sm" value="${bank.acc}" onchange="updateBank(${index}, 'acc', this.value)"></td>
+                    <td><input type="text" class="form-control input-sm" value="${bank.name}" onchange="updateBank(${index}, 'name', this.value)"></td>
+                    <td><button type="button" class="btn btn-danger btn-xs" onclick="removeBank(${index})"><i class="fa fa-trash"></i></button></td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    window.updateBank = function (index, field, value) { adminBanks[index][field] = value; }
+    window.removeBank = function (index) { adminBanks.splice(index, 1); renderBankTable(); }
+
+    $('#btn-add-bank').click(function () {
+        adminBanks.push({ bank_name: "", bin: "", acc: "", name: "" });
+        renderBankTable();
+    });
+
     // --- XỬ LÝ TRANG ADMIN SETTINGS ---
     if ($('#settings-form').length > 0) {
         $.ajax({
             url: API_URL + "/api/admin/settings",
             type: 'GET',
             beforeSend: function (xhr) {
-                // [ĐÃ SỬA LỖI] 'Bearer ' +
                 xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
             },
             success: function (response) {
                 if (response.success) {
                     $('select[name="maintenance_mode"]').val(response.settings.maintenance_mode || 'off');
-                    $('input[name="admin_bank_bin"]').val(response.settings.admin_bank_bin);
-                    $('input[name="admin_account_number"]').val(response.settings.admin_account_number);
-                    $('input[name="admin_account_name"]').val(response.settings.admin_account_name);
                     $('input[name="admin_bustabit_id"]').val(response.settings.admin_bustabit_id);
                     $('input[name="admin_usdt_wallet"]').val(response.settings.admin_usdt_wallet);
                     $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
@@ -836,6 +848,17 @@ $(document).ready(function () {
                         $('input[name="fee_bnb"]').val(response.settings.coin_fees.bnb);
                     }
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
+                    if (response.settings.admin_banks && Array.isArray(response.settings.admin_banks)) {
+                        adminBanks = response.settings.admin_banks;
+                    } else {
+                        adminBanks = [{
+                            bank_name: "Ngân hàng",
+                            bin: response.settings.admin_bank_bin || "",
+                            acc: response.settings.admin_account_number || "",
+                            name: response.settings.admin_account_name || ""
+                        }];
+                    }
+                    renderBankTable();
                 }
             },
             error: function (xhr) {
@@ -849,9 +872,6 @@ $(document).ready(function () {
         e.preventDefault();
         var settingsData = {
             maintenance_mode: $('select[name="maintenance_mode"]').val(),
-            admin_bank_bin: $('input[name="admin_bank_bin"]').val(),
-            admin_account_number: $('input[name="admin_account_number"]').val(),
-            admin_account_name: $('input[name="admin_account_name"]').val(),
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
             admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
             TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
@@ -870,6 +890,7 @@ $(document).ready(function () {
                 bnb: $('input[name="fee_bnb"]').val()
             },
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
+            admin_banks: adminBanks
         };
         $.ajax({
             url: API_URL + "/api/admin/settings",
@@ -877,7 +898,6 @@ $(document).ready(function () {
             contentType: 'application/json',
             data: JSON.stringify(settingsData),
             beforeSend: function (xhr) {
-                // [ĐÃ SỬA LỖI] 'Bearer ' +
                 xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
             },
             success: function (response) { alert(response.message); },
@@ -973,7 +993,7 @@ $(document).ready(function () {
         if (currentMode !== 'buy') {
             $('#btn-submit-swap').prop('disabled', false).text('Tiếp tục');
             $('#input-coin').css('border-color', '#ccc');
-            $('#liquidity-warning').remove(); 
+            $('#liquidity-warning').remove();
             return true;
         }
 
@@ -992,7 +1012,7 @@ $(document).ready(function () {
         if (amountCoin > limit) {
             $('#btn-submit-swap').prop('disabled', true).text('Vượt quá số dư hệ thống');
             $('#input-coin').css('border-color', 'red');
-            
+
             if ($('#liquidity-warning').length === 0) {
                 $('#input-coin').parent().after('<div id="liquidity-warning" style="color:red; font-size:12px; margin-top:5px;">Xin lỗi, hệ thống chỉ còn ' + numberFormat(limit, 2) + ' ' + currentCoin.toUpperCase() + '</div>');
             } else {

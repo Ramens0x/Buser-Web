@@ -175,7 +175,6 @@ def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
         default_settings = {
-            "admin_bank_bin": "970415", "admin_account_number": "100867591184","admin_account_name": "HOANG NGOC SON", "admin_bank_name": "Vietinbank",
             "admin_bustabit_id": "",
             "admin_usdt_wallet": "",
             "TELEGRAM_BOT_TOKEN": "",
@@ -621,25 +620,16 @@ def create_order():
         admin_banks_list = settings.get('admin_banks', [])
         
         if not admin_banks_list:
-             old_bin = settings.get('admin_bank_bin')
-             if old_bin:
-                 admin_banks_list = [{
-                     "bin": old_bin,
-                     "acc": settings.get('admin_account_number'),
-                     "name": settings.get('admin_account_name'),
-                     "bank_name": "Ngân hàng"
-                 }]
-        
-        if not admin_banks_list:
-             return jsonify({"success": False, "message": "Lỗi: Admin chưa cấu hình ngân hàng nhận tiền!"}), 500
-
+            return jsonify({"success": False, "message": "Lỗi hệ thống: Admin chưa cấu hình tài khoản nhận tiền."}), 500
+            
+        # Chọn ngẫu nhiên 1 tài khoản
         selected_bank = random.choice(admin_banks_list)
         
         admin_bin = selected_bank.get('bin')
         admin_account = selected_bank.get('acc')
         admin_name = selected_bank.get('name')
         bank_label = selected_bank.get('bank_name', 'Ngân hàng')
-        #--------------------------------------
+
         viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(transaction_id);
         qr_data_string = viet_qr.build()
         payment_info_dict = {
