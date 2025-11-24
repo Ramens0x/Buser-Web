@@ -53,7 +53,7 @@ def test_convert_to_vnd():
             print(f"   ❌ Failed")
 
 def test_get_rate_buy_sell():
-    print_header("TEST 4: API get_rate_buy_sell (Format Bottabot)")
+    print_header("TEST 4: API get_rate_buy_sell")
     
     coins = ['bustabit', 'usdt', 'btc', 'eth']
     
@@ -140,7 +140,7 @@ def run_all_tests():
         print("="*60)
         print("✅ TẤT CẢ TESTS HOÀN THÀNH!")
         print("="*60)
-        print("\n💡 Hệ thống sẵn sàng thay thế Bottabot!")
+        print("\n💡 Hệ thống sẵn sàng!")
         
     except Exception as e:
         print(f"\n❌ LỖI: {e}")

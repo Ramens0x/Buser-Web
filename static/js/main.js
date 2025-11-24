@@ -38,7 +38,6 @@ $(document).ready(function () {
     let currentMode = 'buy';
     let currentCoin = 'bustabit';
     let isCalculating = false;
-    let adminBanks = [];
 
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
@@ -794,32 +793,10 @@ $(document).ready(function () {
         });
     });
 
-    function renderBankTable() {
-        const tbody = $('#bank-list-table tbody');
-        tbody.empty();
-        adminBanks.forEach((bank, index) => {
-            const row = `
-                <tr>
-                    <td><input type="text" class="form-control input-sm" value="${bank.bank_name}" onchange="updateBank(${index}, 'bank_name', this.value)" placeholder="VD: Vietcombank"></td>
-                    <td><input type="text" class="form-control input-sm" value="${bank.bin}" onchange="updateBank(${index}, 'bin', this.value)" placeholder="970436"></td>
-                    <td><input type="text" class="form-control input-sm" value="${bank.acc}" onchange="updateBank(${index}, 'acc', this.value)"></td>
-                    <td><input type="text" class="form-control input-sm" value="${bank.name}" onchange="updateBank(${index}, 'name', this.value)"></td>
-                    <td><button type="button" class="btn btn-danger btn-xs" onclick="removeBank(${index})"><i class="fa fa-trash"></i></button></td>
-                </tr>
-            `;
-            tbody.append(row);
-        });
-    }
-
-    window.updateBank = function (index, field, value) { adminBanks[index][field] = value; }
-    window.removeBank = function (index) { adminBanks.splice(index, 1); renderBankTable(); }
-
-    $('#btn-add-bank').click(function () {
-        adminBanks.push({ bank_name: "", bin: "", acc: "", name: "" });
-        renderBankTable();
-    });
 
     // --- XỬ LÝ TRANG ADMIN SETTINGS ---
+    var adminBanks = [];
+
     if ($('#settings-form').length > 0) {
         $.ajax({
             url: API_URL + "/api/admin/settings",
@@ -848,15 +825,21 @@ $(document).ready(function () {
                         $('input[name="fee_bnb"]').val(response.settings.coin_fees.bnb);
                     }
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
-                    if (response.settings.admin_banks && Array.isArray(response.settings.admin_banks)) {
+
+                    if (response.settings.admin_banks && Array.isArray(response.settings.admin_banks) && response.settings.admin_banks.length > 0) {
                         adminBanks = response.settings.admin_banks;
                     } else {
-                        adminBanks = [{
-                            bank_name: "Ngân hàng",
-                            bin: response.settings.admin_bank_bin || "",
-                            acc: response.settings.admin_account_number || "",
-                            name: response.settings.admin_account_name || ""
-                        }];
+                        // Nếu chưa có mảng bank, thử fallback về dữ liệu cũ hoặc tạo mảng rỗng
+                        if (response.settings.admin_bank_bin) {
+                            adminBanks = [{
+                                bank_name: "Ngân hàng mặc định",
+                                bin: response.settings.admin_bank_bin || "",
+                                acc: response.settings.admin_account_number || "",
+                                name: response.settings.admin_account_name || ""
+                            }];
+                        } else {
+                            adminBanks = [];
+                        }
                     }
                     renderBankTable();
                 }
@@ -868,8 +851,50 @@ $(document).ready(function () {
         });
     }
 
+    function renderBankTable() {
+        const tbody = $('#bank-list-table tbody');
+        tbody.empty();
+
+        if (adminBanks.length === 0) {
+            tbody.append('<tr><td colspan="5" class="text-center">Chưa có ngân hàng nào. Hãy thêm mới.</td></tr>');
+            return;
+        }
+
+        adminBanks.forEach((bank, index) => {
+            const row = `
+                <tr>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.bank_name)}" onchange="updateBank(${index}, 'bank_name', this.value)" placeholder="VD: Vietcombank"></td>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.bin)}" onchange="updateBank(${index}, 'bin', this.value)" placeholder="970436"></td>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.acc)}" onchange="updateBank(${index}, 'acc', this.value)"></td>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.name)}" onchange="updateBank(${index}, 'name', this.value)"></td>
+                    <td><button type="button" class="btn btn-danger btn-xs" onclick="removeBank(${index})"><i class="fa fa-trash"></i></button></td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    // Gán hàm vào window để gọi được từ onclick trong HTML
+    window.updateBank = function (index, field, value) {
+        if (adminBanks[index]) {
+            adminBanks[index][field] = value;
+        }
+    }
+    window.removeBank = function (index) {
+        adminBanks.splice(index, 1);
+        renderBankTable();
+    }
+
+    // Xử lý nút Thêm Ngân hàng
+    $('#btn-add-bank').off('click').on('click', function () {
+        adminBanks.push({ bank_name: "", bin: "", acc: "", name: "" });
+        renderBankTable();
+    });
+
     $('#settings-form').on('submit', function (e) {
         e.preventDefault();
+        const cleanBanks = adminBanks.filter(b => b.bin && b.acc);
+
         var settingsData = {
             maintenance_mode: $('select[name="maintenance_mode"]').val(),
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
@@ -890,7 +915,7 @@ $(document).ready(function () {
                 bnb: $('input[name="fee_bnb"]').val()
             },
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
-            admin_banks: adminBanks
+            admin_banks: cleanBanks
         };
         $.ajax({
             url: API_URL + "/api/admin/settings",
@@ -900,7 +925,7 @@ $(document).ready(function () {
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
             },
-            success: function (response) { alert(response.message); },
+            success: function (response) { alert(response.message); location.reload(); },
             error: function (xhr) { alert("Lỗi: " + xhr.responseJSON.message); }
         });
     });

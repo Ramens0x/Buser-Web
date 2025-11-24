@@ -174,14 +174,26 @@ app_settings = {}
 def load_settings():
     global app_settings
     if not os.path.exists(CONFIG_FILE):
+
+        env_banks = os.environ.get('ADMIN_BANKS')
+        default_banks = []
+        
+        if env_banks:
+            try:
+                default_banks = json.loads(env_banks) 
+                print("✅ Đã tải thông tin Bank từ .env")
+            except Exception as e:
+                print(f"❌ Lỗi đọc ADMIN_BANKS từ .env: {e}")
+                default_banks = []
+        else:
+            default_banks = []
+
         default_settings = {
             "admin_bustabit_id": "",
             "admin_usdt_wallet": "",
             "TELEGRAM_BOT_TOKEN": "",
             "TELEGRAM_CHAT_ID": "",
-            "admin_banks": [
-                {"bin": "970415", "acc": "100867591184", "name": "HOANG NGOC SON", "bank_name": "Vietinabnk"}
-            ],
+            "admin_banks": default_banks,
             "liquidity_vnd": 50000000,
             "liquidity_usdt": 10000,
             "liquidity_btc": 1,
@@ -603,7 +615,7 @@ def create_order():
         elif coin_type == 'sol': limit = float(settings.get('liquidity_sol', 0))
         else: limit = 1000000 
         
-        if amount_coin > limit:
+        if amount_to > limit:
             return jsonify({
                 "success": False, 
                 "message": f"Số lượng mua vượt quá thanh khoản hiện có của hệ thống ({limit:,.4f} {coin_type.upper()})."
@@ -633,7 +645,9 @@ def create_order():
         viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(transaction_id);
         qr_data_string = viet_qr.build()
         payment_info_dict = {
-            "bank": f"{bank_label} (BIN: {admin_bin})", 
+            "bin": admin_bin,
+            "bank_name": bank_label,
+            "bank": f"{bank_label} (BIN: {admin_bin})",
             "account_number": admin_account, 
             "account_name": admin_name, 
             "amount": int(amount_from), 
@@ -740,20 +754,20 @@ def get_order_detail(order_id):
     # Trả về dữ liệu y hệt như lúc tạo đơn
     payment_info = json.loads(order.payment_info) if order.payment_info else {}
     
-    # Nếu là đơn MUA (Admin nhận tiền), cần tạo lại QR Code string để frontend hiển thị
-    # (Lưu ý: Logic này tái sử dụng từ create_order, thực tế nên tách hàm riêng, nhưng để đây cho gọn)
-    qr_data_string = ""
-    if order.mode == 'buy':
-        settings = load_settings()
-        admin_bin = settings.get('admin_bank_bin')
-        admin_account = settings.get('admin_account_number')
+    qr_data_string = payment_info.get('qr_data_string', "")
+    if order.mode == 'buy' and not qr_data_string:
+        admin_bin = payment_info.get('bin') # Lấy BIN từ đơn hàng
+        admin_account = payment_info.get('account_number')
+        
         if admin_bin and admin_account:
-             # Tái tạo VietQR object nhanh để lấy string
-            viet_qr = VietQR()
-            viet_qr.set_beneficiary_organization(admin_bin, admin_account)
-            viet_qr.set_transaction_amount(str(int(order.amount_vnd)))
-            viet_qr.set_additional_data_field_template(order.id)
-            qr_data_string = viet_qr.build()
+            try:
+                viet_qr = VietQR()
+                viet_qr.set_beneficiary_organization(admin_bin, admin_account)
+                viet_qr.set_transaction_amount(str(int(order.amount_vnd)))
+                viet_qr.set_additional_data_field_template(order.id)
+                qr_data_string = viet_qr.build()
+            except Exception as e:
+                print(f"Error rebuilding QR: {e}")
 
     return jsonify({
         "success": True,
@@ -1503,7 +1517,7 @@ def api_doge_price():
 @app.route("/api/get-rate-buy-sell", methods=['GET'])
 def api_get_rate_buy_sell():
     """
-    API: Lấy giá mua/bán tất cả coin (Giống Bottabot format)
+    API: Lấy giá mua/bán tất cả coin 
     Query params: ?coin=btc hoặc không có (lấy tất cả)
     """
     coin = request.args.get('coin', '').lower()
@@ -1533,7 +1547,6 @@ def api_all_prices():
 def api_start():
     """
     API: Health check + Thông tin hệ thống
-    Giống endpoint /start của Bottabot
     """
     all_prices = price_service.get_all_prices()
     return jsonify({
