@@ -180,6 +180,9 @@ def load_settings():
             "admin_usdt_wallet": "",
             "TELEGRAM_BOT_TOKEN": "",
             "TELEGRAM_CHAT_ID": "",
+            "admin_banks": [
+                {"bin": "970415", "acc": "100867591184", "name": "HOANG NGOC SON", "bank_name": "Vietinabnk"}
+            ],
             "liquidity_vnd": 50000000,
             "liquidity_usdt": 10000,
             "liquidity_btc": 1,
@@ -615,10 +618,38 @@ def create_order():
     settings = load_settings()
 
     if mode == 'buy':
-        admin_bin = settings.get('admin_bank_bin'); admin_account = settings.get('admin_account_number'); admin_name = settings.get('admin_account_name')
+        admin_banks_list = settings.get('admin_banks', [])
+        
+        if not admin_banks_list:
+             old_bin = settings.get('admin_bank_bin')
+             if old_bin:
+                 admin_banks_list = [{
+                     "bin": old_bin,
+                     "acc": settings.get('admin_account_number'),
+                     "name": settings.get('admin_account_name'),
+                     "bank_name": "Ngân hàng"
+                 }]
+        
+        if not admin_banks_list:
+             return jsonify({"success": False, "message": "Lỗi: Admin chưa cấu hình ngân hàng nhận tiền!"}), 500
+
+        selected_bank = random.choice(admin_banks_list)
+        
+        admin_bin = selected_bank.get('bin')
+        admin_account = selected_bank.get('acc')
+        admin_name = selected_bank.get('name')
+        bank_label = selected_bank.get('bank_name', 'Ngân hàng')
+        #--------------------------------------
         viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(transaction_id);
         qr_data_string = viet_qr.build()
-        payment_info_dict = {"bank": f"Bank (BIN: {admin_bin})", "account_number": admin_account, "account_name": admin_name, "amount": int(amount_from), "content": transaction_id, "qr_data_string": qr_data_string}
+        payment_info_dict = {
+            "bank": f"{bank_label} (BIN: {admin_bin})", 
+            "account_number": admin_account, 
+            "account_name": admin_name, 
+            "amount": int(amount_from), 
+            "content": transaction_id, 
+            "qr_data_string": qr_data_string
+        }
     else: 
         wallet_address = (settings.get('admin_bustabit_id') if coin_type == 'bustabit' else settings.get('admin_usdt_wallet'))
         payment_info_dict = {"memo": "", "wallet_address": wallet_address, "network": "Bustabit" if coin_type == 'bustabit' else "BEP20 (BSC)"}
