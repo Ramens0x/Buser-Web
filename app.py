@@ -651,12 +651,22 @@ def create_order():
     # Lấy tên người dùng (để ghép vào nội dung)
     user_account_name = ""
 
-    user_bank = Bank.query.filter_by(user_id=user.id).first()
-    if user_bank and user_bank.account_name:
-        user_account_name = remove_accents(user_bank.account_name)
+    # 1. Ưu tiên lấy từ KYC trước
+    kyc_info = KYC.query.filter_by(user_id=user.id).first()
+    if kyc_info and kyc_info.full_name:
+        user_account_name = remove_accents(kyc_info.full_name)
     else:
-        # Nếu chưa add bank, dùng username viết hoa
-        user_account_name = user.username.upper()
+        # 2. Nếu không có KYC, lấy từ Tên gợi nhớ trong Ví (Wallet) mà khách chọn
+        # wallet_id là ví khách chọn để nhận coin trong đơn hàng này
+        if wallet_id:
+            selected_wallet = Wallet.query.filter_by(id=wallet_id).first()
+            if selected_wallet and selected_wallet.name:
+                user_account_name = remove_accents(selected_wallet.name)
+        if not user_account_name:
+            return jsonify({
+                "success": False, 
+                "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
+            }), 400
 
     # Nội dung chuyển khoản đầy đủ: T + 8 số + Tên + transfer
     full_transfer_content = f"{transaction_id} {user_account_name} transfer"

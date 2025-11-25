@@ -101,18 +101,32 @@ $(document).ready(function () {
                 billLink = `<br><small style="color:#999;">Chưa có bill</small>`;
             }
 
-            const row = `
+            if (order.mode === 'buy') {
+                // Bảng MUA: Giữ nguyên 6 cột (ID, User, Số lượng, Loại Coin, Ví khách, Hành động)
+                const row = `
                 <tr id="order-${order.id}">
-                    <td><a href="${order.mode === 'buy' ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html'}?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
+                    <td><a href="checkout_payment_buy.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
                     <td>${escapeHTML(order.username)}</td>
-                    <td>${numberFormat(order.mode === 'buy' ? order.amount_coin : order.amount_vnd, order.mode === 'buy' ? 8 : 0)} ${order.mode === 'buy' ? order.coin.toUpperCase() : 'VNĐ'}</td>
+                    <td>${numberFormat(order.amount_coin, 8)} ${order.coin.toUpperCase()}</td>
                     <td>${order.coin.toUpperCase()}</td>
                     <td>${order.detail_info} ${billLink}</td> 
                     <td>${actionBtns}</td>
                 </tr>`;
-
-            if (order.mode === 'buy') { buyCount++; buyTable.append(row); }
-            else { sellCount++; sellTable.append(row); }
+                buyTable.append(row);
+                buyCount++;
+            } else {
+                // Bảng BÁN: Chỉ dùng 5 cột (ID, User, Số tiền VNĐ, Ngân hàng khách, Hành động)
+                const row = `
+                <tr id="order-${order.id}">
+                    <td><a href="checkout_payment_sell.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
+                    <td>${escapeHTML(order.username)}</td>
+                    <td>${numberFormat(order.amount_vnd, 0)} VNĐ</td>
+                    <td>${order.detail_info} ${billLink}</td> 
+                    <td>${actionBtns}</td>
+                </tr>`;
+                sellTable.append(row);
+                sellCount++;
+            }
         });
 
 
