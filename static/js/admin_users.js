@@ -52,7 +52,6 @@ $(document).ready(function () {
                     <td>${escapeHTML(user.id)}</td>
                     <td><strong>${escapeHTML(user.username)}</strong></td>
                     <td>${escapeHTML(user.email)}</td>
-                    <td>${user.role}</td>
                     <td>${escapeHTML(user.role)}</td>
                     <td>
                         <button class="btn btn-xs btn-warning btn-edit" data-id="${user.id}">Sửa</button>

@@ -447,55 +447,62 @@ $(document).ready(function () {
         });
     }
 
-    // --- [MỚI] Hàm tải danh sách VÍ (Wallet) đã lưu ---
-    function loadWalletsList() {
-        const token = getAuthToken();
-        const tableBody = $('#wallets-table-body');
+    // --- Hàm tải danh sách VÍ (Wallet) đã lưu ---
+function loadWalletsList() {
+    const token = getAuthToken();
+    const tableBody = $('#wallets-table-body');
+    const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol']; // Danh sách đầy đủ
+    let allWallets = [];
+    let requests = [];
 
-        // Gọi API cho cả 2 loại coin
-        const req1 = $.ajax({
-            url: `${API_URL}/api/user/wallets?coin_type=bustabit`,
-            type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
-        });
-        const req2 = $.ajax({
-            url: `${API_URL}/api/user/wallets?coin_type=usdt`,
-            type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
-        });
+    // Tạo request cho từng loại coin
+    coins.forEach(coin => {
+        requests.push(
+            $.ajax({
+                url: `${API_URL}/api/user/wallets?coin_type=${coin}`,
+                type: 'GET',
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
+            })
+        );
+    });
 
-        // Dùng $.when để đợi cả 2 API cùng chạy xong
-        $.when(req1, req2).done(function (res1, res2) {
-            tableBody.empty(); // Xóa "Đang tải..."
-            const wallets = res1[0].wallets.concat(res2[0].wallets); // Gộp 2 mảng kết quả
-
-            if (wallets.length === 0) {
-                tableBody.html('<tr><td colspan="4" class="text-center">Bạn chưa lưu ví nào.</td></tr>');
-                return;
+    // Đợi tất cả request xong
+    $.when.apply($, requests).done(function (...responses) {
+        tableBody.empty();
+        
+        // Gom dữ liệu từ các response (lưu ý cấu trúc trả về của $.when khác nhau nếu có 1 hay nhiều request)
+        responses.forEach(res => {
+            // res[0] là data trả về từ ajax
+            let data = (Array.isArray(res) ? res[0] : res); 
+            if (data && data.wallets) {
+                allWallets = allWallets.concat(data.wallets);
             }
-
-            wallets.forEach(wallet => {
-                let type = escapeHTML(wallet.coin_type.toUpperCase());
-                let address = escapeHTML(wallet.address);
-                let name = escapeHTML(wallet.name);
-                let details = `Tag: ${escapeHTML(wallet.tag) || 'N/A'}<br>Phone: ${escapeHTML(wallet.phone) || 'N/A'}`;
-                if (wallet.coin_type === 'usdt') {
-                    details = "(Không yêu cầu chi tiết)";
-                }
-
-                const row = `
-                <tr id="wallet-row-${escapeHTML(wallet.id)}">
-                <td>${type}</td>
-                <td><b>${name || 'Chưa đặt tên'}</b><br><small>${address}</small></td>
-                <td><small>${details}</small></td>
-                <td><button class="btn btn-xs btn-danger btn-delete-wallet" data-id="${escapeHTML(wallet.id)}"><i class="fa fa-trash"></i> Xóa</button></td>
-                </tr>`;
-                tableBody.append(row);
-            });
-        }).fail(function () {
-            tableBody.html('<tr><td colspan="4" class="text-center">Lỗi khi tải danh sách ví.</td></tr>');
         });
-    }
+
+        if (allWallets.length === 0) {
+            tableBody.html('<tr><td colspan="4" class="text-center">Bạn chưa lưu ví nào.</td></tr>');
+            return;
+        }
+
+        allWallets.forEach(wallet => {
+            let type = escapeHTML(wallet.coin_type.toUpperCase());
+            let address = escapeHTML(wallet.address);
+            let name = escapeHTML(wallet.name);
+            let details = `Tag: ${escapeHTML(wallet.tag) || 'N/A'}<br>Phone: ${escapeHTML(wallet.phone) || 'N/A'}`;
+            
+            const row = `
+            <tr id="wallet-row-${escapeHTML(wallet.id)}">
+            <td>${type}</td>
+            <td><b>${name || 'Chưa đặt tên'}</b><br><small>${address}</small></td>
+            <td><small>${details}</small></td>
+            <td><button class="btn btn-xs btn-danger btn-delete-wallet" data-id="${escapeHTML(wallet.id)}"><i class="fa fa-trash"></i> Xóa</button></td>
+            </tr>`;
+            tableBody.append(row);
+        });
+    }).fail(function () {
+        tableBody.html('<tr><td colspan="4" class="text-center">Lỗi khi tải danh sách ví.</td></tr>');
+    });
+}
 
     // --- [MỚI] Hàm tải danh sách NGÂN HÀNG (Bank) đã lưu ---
     function loadBanksList() {
@@ -809,7 +816,7 @@ $(document).ready(function () {
                     $('select[name="maintenance_mode"]').val(response.settings.maintenance_mode || 'off');
                     $('input[name="admin_bustabit_id"]').val(response.settings.admin_bustabit_id);
                     $('input[name="admin_usdt_wallet"]').val(response.settings.admin_usdt_wallet);
-                    $('input[name="admin_ether_wallet"]').val(response.settings.admin_ether_id || '');
+                    $('input[name="admin_ether_id"]').val(response.settings.admin_ether_id || '');
                     $('input[name="admin_bnb_wallet"]').val(response.settings.admin_bnb_wallet || '');
                     $('input[name="admin_sol_wallet"]').val(response.settings.admin_sol_wallet || '');
                     $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
@@ -902,7 +909,7 @@ $(document).ready(function () {
             maintenance_mode: $('select[name="maintenance_mode"]').val(),
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
             admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
-            admin_ether_wallet: $('input[name="admin_ether_id"]').val(),
+            admin_ether_id: $('input[name="admin_ether_id"]').val(),
             admin_bnb_wallet: $('input[name="admin_bnb_wallet"]').val(),
             admin_sol_wallet: $('input[name="admin_sol_wallet"]').val(),
             TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
@@ -949,6 +956,7 @@ $(document).ready(function () {
     if ($('#add-wallet-form').length > 0) {
         function toggleWalletFields() {
             const type = $('#coin-type-select').val();
+            
 
             // 1. Mặc định: Hiện Địa chỉ, Ẩn Tag
             $('#field-address-group').show();
@@ -971,6 +979,10 @@ $(document).ready(function () {
             else { 
                 // USDT, BNB, SOL: Chỉ cần Địa chỉ ví (Tag vẫn ẩn)
                 // Họ tên & SĐT đã được hiện ở dòng mặc định bên trên
+            }
+            if (type === 'bustabit' || type === 'bnb' || type === 'sol') {
+                $('#field-tag-group').show();
+                $('#label-tag').text(type === 'bustabit' ? 'Destination Tag:' : 'Memo (Nếu có):');
             }
         }
 
@@ -1004,10 +1016,7 @@ $(document).ready(function () {
              if (!inputAddress) { alert("Vui lòng nhập địa chỉ!"); return; }
         }
         else {
-            // Các coin thường (USDT, BNB, SOL)
             if (!inputAddress) { alert("Vui lòng nhập địa chỉ ví!"); return; }
-            // Không cần Tag, xóa đi cho gọn
-            inputTag = "";
         }
 
         // Kiểm tra bắt buộc nhập tên và sđt (nếu bạn muốn bắt buộc)

@@ -610,7 +610,7 @@ def create_order():
     # Xác định số tiền VNĐ trong giao dịch: Nếu Mua: Khách trả VNĐ (amount_from) Nếu Bán: Khách nhận VNĐ (amount_to)/ Cấu hình hạn mức bắt buộc KYC (100 triệu)
     transaction_vnd = amount_from if mode == 'buy' else amount_to
     KYC_LIMIT = 100000000
-    if transaction_vnd >= KYC_LIMIT:
+    if transaction_vnd > KYC_LIMIT:
         # Kiểm tra xem user đã KYC chưa
         kyc_record = KYC.query.filter_by(user_id=user.id).first()
         
@@ -868,17 +868,16 @@ def get_qr_image():
 
 # --- [MỚI] HÀM GỬI THÔNG BÁO TELEGRAM (NÂNG CẤP) ---
 def send_telegram_notification(message, order_id=None):
-    """
-    Gửi thông báo Telegram có nút tương tác
-    """
+
     global app_settings
 
-    token = os.environ.get('TELEGRAM_BOT_TOKEN') or app_settings.get('TELEGRAM_BOT_TOKEN')
-    chat_id = os.environ.get('TELEGRAM_CHAT_ID') or app_settings.get('TELEGRAM_CHAT_ID')
+    token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
 
-
-    token = app_settings.get('TELEGRAM_BOT_TOKEN')
-    chat_id = app_settings.get('TELEGRAM_CHAT_ID')
+    if not token:
+        token = app_settings.get('TELEGRAM_BOT_TOKEN')
+    if not chat_id:
+        chat_id = app_settings.get('TELEGRAM_CHAT_ID')
     
     if not token or not chat_id or str(token).strip() == "" or str(chat_id).strip() == "":
         print(">>> LƯU Ý: Chưa cấu hình Telegram Bot. Bỏ qua thông báo.")
@@ -1752,8 +1751,8 @@ if __name__ == '__main__':
         load_settings()
 
         
-        env_admin_user = os.environ.get('ADMIN_USERNAME', 'admin')
-        env_admin_pass = os.environ.get('ADMIN_PASSWORD', 'Buseradmin1@')
+        env_admin_user = os.environ.get('ADMIN_USERNAME')
+        env_admin_pass = os.environ.get('ADMIN_PASSWORD')
 
         admin_user = User.query.filter_by(username=env_admin_user).first()
         if not admin_user:
