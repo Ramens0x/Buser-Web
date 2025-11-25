@@ -607,14 +607,11 @@ def create_order():
     amount_from, amount_to = float(data.get('amount_from', 0)), float(data.get('amount_to', 0))
     wallet_id, bank_id = data.get('wallet_id'), data.get('bank_id')
 
-    # Xác định số tiền VNĐ trong giao dịch: Nếu Mua: Khách trả VNĐ (amount_from) Nếu Bán: Khách nhận VNĐ (amount_to)/ Cấu hình hạn mức bắt buộc KYC (100 triệu)
+    # Xác định số tiền VNĐ
     transaction_vnd = amount_from if mode == 'buy' else amount_to
     KYC_LIMIT = 100000000
     if transaction_vnd > KYC_LIMIT:
-        # Kiểm tra xem user đã KYC chưa
         kyc_record = KYC.query.filter_by(user_id=user.id).first()
-        
-        # Nếu chưa gửi KYC hoặc chưa được duyệt -> Chặn lại
         if not kyc_record or kyc_record.status != 'approved':
             return jsonify({
                 "success": False, 
@@ -624,7 +621,6 @@ def create_order():
     if mode == 'buy':
         settings = load_settings()
         limit = 0
-        
         if coin_type in ['bustabit', 'btc']: limit = float(settings.get('liquidity_btc', 0))
         elif coin_type == 'usdt': limit = float(settings.get('liquidity_usdt', 0))
         elif coin_type in ['ether', 'eth']: limit = float(settings.get('liquidity_eth', 0))
@@ -633,57 +629,59 @@ def create_order():
         else: limit = 1000000 
         
         if amount_to > limit:
-            return jsonify({
-                "success": False, 
-                "message": f"Số lượng mua vượt quá thanh khoản hiện có của hệ thống ({limit:,.4f} {coin_type.upper()})."
-            }), 400
+            return jsonify({"success": False, "message": f"Số lượng mua vượt quá thanh khoản hiện có ({limit:,.4f} {coin_type.upper()})."}), 400
 
-    # Mã ngắn (Unique ID) cho Database: T + 8 số ngẫu nhiên
     def get_unique_order_id():
         while True:
-            # Tạo chuỗi 8 chữ số ngẫu nhiên
             digits = ''.join([str(random.randint(0, 9)) for _ in range(8)])
             oid = f"T{digits}"
-            if not Order.query.filter_by(id=oid).first():
-                return oid
+            if not Order.query.filter_by(id=oid).first(): return oid
 
-    transaction_id = get_unique_order_id() # Ví dụ: T12345678
-    # Lấy tên người dùng (để ghép vào nội dung)
+    transaction_id = get_unique_order_id() 
+    
+    # --- [LOGIC MỚI] Lấy tên người dùng cho nội dung CK (Mua) ---
     user_account_name = ""
-
-    # 1. Ưu tiên lấy từ KYC trước
     kyc_info = KYC.query.filter_by(user_id=user.id).first()
+    
+    # 1. Ưu tiên KYC
     if kyc_info and kyc_info.full_name:
         user_account_name = remove_accents(kyc_info.full_name)
     else:
-        # 2. Nếu không có KYC, lấy từ Tên gợi nhớ trong Ví (Wallet) mà khách chọn
-        # wallet_id là ví khách chọn để nhận coin trong đơn hàng này
+        # 2. Lấy từ Tên Ví
         if wallet_id:
             selected_wallet = Wallet.query.filter_by(id=wallet_id).first()
             if selected_wallet and selected_wallet.name:
                 user_account_name = remove_accents(selected_wallet.name)
+        
+        # 3. Chặn nếu thiếu tên
         if not user_account_name:
             return jsonify({
                 "success": False, 
                 "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
             }), 400
 
-    # Nội dung chuyển khoản đầy đủ: T + 8 số + Tên + transfer
     full_transfer_content = f"{transaction_id} {user_account_name} transfer"
-
-        
-    payment_info_dict = {}
+    
+    # --- [LOGIC MỚI] Nội dung cho đơn Bán (Admin chuyển) ---
+    # Lấy tên chủ TK Admin từ settings (nếu có) hoặc fix cứng
     settings = load_settings()
+    admin_banks = settings.get('admin_banks', [])
+    admin_name_fixed = "HOANG NGOC SON" 
+    if admin_banks and len(admin_banks) > 0:
+        # Lấy tên của bank đầu tiên trong list admin
+        admin_name_fixed = remove_accents(admin_banks[0].get('name', 'HOANG NGOC SON'))
+        
+    sell_transfer_content = f"{transaction_id} {admin_name_fixed} transfer"
+    # ------------------------------------------------------
+
+    payment_info_dict = {}
 
     if mode == 'buy':
         admin_banks_list = settings.get('admin_banks', [])
-        
         if not admin_banks_list:
             return jsonify({"success": False, "message": "Lỗi hệ thống: Admin chưa cấu hình tài khoản nhận tiền."}), 500
             
-        # Chọn ngẫu nhiên 1 tài khoản
         selected_bank = random.choice(admin_banks_list)
-        
         admin_bin = selected_bank.get('bin')
         admin_account = selected_bank.get('acc')
         admin_name = selected_bank.get('name')
@@ -692,78 +690,46 @@ def create_order():
         viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(full_transfer_content);
         qr_data_string = viet_qr.build()
         payment_info_dict = {
-            "bin": admin_bin,
-            "bank_name": bank_label,
-            "bank": f"{bank_label} (BIN: {admin_bin})",
-            "account_number": admin_account, 
-            "account_name": admin_name, 
-            "amount": int(amount_from), 
-            "content": full_transfer_content, 
-            "qr_data_string": qr_data_string
+            "bin": admin_bin, "bank_name": bank_label, "bank": f"{bank_label} (BIN: {admin_bin})",
+            "account_number": admin_account, "account_name": admin_name, 
+            "amount": int(amount_from), "content": full_transfer_content, "qr_data_string": qr_data_string
         }
     else: 
-        if coin_type == 'bustabit':
-            wallet_address = settings.get('admin_bustabit_id')
-            network = "Bustabit"
-        elif coin_type == 'ether':
-            wallet_address = settings.get('admin_ether_id') 
-            network = "Ether"
-        elif coin_type == 'sol':
-            wallet_address = settings.get('admin_sol_wallet')
-            network = "Solana"
-        elif coin_type == 'bnb':
-            wallet_address = settings.get('admin_bnb_wallet')
-            network = "BEP-20 (BSC)"
-        else: 
-            wallet_address = settings.get('admin_usdt_wallet')
-            network = "BEP-20 (BSC)"
+        if coin_type == 'bustabit': wallet_address = settings.get('admin_bustabit_id'); network = "Bustabit"
+        elif coin_type == 'ether': wallet_address = settings.get('admin_ether_id'); network = "Ether"
+        elif coin_type == 'sol': wallet_address = settings.get('admin_sol_wallet'); network = "Solana"
+        elif coin_type == 'bnb': wallet_address = settings.get('admin_bnb_wallet'); network = "BEP-20 (BSC)"
+        else: wallet_address = settings.get('admin_usdt_wallet'); network = "BEP-20 (BSC)"
 
         payment_info_dict = {
-            "memo": "", 
-            "wallet_address": wallet_address, 
-            "network": network,
-            "content": full_transfer_content 
+            "memo": "", "wallet_address": wallet_address, "network": network,
+            "content": full_transfer_content,
+            "sell_content": sell_transfer_content # <--- Gửi nội dung CK Bán xuống DB
         }
     
     new_order = Order(
         id=transaction_id, username=user.username, mode=mode, coin=coin_type,
         amount_vnd = amount_from if mode == 'buy' else amount_to,
         amount_coin = amount_to if mode == 'buy' else amount_from,
-        user_wallet_id = wallet_id,
-        user_bank_id = bank_id,
+        user_wallet_id = wallet_id, user_bank_id = bank_id,
         payment_info = json.dumps(payment_info_dict)
     )
     db.session.add(new_order)
     db.session.commit()
 
-    # --- gửi thông báo cho admin (CHẠY NGẦM) ---
+    # Gửi Telegram
     try:
         if new_order.mode == 'buy':
-            message = (
-                f"🔔 *Đơn MUA Mới (Chờ gửi Coin)*\n"
-                f"Mã: *{new_order.id}*\n"
-                f"User: *{new_order.username}*\n"
-                f"Nhận VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*\n"
-                f"Nội dung CK: `{full_transfer_content}`"
-            )
+            message = f"🔔 *Đơn MUA Mới*\nMã: *{new_order.id}*\nUser: *{new_order.username}*\nVNĐ: *{new_order.amount_vnd:,.0f}*\nND: `{full_transfer_content}`"
         else:
-            message = (
-                f"🔔 *Đơn BÁN Mới (Chờ gửi VNĐ)*\n"
-                f"Mã: *{new_order.id}*\n"
-                f"User: *{new_order.username}*\n"
-                f"Nhận Coin: *{new_order.amount_coin:.8f} {new_order.coin.upper()}*\n"
-                f"Gửi VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*\n"
-                f"Nội dung CK (Admin dùng): `{full_transfer_content}`" 
-            )
+            message = f"🔔 *Đơn BÁN Mới*\nMã: *{new_order.id}*\nUser: *{new_order.username}*\nCoin: *{new_order.amount_coin:.8f}*\nVNĐ: *{new_order.amount_vnd:,.0f}*\nND Admin CK: `{sell_transfer_content}`"
         eventlet.spawn(send_telegram_notification, message, order_id=new_order.id)
-    except Exception as e:
-        print(f"Lỗi khi tạo tin nhắn Telegram: {e}")
+    except Exception as e: print(f"Lỗi Telegram: {e}")
 
     return jsonify({"success": True, "order": {
         "id": new_order.id, "username": new_order.username, "mode": new_order.mode,
         "coin": new_order.coin, "status": new_order.status, "created_at": new_order.created_at.isoformat(),
         "amount_vnd": new_order.amount_vnd, "amount_coin": new_order.amount_coin,
-        "user_wallet_id": new_order.user_wallet_id, "user_bank_id": new_order.user_bank_id,
         "payment_info": payment_info_dict
     }})
 
@@ -1046,7 +1012,6 @@ def admin_cancel_order():
 @app.route("/api/admin/transactions", methods=['GET'])
 def get_admin_transactions():
     user = get_user_from_request()
-    
     if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Không có quyền"}), 403
 
     pending_orders = Order.query.filter_by(status='pending').order_by(Order.created_at.desc()).all()
@@ -1056,25 +1021,40 @@ def get_admin_transactions():
         payment_info = json.loads(order.payment_info or '{}')
         bill_image_filename = payment_info.get('bill_image', None)
         detail_info = "Không có dữ liệu"
+        
+        sell_content = payment_info.get('sell_content', f"{order.id} HOANG NGOC SON transfer") 
+
+        # Biến chứa thông tin bank để tạo QR
+        user_bank_raw = None
+
         if order.mode == 'buy': 
             w = Wallet.query.filter_by(id=order.user_wallet_id).first()
             if w:
                 tag_info = f" | Tag: {w.tag}" if w.tag else ""
                 detail_info = f"<b>Addr:</b> {w.address}<br><b>Tên:</b> {w.name}{tag_info}"
-        else: # Khách bán -> Admin cần biết bank khách để trả tiền
+        else: 
+            # Xử lý Đơn Bán -> Lấy thông tin Bank khách
             b = Bank.query.filter_by(id=order.user_bank_id).first()
             if b:
                 detail_info = f"<b>Bank:</b> {b.bank_name}<br><b>STK:</b> {b.account_number}<br><b>Tên:</b> {b.account_name}"
+                # Tạo dữ liệu raw để JS tạo mã QR
+                user_bank_raw = {
+                    "bankName": b.bank_name, # Tên ngân hàng để map sang BIN
+                    "accountNo": b.account_number,
+                    "accountName": remove_accents(b.account_name),
+                    "amount": int(order.amount_vnd),
+                    "addInfo": sell_content
+                }
+
         orders_list.append({
             "id": order.id, "mode": order.mode, "coin": order.coin, "amount_vnd": order.amount_vnd,
             "amount_coin": order.amount_coin, "status": order.status, "created_at": order.created_at.isoformat(),
             "username": order.username, 
             "detail_info": detail_info,
-            "username": order.username, 
-            "detail_info": detail_info,
-            "bill_image": bill_image_filename
+            "bill_image": bill_image_filename,
+            "sell_content": sell_content,
+            "user_bank_raw": user_bank_raw # <-- Gửi cái này xuống để tạo QR
         })
-
     # 2. [MỚI] Tính toán thống kê
     try:
         total_vnd_in = db.session.query(func.sum(Order.amount_vnd)).filter(
@@ -1102,6 +1082,11 @@ def get_admin_transactions():
     except Exception as e:
         print(f"Lỗi tính toán thống kê: {e}")
         stats_dict = {}
+    try:
+        total_vnd_in = db.session.query(func.sum(Order.amount_vnd)).filter(Order.status == 'completed', Order.mode == 'buy').scalar() or 0
+        total_vnd_out = db.session.query(func.sum(Order.amount_vnd)).filter(Order.status == 'completed', Order.mode == 'sell').scalar() or 0
+        stats_dict = { "total_vnd_in": total_vnd_in, "total_vnd_out": total_vnd_out }
+    except: pass
     return jsonify({"success": True, "transactions": orders_list, "stats": stats_dict})
 
 @app.route("/api/admin/transactions/complete", methods=['POST'])

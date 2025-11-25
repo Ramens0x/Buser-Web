@@ -61,10 +61,17 @@ $(document).ready(function () {
                 if (selectedBank) {
                     $('#user-bank-name').text(escapeHTML(selectedBank.bank_name));
                     $('#user-bank-account').text(escapeHTML(selectedBank.account_number));
+                    
                     $('#user-account-name').text(escapeHTML(selectedBank.account_name));
                 }
             }
         });
+        if (order.payment_info && order.payment_info.sell_content) {
+            $('#sell-order-content').text(order.payment_info.sell_content);
+        } else {
+            // Fallback cho đơn cũ
+            $('#sell-order-content').text(`${order.id} HOANG NGOC SON transfer`);
+        }
 
         if (order.status !== 'pending') {
             $('#btn-user-cancel').prop('disabled', true).text(order.status === 'completed' ? 'Đã Hoàn Thành' : 'Đã Hủy');
