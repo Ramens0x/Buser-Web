@@ -36,33 +36,38 @@
                             <div class="form-group">
                                 <label class="labelGreen">Loại tài khoản:</label>
                                 <select class="form-control formGreen" id="coin-type-select" name="coin_type">
-                                    <option value="bustabit">Bustabit (bitcoin BTC)</option>
-                                    <option value="usdt">USDT - BEP20 (BSC)</option>
+                                    <option value="bustabit">Bustabit (Bits - BTC)</option>
+                                    <option value="ether">Ether (Ethos - ETH)</option>
+                                    <option value="usdt">USDT - BEP20</option>
+                                    <option value="bnb">BNB - BEP20</option>
+                                    <option value="sol">Solana (SOL)</option>
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" id="field-address-group">
                                 <label class="labelGreen">Địa chỉ ví nhận:</label>
                                 <input type="text" class="form-control formGreen" name="address"
-                                    placeholder="Địa chỉ ví nhận" required>
+                                    placeholder="Nhập địa chỉ ví...">
                             </div>
 
-                            <div class="form-group" id="bustabit-fields-tag">
-                                <label class="labelGreen">Destination Tag:</label>
+                            <div class="form-group" id="field-tag-group" style="display: none;">
+                                <label class="labelGreen" id="label-tag">Destination Tag / ID:</label>
                                 <input type="text" class="form-control formGreen" name="tag"
-                                    placeholder="ID đăng nhập sàn (Tag/Memo)">
+                                    placeholder="Nhập ID Đăng nhập sàn...">
                             </div>
 
-                            <div class="form-group" id="bustabit-fields-name">
-                                <label class="labelRed">Họ Tên:</label>
-                                <input type="text" class="form-control formRed" name="name"
-                                    placeholder="Họ tên liên hệ (trùng với tên trên sàn)" required>
-                            </div>
+                            <div id="field-personal-group" style="display: none;">
+                                <div class="form-group">
+                                    <label class="labelRed">Họ Tên:</label>
+                                    <input type="text" class="form-control formRed" name="name"
+                                        placeholder="Họ tên liên hệ (trùng với tên trên sàn)">
+                                </div>
 
-                            <div class="form-group" id="bustabit-fields-phone">
-                                <label class="labelGreen">Số điện thoại:</label>
-                                <input type="text" class="form-control formGreen" name="phone"
-                                    placeholder="Nhập số điện thoại liên hệ" required>
+                                <div class="form-group">
+                                    <label class="labelGreen">Số điện thoại:</label>
+                                    <input type="text" class="form-control formGreen" name="phone"
+                                        placeholder="Nhập số điện thoại liên hệ">
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-success btn-block">
@@ -80,26 +85,7 @@
     <script src="/static/js/config.js"></script>
     <script src="/static/js/main.js"></script>
 
-    <script>
-        // [MỚI] Script ẩn/hiện ô Tag
-        $(document).ready(function () {
-            function toggleBustabitFields() {
-                if ($('#coin-type-select').val() === 'bustabit') {
-                    $('#bustabit-fields-tag').show();
-                    $('#bustabit-fields-name').show();
-                    $('#bustabit-fields-phone').show();
-                } else { // usdt
-                    $('#bustabit-fields-tag').hide();
-                    $('#bustabit-fields-name').hide();
-                    $('#bustabit-fields-phone').hide();
-                }
-            }
-            // Chạy lần đầu
-            toggleBustabitFields();
-            // Chạy khi thay đổi
-            $('#coin-type-select').on('change', toggleBustabitFields);
-        });
-    </script>
+    
     <style>
     .floating-telegram {
         position: fixed;

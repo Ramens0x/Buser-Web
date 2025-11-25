@@ -170,6 +170,20 @@ class Order(db.Model):
 current_rates = {'bustabit': {'buy': 0, 'sell': 0}, 'usdt': {'buy': 0, 'sell': 0}}
 app_settings = {}
 
+# --- HÀM TIỆN ÍCH ---
+# Hàm xóa dấu tiếng Việt và viết hoa
+def remove_accents(input_str):
+    if not input_str: return ""
+    s1 = u'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ'
+    s0 = u'AAAAEEEIIOOOOUUYaaaaeeeiioooouuyAaDdIiUuOoUuAaAaAaAaAaAaAaAaAaAaAaAaEeEeEeEeEeEeEeEeIiIiOoOoOoOoOoOoOoOoOoOoOoOoUuUuUuUuUuUuUuYyYyYyYy'
+    s = ''
+    for c in input_str:
+        if c in s1:
+            s += s0[s1.index(c)]
+        else:
+            s += c
+    return s.upper()
+
 # --- HÀM QUẢN LÝ CÀI ĐẶT ---
 def load_settings():
     global app_settings
@@ -191,6 +205,9 @@ def load_settings():
         default_settings = {
             "admin_bustabit_id": "",
             "admin_usdt_wallet": "",
+            "admin_ether_id": "",  
+            "admin_sol_wallet": "",
+            "admin_bnb_wallet": "",
             "TELEGRAM_BOT_TOKEN": "",
             "TELEGRAM_CHAT_ID": "",
             "admin_banks": default_banks,
@@ -620,10 +637,30 @@ def create_order():
                 "success": False, 
                 "message": f"Số lượng mua vượt quá thanh khoản hiện có của hệ thống ({limit:,.4f} {coin_type.upper()})."
             }), 400
-    
-    transaction_id = generate_random_id()
-    while Order.query.filter_by(id=transaction_id).first():
-        transaction_id = generate_random_id()
+
+    # Mã ngắn (Unique ID) cho Database: T + 8 số ngẫu nhiên
+    def get_unique_order_id():
+        while True:
+            # Tạo chuỗi 8 chữ số ngẫu nhiên
+            digits = ''.join([str(random.randint(0, 9)) for _ in range(8)])
+            oid = f"T{digits}"
+            if not Order.query.filter_by(id=oid).first():
+                return oid
+
+    transaction_id = get_unique_order_id() # Ví dụ: T12345678
+    # Lấy tên người dùng (để ghép vào nội dung)
+    user_account_name = ""
+
+    user_bank = Bank.query.filter_by(user_id=user.id).first()
+    if user_bank and user_bank.account_name:
+        user_account_name = remove_accents(user_bank.account_name)
+    else:
+        # Nếu chưa add bank, dùng username viết hoa
+        user_account_name = user.username.upper()
+
+    # Nội dung chuyển khoản đầy đủ: T + 8 số + Tên + transfer
+    full_transfer_content = f"{transaction_id} {user_account_name} transfer"
+
         
     payment_info_dict = {}
     settings = load_settings()
@@ -642,7 +679,7 @@ def create_order():
         admin_name = selected_bank.get('name')
         bank_label = selected_bank.get('bank_name', 'Ngân hàng')
 
-        viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(transaction_id);
+        viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(full_transfer_content);
         qr_data_string = viet_qr.build()
         payment_info_dict = {
             "bin": admin_bin,
@@ -651,12 +688,32 @@ def create_order():
             "account_number": admin_account, 
             "account_name": admin_name, 
             "amount": int(amount_from), 
-            "content": transaction_id, 
+            "content": full_transfer_content, 
             "qr_data_string": qr_data_string
         }
     else: 
-        wallet_address = (settings.get('admin_bustabit_id') if coin_type == 'bustabit' else settings.get('admin_usdt_wallet'))
-        payment_info_dict = {"memo": "", "wallet_address": wallet_address, "network": "Bustabit" if coin_type == 'bustabit' else "BEP20 (BSC)"}
+        if coin_type == 'bustabit':
+            wallet_address = settings.get('admin_bustabit_id')
+            network = "Bustabit"
+        elif coin_type == 'ether':
+            wallet_address = settings.get('admin_ether_id') 
+            network = "Ether"
+        elif coin_type == 'sol':
+            wallet_address = settings.get('admin_sol_wallet')
+            network = "Solana"
+        elif coin_type == 'bnb':
+            wallet_address = settings.get('admin_bnb_wallet')
+            network = "BEP-20 (BSC)"
+        else: 
+            wallet_address = settings.get('admin_usdt_wallet')
+            network = "BEP-20 (BSC)"
+
+        payment_info_dict = {
+            "memo": "", 
+            "wallet_address": wallet_address, 
+            "network": network,
+            "content": full_transfer_content 
+        }
     
     new_order = Order(
         id=transaction_id, username=user.username, mode=mode, coin=coin_type,
@@ -674,16 +731,19 @@ def create_order():
         if new_order.mode == 'buy':
             message = (
                 f"🔔 *Đơn MUA Mới (Chờ gửi Coin)*\n"
+                f"Mã: *{new_order.id}*\n"
                 f"User: *{new_order.username}*\n"
                 f"Nhận VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*\n"
-                f"Gửi Coin: *{new_order.amount_coin:.8f} {new_order.coin.upper()}*"
+                f"Nội dung CK: `{full_transfer_content}`"
             )
         else:
             message = (
                 f"🔔 *Đơn BÁN Mới (Chờ gửi VNĐ)*\n"
+                f"Mã: *{new_order.id}*\n"
                 f"User: *{new_order.username}*\n"
                 f"Nhận Coin: *{new_order.amount_coin:.8f} {new_order.coin.upper()}*\n"
-                f"Gửi VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*"
+                f"Gửi VNĐ: *{new_order.amount_vnd:,.0f} VNĐ*\n"
+                f"Nội dung CK (Admin dùng): `{full_transfer_content}`" 
             )
         eventlet.spawn(send_telegram_notification, message, order_id=new_order.id)
     except Exception as e:

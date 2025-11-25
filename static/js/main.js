@@ -809,6 +809,9 @@ $(document).ready(function () {
                     $('select[name="maintenance_mode"]').val(response.settings.maintenance_mode || 'off');
                     $('input[name="admin_bustabit_id"]').val(response.settings.admin_bustabit_id);
                     $('input[name="admin_usdt_wallet"]').val(response.settings.admin_usdt_wallet);
+                    $('input[name="admin_ether_wallet"]').val(response.settings.admin_ether_id || '');
+                    $('input[name="admin_bnb_wallet"]').val(response.settings.admin_bnb_wallet || '');
+                    $('input[name="admin_sol_wallet"]').val(response.settings.admin_sol_wallet || '');
                     $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
                     $('input[name="telegram_chat_id"]').val(response.settings.TELEGRAM_CHAT_ID || '');
                     $('input[name="liquidity_vnd"]').val(response.settings.liquidity_vnd);
@@ -899,6 +902,9 @@ $(document).ready(function () {
             maintenance_mode: $('select[name="maintenance_mode"]').val(),
             admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
             admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
+            admin_ether_wallet: $('input[name="admin_ether_id"]').val(),
+            admin_bnb_wallet: $('input[name="admin_bnb_wallet"]').val(),
+            admin_sol_wallet: $('input[name="admin_sol_wallet"]').val(),
             TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
             TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val(),
             liquidity_vnd: $('input[name="liquidity_vnd"]').val(),
@@ -939,25 +945,84 @@ $(document).ready(function () {
         loadPublicHistory();
     }
 
+    // --- XỬ LÝ GIAO DIỆN THÊM VÍ (add-wallet.html) ---
+    if ($('#add-wallet-form').length > 0) {
+        function toggleWalletFields() {
+            const type = $('#coin-type-select').val();
+
+            // 1. Mặc định: Hiện Địa chỉ, Ẩn Tag
+            $('#field-address-group').show();
+            $('#field-tag-group').hide();
+            
+            // [SỬA ĐỔI QUAN TRỌNG] Luôn hiện nhóm thông tin cá nhân cho TẤT CẢ các coin
+            $('#field-personal-group').show(); 
+
+            if (type === 'bustabit') {
+                // Bustabit: Cần thêm Tag
+                $('#field-tag-group').show();
+                $('#label-tag').text('Destination Tag:');
+            } 
+            else if (type === 'ether') {
+                // Ether: ẨN địa chỉ ví, Hiện Tag (làm ID)
+                $('#field-address-group').hide(); 
+                $('#field-tag-group').show();
+                $('#label-tag').text('Ethos ID (Destination Tag):');
+            } 
+            else { 
+                // USDT, BNB, SOL: Chỉ cần Địa chỉ ví (Tag vẫn ẩn)
+                // Họ tên & SĐT đã được hiện ở dòng mặc định bên trên
+            }
+        }
+
+        // Chạy lần đầu và khi thay đổi
+        toggleWalletFields();
+        $('#coin-type-select').on('change', toggleWalletFields);
+    }
 
     // --- XỬ LÝ FORM THÊM VÍ (add-wallet.html) ---
     $('#add-wallet-form').on('submit', function (e) {
         e.preventDefault();
 
-        var data = {
-            coin_type: $(this).find('select[name="coin_type"]').val(),
-            address: $(this).find('input[name="address"]').val(),
-            tag: $(this).find('input[name="tag"]').val(),
-            name: $(this).find('input[name="name"]').val(),
-            phone: $(this).find('input[name="phone"]').val()
-        };
+        var coinType = $(this).find('select[name="coin_type"]').val();
+        var inputAddress = $(this).find('input[name="address"]').val();
+        var inputTag = $(this).find('input[name="tag"]').val();
+        
+        // [QUAN TRỌNG] Luôn lấy thông tin Họ tên & SĐT cho mọi loại coin
+        var inputName = $(this).find('input[name="name"]').val();
+        var inputPhone = $(this).find('input[name="phone"]').val();
 
-        // Ẩn/hiện trường theo logic
-        if (data.coin_type === 'usdt') {
-            data.tag = "";
-            data.name = "";
-            data.phone = "";
+        // Logic xử lý dữ liệu riêng cho từng coin
+        if (coinType === 'ether') {
+            if (!inputTag) {
+                alert("Vui lòng nhập Ethos ID (Tag)!");
+                return;
+            }
+            // Ether dùng Tag làm Address
+            inputAddress = inputTag; 
+        } 
+        else if (coinType === 'bustabit') {
+             if (!inputAddress) { alert("Vui lòng nhập địa chỉ!"); return; }
         }
+        else {
+            // Các coin thường (USDT, BNB, SOL)
+            if (!inputAddress) { alert("Vui lòng nhập địa chỉ ví!"); return; }
+            // Không cần Tag, xóa đi cho gọn
+            inputTag = "";
+        }
+
+        // Kiểm tra bắt buộc nhập tên và sđt (nếu bạn muốn bắt buộc)
+        if (!inputName || !inputPhone) {
+            alert("Vui lòng nhập đầy đủ Họ tên và Số điện thoại!");
+            return;
+        }
+
+        var data = {
+            coin_type: coinType,
+            address: inputAddress,
+            tag: inputTag,
+            name: inputName,
+            phone: inputPhone
+        };
 
         $.ajax({
             url: API_URL + "/api/user/add-wallet",
@@ -968,7 +1033,7 @@ $(document).ready(function () {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
             },
             success: function (response) {
-                alert(response.message); // "Đã thêm ví thành công!"
+                alert(response.message);
                 if (document.referrer && document.referrer.includes('profile.html')) {
                     window.location.href = "profile.html#wallets";
                 } else {
@@ -976,7 +1041,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr) {
-                alert("Lỗi: " + xhr.responseJSON.message);
+                alert("Lỗi: " + (xhr.responseJSON ? xhr.responseJSON.message : "Lỗi không xác định"));
             }
         });
     });
