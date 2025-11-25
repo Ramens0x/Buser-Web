@@ -48,7 +48,7 @@ KYC_UPLOAD_FOLDER = 'uploads/kyc'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # Giới hạn 5MB
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024  # Giới hạn 15MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa có
 os.makedirs(KYC_UPLOAD_FOLDER, exist_ok=True)
 
@@ -463,7 +463,7 @@ def api_login_user():
         # Token sẽ hết hạn sau 24 giờ
         payload = {
             'username': user.username,
-            'exp': datetime.now() + timedelta(days=1) 
+            'exp': datetime.now() + timedelta(minutes=60) 
         }
         # Ký (tạo) token bằng SECRET_KEY
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
@@ -1359,8 +1359,9 @@ def submit_kyc():
         # Gửi thông báo Telegram cho Admin
         try:
             msg = f"🛡️ *YÊU CẦU KYC MỚI*\nUser: {user.username}\nTên: {full_name}"
-            send_telegram_notification(msg)
-        except: pass
+            eventlet.spawn(send_telegram_notification, msg)
+        except Exception as e:
+            print(f"Lỗi tạo task Telegram: {e}")
 
         return jsonify({"success": True, "message": "Đã gửi hồ sơ KYC thành công! Vui lòng chờ duyệt."})
     except Exception as e:

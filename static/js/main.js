@@ -35,9 +35,37 @@ function escapeHTML(str) {
 
 $(document).ready(function () {
 
+    $.ajaxSetup({
+        error: function(xhr) {
+            // Mã 401 là Unauthorized (Hết hạn token hoặc Token sai)
+            if (xhr.status === 401) {
+                alert("⏳ Phiên đăng nhập đã hết hạn (60 phút). Vui lòng đăng nhập lại!");
+                
+                // Xóa token cũ
+                localStorage.removeItem('buser_user');
+                localStorage.removeItem('buser_login_data');
+                
+                // Chuyển hướng về trang login
+                window.location.href = "login.html";
+            }
+        }
+    });
+
     let currentMode = 'buy';
     let currentCoin = 'bustabit';
     let isCalculating = false;
+
+    $.ajaxSetup({
+        error: function(xhr) {
+            // Nếu server trả về 401 (Unauthorized) -> Token hết hạn hoặc sai
+            if (xhr.status === 401) {
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                localStorage.removeItem('buser_user');
+                localStorage.removeItem('buser_login_data');
+                window.location.href = "login.html";
+            }
+        }
+    });
 
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
@@ -425,67 +453,68 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr) {
-                $('#personal-history-body').html('<tr><td colspan="6" class="text-center">Lỗi khi tải lịch sử: ${xhr.responseJSON.message}</td></tr>');
+                $('#personal-history-body').html(`<tr><td colspan="6" class="text-center">Lỗi khi tải lịch sử: ${xhr.responseJSON ? xhr.responseJSON.message : "Lỗi kết nối"}</td></tr>`);
             }
         });
     }
 
     // --- Hàm tải danh sách VÍ (Wallet) đã lưu ---
-function loadWalletsList() {
-    const token = getAuthToken();
-    const tableBody = $('#wallets-table-body');
-    const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol']; // Danh sách đầy đủ
-    let allWallets = [];
-    let requests = [];
-
-    // Tạo request cho từng loại coin
-    coins.forEach(coin => {
-        requests.push(
-            $.ajax({
-                url: `${API_URL}/api/user/wallets?coin_type=${coin}`,
-                type: 'GET',
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
-            })
-        );
-    });
-
-    // Đợi tất cả request xong
-    $.when.apply($, requests).done(function (...responses) {
-        tableBody.empty();
-        
-        // Gom dữ liệu từ các response (lưu ý cấu trúc trả về của $.when khác nhau nếu có 1 hay nhiều request)
-        responses.forEach(res => {
-            // res[0] là data trả về từ ajax
-            let data = (Array.isArray(res) ? res[0] : res); 
-            if (data && data.wallets) {
-                allWallets = allWallets.concat(data.wallets);
+    function loadWalletsList() {
+        const token = getAuthToken();
+        const tableBody = $('#wallets-table-body');
+        const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol'];
+        let requests = [];
+    
+        // Hiển thị đang tải
+        tableBody.html('<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>');
+    
+        coins.forEach(coin => {
+            requests.push(
+                $.ajax({
+                    url: `${API_URL}/api/user/wallets?coin_type=${coin}`,
+                    type: 'GET',
+                    beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
+                })
+            );
+        });
+    
+        // Khi tất cả request hoàn thành (dù thành công hay thất bại)
+        Promise.allSettled(requests).then((results) => {
+            tableBody.empty();
+            let allWallets = [];
+    
+            results.forEach((result) => {
+                if (result.status === 'fulfilled' && result.value.wallets) {
+                    allWallets = allWallets.concat(result.value.wallets);
+                }
+            });
+    
+            if (allWallets.length === 0) {
+                tableBody.html('<tr><td colspan="4" class="text-center">Bạn chưa lưu ví nào.</td></tr>');
+                return;
             }
+    
+            allWallets.forEach(wallet => {
+                let type = escapeHTML(wallet.coin_type.toUpperCase());
+                let address = escapeHTML(wallet.address);
+                let name = escapeHTML(wallet.name);
+                // Fix hiển thị chi tiết
+                let details = "";
+                if (wallet.tag && wallet.tag !== 'null') details += `Tag: ${escapeHTML(wallet.tag)}<br>`;
+                if (wallet.phone) details += `Phone: ${escapeHTML(wallet.phone)}`;
+                if (details === "") details = "Không có";
+    
+                const row = `
+                <tr id="wallet-row-${escapeHTML(wallet.id)}">
+                    <td><span class="label label-primary">${type}</span></td>
+                    <td><b>${name || 'Chưa đặt tên'}</b><br><small style="color:#777; font-family:monospace;">${address}</small></td>
+                    <td><small>${details}</small></td>
+                    <td><button class="btn btn-xs btn-danger btn-delete-wallet" data-id="${escapeHTML(wallet.id)}"><i class="fa fa-trash"></i> Xóa</button></td>
+                </tr>`;
+                tableBody.append(row);
+            });
         });
-
-        if (allWallets.length === 0) {
-            tableBody.html('<tr><td colspan="4" class="text-center">Bạn chưa lưu ví nào.</td></tr>');
-            return;
-        }
-
-        allWallets.forEach(wallet => {
-            let type = escapeHTML(wallet.coin_type.toUpperCase());
-            let address = escapeHTML(wallet.address);
-            let name = escapeHTML(wallet.name);
-            let details = `Tag: ${escapeHTML(wallet.tag) || 'N/A'}<br>Phone: ${escapeHTML(wallet.phone) || 'N/A'}`;
-            
-            const row = `
-            <tr id="wallet-row-${escapeHTML(wallet.id)}">
-            <td>${type}</td>
-            <td><b>${name || 'Chưa đặt tên'}</b><br><small>${address}</small></td>
-            <td><small>${details}</small></td>
-            <td><button class="btn btn-xs btn-danger btn-delete-wallet" data-id="${escapeHTML(wallet.id)}"><i class="fa fa-trash"></i> Xóa</button></td>
-            </tr>`;
-            tableBody.append(row);
-        });
-    }).fail(function () {
-        tableBody.html('<tr><td colspan="4" class="text-center">Lỗi khi tải danh sách ví.</td></tr>');
-    });
-}
+    }
 
     // --- [MỚI] Hàm tải danh sách NGÂN HÀNG (Bank) đã lưu ---
     function loadBanksList() {
