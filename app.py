@@ -1773,7 +1773,7 @@ if __name__ == '__main__':
             scheduler = BackgroundScheduler()
             # 1. Dọn dẹp bill cũ (24h/lần)
             scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24)
-            scheduler.add_job(func=update_price_task, trigger="interval", seconds=30)
+            scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
             scheduler.add_job(func=cancel_expired_orders, trigger="interval", minutes=15)
             scheduler.start()
             print(">>> Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")

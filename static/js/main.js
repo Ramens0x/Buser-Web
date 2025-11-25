@@ -41,81 +41,64 @@ $(document).ready(function () {
 
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
+            
+            // Hàm phụ để hiển thị giá an toàn
+            // Nếu giá > 0 thì format số, ngược lại hiện "Đang cập nhật"
+            const showPrice = (price) => {
+                return (price && price > 0) ? numberFormat(price, 0) + ' ₫' : '<span style="font-size:12px; color:#999;">Đang cập nhật</span>';
+            };
+
+            // Cập nhật từng coin
             if (data.bustabit) {
-                $('#bustabit-buy').text(numberFormat(data.bustabit.buy, 0) + ' ₫');
-                $('#bustabit-sell').text(numberFormat(data.bustabit.sell, 0) + ' ₫');
+                $('#bustabit-buy').html(showPrice(data.bustabit.buy));
+                $('#bustabit-sell').html(showPrice(data.bustabit.sell));
             }
 
             if (data.ether) {
-                $('#ether-buy').text(numberFormat(data.ether.buy, 0) + ' ₫');
-                $('#ether-sell').text(numberFormat(data.ether.sell, 0) + ' ₫');
+                $('#ether-buy').html(showPrice(data.ether.buy));
+                $('#ether-sell').html(showPrice(data.ether.sell));
             }
 
             if (data.btc) {
-                $('#btc-buy').text(numberFormat(data.btc.buy, 0) + ' ₫');
-                $('#btc-sell').text(numberFormat(data.btc.sell, 0) + ' ₫');
+                $('#btc-buy').html(showPrice(data.btc.buy));
+                $('#btc-sell').html(showPrice(data.btc.sell));
             }
 
             if (data.usdt) {
-                $('#usdt-buy').text(numberFormat(data.usdt.buy, 0) + ' ₫');
-                $('#usdt-sell').text(numberFormat(data.usdt.sell, 0) + ' ₫');
+                $('#usdt-buy').html(showPrice(data.usdt.buy));
+                $('#usdt-sell').html(showPrice(data.usdt.sell));
             }
 
             if (data.eth) {
-                $('#eth-buy').text(numberFormat(data.eth.buy, 0) + ' ₫');
-                $('#eth-sell').text(numberFormat(data.eth.sell, 0) + ' ₫');
+                $('#eth-buy').html(showPrice(data.eth.buy));
+                $('#eth-sell').html(showPrice(data.eth.sell));
             }
 
             if (data.bnb) {
-                $('#bnb-buy').text(numberFormat(data.bnb.buy, 0) + ' ₫');
-                $('#bnb-sell').text(numberFormat(data.bnb.sell, 0) + ' ₫');
-            }
-
-            if (data.doge) {
-                $('#doge-buy').text(numberFormat(data.doge.buy, 0) + ' ₫');
-                $('#doge-sell').text(numberFormat(data.doge.sell, 0) + ' ₫');
+                $('#bnb-buy').html(showPrice(data.bnb.buy));
+                $('#bnb-sell').html(showPrice(data.bnb.sell));
             }
 
             if (data.sol) {
-                $('#sol-buy').text(numberFormat(data.sol.buy, 0) + ' ₫');
-                $('#sol-sell').text(numberFormat(data.sol.sell, 0) + ' ₫');
+                $('#sol-buy').html(showPrice(data.sol.buy));
+                $('#sol-sell').html(showPrice(data.sol.sell));
             }
-
-            if (data.ada) {
-                $('#ada-buy').text(numberFormat(data.ada.buy, 0) + ' ₫');
-                $('#ada-sell').text(numberFormat(data.ada.sell, 0) + ' ₫');
-            }
-
-            if (data.xrp) {
-                $('#xrp-buy').text(numberFormat(data.xrp.buy, 0) + ' ₫');
-                $('#xrp-sell').text(numberFormat(data.xrp.sell, 0) + ' ₫');
-            }
-
-            if (data.xlm) {
-                $('#xlm-buy').text(numberFormat(data.xlm.buy, 0) + ' ₫');
-                $('#xlm-sell').text(numberFormat(data.xlm.sell, 0) + ' ₫');
-            }
-
-            if (data.ltc) {
-                $('#ltc-buy').text(numberFormat(data.ltc.buy, 0) + ' ₫');
-                $('#ltc-sell').text(numberFormat(data.ltc.sell, 0) + ' ₫');
-            }
-
-            if (data.cake) {
-                $('#cake-buy').text(numberFormat(data.cake.buy, 0) + ' ₫');
-                $('#cake-sell').text(numberFormat(data.cake.sell, 0) + ' ₫');
-            }
-
-            if (data.near) {
-                $('#near-buy').text(numberFormat(data.near.buy, 0) + ' ₫');
-                $('#near-sell').text(numberFormat(data.near.sell, 0) + ' ₫');
-            }
+            
+            // Các coin khác (Doge, ADA, XRP...) làm tương tự nếu cần
+            if (data.doge) { $('#doge-buy').html(showPrice(data.doge.buy)); $('#doge-sell').html(showPrice(data.doge.sell)); }
+            if (data.ada) { $('#ada-buy').html(showPrice(data.ada.buy)); $('#ada-sell').html(showPrice(data.ada.sell)); }
+            if (data.xrp) { $('#xrp-buy').html(showPrice(data.xrp.buy)); $('#xrp-sell').html(showPrice(data.xrp.sell)); }
+            if (data.xlm) { $('#xlm-buy').html(showPrice(data.xlm.buy)); $('#xlm-sell').html(showPrice(data.xlm.sell)); }
+            if (data.ltc) { $('#ltc-buy').html(showPrice(data.ltc.buy)); $('#ltc-sell').html(showPrice(data.ltc.sell)); }
+            if (data.cake) { $('#cake-buy').html(showPrice(data.cake.buy)); $('#cake-sell').html(showPrice(data.cake.sell)); }
+            if (data.near) { $('#near-buy').html(showPrice(data.near.buy)); $('#near-sell').html(showPrice(data.near.sell)); }
 
             // Cập nhật tỷ giá bên dưới form
             updateRateDisplay(data);
         }).fail(function () {
             console.error("Không thể kết nối đến API backend " + API_URL);
-            $('.rate_buy, .rate_sell').text("Lỗi API").css('color', 'red');
+            // Khi lỗi toàn bộ API, chuyển hết thành "Lỗi"
+            $('.rate_buy, .rate_sell').text("Bảo trì").css('color', 'red').css('font-size', '12px');
         });
     }
 
