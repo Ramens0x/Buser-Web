@@ -659,8 +659,11 @@ def create_order():
                 "success": False, 
                 "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
             }), 400
+            
+    transfer_keywords = ["transfer", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien"]
+    random_suffix = random.choice(transfer_keywords)
 
-    full_transfer_content = f"{transaction_id} {user_account_name} transfer"
+    full_transfer_content = f"{transaction_id} {user_account_name} {random_suffix}"
     
     # --- [LOGIC MỚI] Nội dung cho đơn Bán (Admin chuyển) ---
     # Lấy tên chủ TK Admin từ settings (nếu có) hoặc fix cứng
