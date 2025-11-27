@@ -1075,6 +1075,7 @@ def get_admin_transactions():
             Order.status == 'completed', Order.mode == 'sell'
         ).scalar() or 0
 
+        # Tính volume từng loại coin
         total_bustabit = db.session.query(func.sum(Order.amount_coin)).filter(
             Order.status == 'completed', Order.coin == 'bustabit'
         ).scalar() or 0
@@ -1082,12 +1083,24 @@ def get_admin_transactions():
         total_usdt = db.session.query(func.sum(Order.amount_coin)).filter(
             Order.status == 'completed', Order.coin == 'usdt'
         ).scalar() or 0
+        
+        total_ether = db.session.query(func.sum(Order.amount_coin)).filter(
+            Order.status == 'completed', Order.coin == 'ether'
+        ).scalar() or 0
+
+        total_bnb = db.session.query(func.sum(Order.amount_coin)).filter(
+            Order.status == 'completed', Order.coin == 'bnb'
+        ).scalar() or 0
+
+        total_sol = db.session.query(func.sum(Order.amount_coin)).filter(
+            Order.status == 'completed', Order.coin == 'sol'
+        ).scalar() or 0
 
         # --- C. Tính tổng tháng này (Monthly) ---
         total_vnd_in_month = db.session.query(func.sum(Order.amount_vnd)).filter(
             Order.status == 'completed', 
             Order.mode == 'buy',
-            Order.created_at >= first_day_of_month # Lọc theo ngày đầu tháng
+            Order.created_at >= first_day_of_month 
         ).scalar() or 0
 
         total_vnd_out_month = db.session.query(func.sum(Order.amount_vnd)).filter(
@@ -1098,12 +1111,16 @@ def get_admin_transactions():
 
         # Đóng gói dữ liệu trả về
         stats_dict = {
-            "total_vnd_in": total_vnd_in,             # Tổng thu (Trọn đời)
-            "total_vnd_out": total_vnd_out,           # Tổng chi (Trọn đời)
-            "total_vnd_in_month": total_vnd_in_month,   # Tổng thu (Tháng này) - MỚI
-            "total_vnd_out_month": total_vnd_out_month, # Tổng chi (Tháng này) - MỚI
+            "total_vnd_in": total_vnd_in,            
+            "total_vnd_out": total_vnd_out,           
+            "total_vnd_in_month": total_vnd_in_month,   
+            "total_vnd_out_month": total_vnd_out_month, 
+            
             "total_bustabit_volume": total_bustabit,
-            "total_usdt_volume": total_usdt
+            "total_usdt_volume": total_usdt,
+            "total_ether_volume": total_ether,
+            "total_bnb_volume": total_bnb,
+            "total_sol_volume": total_sol
         }
     except Exception as e:
         print(f"Lỗi tính toán thống kê: {e}")
