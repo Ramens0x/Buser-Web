@@ -22,6 +22,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 import jwt
 from datetime import datetime, timedelta
+from datetime import datetime, date
 from flask_mail import Mail, Message
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -665,7 +666,6 @@ def create_order():
 
     full_transfer_content = f"{transaction_id} {user_account_name} {random_suffix}"
     
-    # --- [LOGIC MỚI] Nội dung cho đơn Bán (Admin chuyển) ---
     # Lấy tên chủ TK Admin từ settings (nếu có) hoặc fix cứng
     settings = load_settings()
     admin_banks = settings.get('admin_banks', [])
@@ -1011,12 +1011,13 @@ def admin_cancel_order():
     socketio.emit('order_completed', {'order_id': order.id}, room=order.id)
     return jsonify({"success": True, "message": f"Admin đã hủy đơn hàng {order_id}"})
 
-    # --- [MỚI] API ADMIN ĐỂ XEM VÀ DUYỆT GIAO DỊCH ---
+    # --- API ADMIN ĐỂ XEM VÀ DUYỆT GIAO DỊCH ---
 @app.route("/api/admin/transactions", methods=['GET'])
 def get_admin_transactions():
     user = get_user_from_request()
     if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Không có quyền"}), 403
 
+    # 1. Lấy danh sách đơn hàng đang chờ (Pending)
     pending_orders = Order.query.filter_by(status='pending').order_by(Order.created_at.desc()).all()
     
     orders_list = []
@@ -1042,7 +1043,7 @@ def get_admin_transactions():
                 detail_info = f"<b>Bank:</b> {b.bank_name}<br><b>STK:</b> {b.account_number}<br><b>Tên:</b> {b.account_name}"
                 # Tạo dữ liệu raw để JS tạo mã QR
                 user_bank_raw = {
-                    "bankName": b.bank_name, # Tên ngân hàng để map sang BIN
+                    "bankName": b.bank_name,
                     "accountNo": b.account_number,
                     "accountName": remove_accents(b.account_name),
                     "amount": int(order.amount_vnd),
@@ -1056,10 +1057,16 @@ def get_admin_transactions():
             "detail_info": detail_info,
             "bill_image": bill_image_filename,
             "sell_content": sell_content,
-            "user_bank_raw": user_bank_raw # <-- Gửi cái này xuống để tạo QR
+            "user_bank_raw": user_bank_raw
         })
-    # 2. [MỚI] Tính toán thống kê
+
+    # 2. [MỚI] Tính toán thống kê (Bao gồm cả Trọn đời và Tháng này)
     try:
+        # --- A. Xác định ngày đầu tháng ---
+        today = datetime.now()
+        first_day_of_month = datetime(today.year, today.month, 1)
+
+        # --- B. Tính tổng trọn đời (Lifetime) ---
         total_vnd_in = db.session.query(func.sum(Order.amount_vnd)).filter(
             Order.status == 'completed', Order.mode == 'buy'
         ).scalar() or 0
@@ -1076,20 +1083,32 @@ def get_admin_transactions():
             Order.status == 'completed', Order.coin == 'usdt'
         ).scalar() or 0
 
+        # --- C. Tính tổng tháng này (Monthly) ---
+        total_vnd_in_month = db.session.query(func.sum(Order.amount_vnd)).filter(
+            Order.status == 'completed', 
+            Order.mode == 'buy',
+            Order.created_at >= first_day_of_month # Lọc theo ngày đầu tháng
+        ).scalar() or 0
+
+        total_vnd_out_month = db.session.query(func.sum(Order.amount_vnd)).filter(
+            Order.status == 'completed', 
+            Order.mode == 'sell',
+            Order.created_at >= first_day_of_month
+        ).scalar() or 0
+
+        # Đóng gói dữ liệu trả về
         stats_dict = {
-            "total_vnd_in": total_vnd_in,
-            "total_vnd_out": total_vnd_out,
+            "total_vnd_in": total_vnd_in,             # Tổng thu (Trọn đời)
+            "total_vnd_out": total_vnd_out,           # Tổng chi (Trọn đời)
+            "total_vnd_in_month": total_vnd_in_month,   # Tổng thu (Tháng này) - MỚI
+            "total_vnd_out_month": total_vnd_out_month, # Tổng chi (Tháng này) - MỚI
             "total_bustabit_volume": total_bustabit,
             "total_usdt_volume": total_usdt
         }
     except Exception as e:
         print(f"Lỗi tính toán thống kê: {e}")
         stats_dict = {}
-    try:
-        total_vnd_in = db.session.query(func.sum(Order.amount_vnd)).filter(Order.status == 'completed', Order.mode == 'buy').scalar() or 0
-        total_vnd_out = db.session.query(func.sum(Order.amount_vnd)).filter(Order.status == 'completed', Order.mode == 'sell').scalar() or 0
-        stats_dict = { "total_vnd_in": total_vnd_in, "total_vnd_out": total_vnd_out }
-    except: pass
+
     return jsonify({"success": True, "transactions": orders_list, "stats": stats_dict})
 
 @app.route("/api/admin/transactions/complete", methods=['POST'])
