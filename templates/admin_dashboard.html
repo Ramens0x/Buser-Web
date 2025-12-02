@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,6 +56,7 @@
             color: #777;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -151,6 +153,25 @@
                         <div class="stat-box" style="padding: 10px;">
                             <h4 id="stat-sol" style="font-weight: bold;">0</h4>
                             <p style="font-size: 12px;">SOL</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Tỷ lệ Mua vs Bán (VNĐ)</div>
+                            <div class="panel-body">
+                                <canvas id="vndChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Khối lượng Giao dịch theo Coin</div>
+                            <div class="panel-body">
+                                <canvas id="coinChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>

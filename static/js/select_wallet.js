@@ -31,9 +31,7 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/user/wallets?coin_type=${draftOrder.coin}`,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-        },
+      
         success: function (response) {
             const walletListDiv = $('.wallet-list');
             walletListDiv.empty();
@@ -98,9 +96,7 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(orderData),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
+          
             success: function (response) {
                 localStorage.setItem('current_order', JSON.stringify(response.order));
                 localStorage.removeItem('draft_order');

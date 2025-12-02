@@ -22,7 +22,6 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,
         type: 'GET',
-        beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
         success: function (response) {
             if (response.success) {
                 renderOrderData(response.order);
@@ -65,7 +64,6 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/user/wallets?coin_type=${order.coin}`,
             type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
                 const selectedWallet = res.wallets.find(w => w.id === order.user_wallet_id);
                 if (selectedWallet) {
@@ -97,7 +95,6 @@ $(document).ready(function () {
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ order_id: order.id }),
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
                 success: function (res) {
                     alert(res.message);
                     location.reload(); // Tải lại trang để cập nhật trạng thái
@@ -142,9 +139,6 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (res) {
                 alert(res.message);
                 $('#upload-bill-form').parent().removeClass('alert-info').addClass('alert-success')

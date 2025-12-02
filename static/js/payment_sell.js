@@ -20,7 +20,7 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,
         type: 'GET',
-        beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+    
         success: function (response) {
             if (response.success) {
                 renderOrderData(response.order);
@@ -55,7 +55,7 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/user/banks`,
             type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
+         
             success: function (res) {
                 const selectedBank = res.banks.find(b => b.id === order.user_bank_id);
                 if (selectedBank) {
@@ -88,7 +88,6 @@ $(document).ready(function () {
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ order_id: order.id }),
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
                 success: function (res) {
                     alert(res.message);
                     location.reload();

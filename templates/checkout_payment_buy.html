@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,10 +76,18 @@
                         <div class="col-sm-7 text-left">
                             <ul class="payment-info" style="padding-left: 0;">
                                 <li><strong>Ngân hàng:</strong> <span id="payment-bank">...</span></li>
-                                <li><strong>Số tài khoản:</strong> <span id="payment-account-number">...</span></li>
+                                <li><strong>Số tài khoản:</strong> <span id="payment-account-number">...</span>
+                                    <button class="btn btn-default btn-xs" onclick="copyToClipboard('#payment-account-number')" title="Sao chép">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </li>
                                 <li><strong>Chủ tài khoản:</strong> <span id="payment-account-name">...</span></li>
                                 <li><strong>Số tiền:</strong> <span id="payment-amount">...</span></li>
-                                <li><strong>Nội dung:</strong> <span id="payment-content">...</span></li>
+                                <li><strong>Nội dung:</strong> <span id="payment-content">...</span>
+                                    <button class="btn btn-default btn-xs" onclick="copyToClipboard('#payment-content')" title="Sao chép">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </li>
                             </ul>
                             <div class="alert alert-warning"><strong>LƯU Ý:</strong> Phải nhập chính xác <strong>Nội
                                     dung</strong>.</div>

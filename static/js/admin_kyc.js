@@ -18,9 +18,6 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/admin/kyc-list`,
             type: 'GET',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (res) {
                 const tableBody = $('#kyc-table-body');
                 tableBody.empty();
@@ -77,7 +74,6 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/admin/kyc-list`,
             type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
                 const kyc = res.requests.find(k => k.id === kycId);
                 if (!kyc) return;
@@ -115,7 +111,6 @@ $(document).ready(function () {
                 action: 'approve',
                 admin_note: adminNote
             }),
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
                 alert(res.message);
                 $('#kycModal').modal('hide');
@@ -147,7 +142,6 @@ $(document).ready(function () {
                 action: 'reject',
                 admin_note: adminNote
             }),
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
                 alert(res.message);
                 $('#kycModal').modal('hide');

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -151,137 +152,101 @@
             </div>
 
             <div class="col-md-4" id="cot-phai">
-                <div class="panel panel-success">
-                    <div class="panel-heading">
-                        <i class="fa fa-btc"></i> BẢNG GIÁ GIAO DỊCH
+                <h4 style="font-weight: bold; color: #555; margin-bottom: 20px;">
+                    <i class="fa fa-line-chart"></i> THỊ TRƯỜNG HÔM NAY
+                </h4>
+                
+                <div class="price-list">
+                    <div class="price-header row hidden-xs">
+                        <div class="col-sm-5">Tên Coin</div>
+                        <div class="col-sm-3 text-right">Giá Mua</div>
+                        <div class="col-sm-4 text-right">Giá Bán</div>
                     </div>
-                    <table class="table table-hover table-striped" id="table-conten-rate">
-                        <tbody>
-                            <tr class="rate_header">
-                                <th><i class="fa fa-btc"></i> Coins</th>
-                                <th>Mua</th>
-                                <th>Bán</th>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <img src="/static/img/bitcoin-logo.png" class="icon"> Bitcoin (BTC)
-                                </th>
-                                <th><span class="rate_buy" id="btc-buy">...</span></th>
-                                <th><span class="rate_sell" id="btc-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=026" class="icon"
-                                        width="20"> Ethereum (ETH)</th>
-                                <th><span class="rate_buy" id="eth-buy">...</span></th>
-                                <th><span class="rate_sell" id="eth-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th><img src="https://cryptologos.cc/logos/bnb-bnb-logo.png?v=026" class="icon"
-                                        width="20"> BNB (BEP20)</th>
-                                <th><span class="rate_buy" id="bnb-buy">...</span></th>
-                                <th><span class="rate_sell" id="bnb-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="icon"> Solana
-                                    (SOL)
-                                </th>
-                                <th><span class="rate_buy" id="sol-buy">...</span></th>
-                                <th><span class="rate_sell" id="sol-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/dogecoin-doge-logo.png" class="icon">
-                                    Dogecoin (DOGE)
-                                </th>
-                                <th><span class="rate_buy" id="doge-buy">...</span></th>
-                                <th><span class="rate_sell" id="doge-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/cardano-ada-logo.png" class="icon">
-                                    Cardano (ADA)
-                                </th>
-                                <th><span class="rate_buy" id="ada-buy">...</span></th>
-                                <th><span class="rate_sell" id="ada-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/xrp-xrp-logo.png" class="icon">
-                                    Ripple (XRP)
-                                </th>
-                                <th><span class="rate_buy" id="xrp-buy">...</span></th>
-                                <th><span class="rate_sell" id="xrp-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/stellar-xlm-logo.png" class="icon">
-                                    Stellar (XLM)
-                                </th>
-                                <th><span class="rate_buy" id="xlm-buy">...</span></th>
-                                <th><span class="rate_sell" id="xlm-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/litecoin-ltc-logo.png" class="icon">
-                                    Litecoin (LTC)
-                                </th>
-                                <th><span class="rate_buy" id="ltc-buy">...</span></th>
-                                <th><span class="rate_sell" id="ltc-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/pancakeswap-cake-logo.png" class="icon">
-                                    PancakeSwap (CAKE)
-                                </th>
-                                <th><span class="rate_buy" id="cake-buy">...</span></th>
-                                <th><span class="rate_sell" id="cake-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="https://cryptologos.cc/logos/near-protocol-near-logo.png" class="icon">
-                                    NEAR Protocol (NEAR)
-                                </th>
-                                <th><span class="rate_buy" id="near-buy">...</span></th>
-                                <th><span class="rate_sell" id="near-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="/static/img/tether-usdt-logo.png" class="icon"> USDT (BEP20)
-                                </th>
-                                <th><span class="rate_buy" id="usdt-buy">...</span></th>
-                                <th><span class="rate_sell" id="usdt-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="/static/img/bus-310x310.png" class="icon"> Bits
-                                </th>
-                                <th><span class="rate_buy" id="bustabit-buy">...</span></th>
-                                <th><span class="rate_sell" id="bustabit-sell">...</span></th>
-                            </tr>
-
-                            <tr>
-                                <th>
-                                    <img src="/static/img/ether.jpg" class="icon"> Ethos
-                                </th>
-                                <th><span class="rate_buy" id="ether-buy">...</span></th>
-                                <th><span class="rate_sell" id="ether-sell">...</span></th>
-                            </tr>
-
-                        </tbody>
-                    </table>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="/static/img/bitcoin-logo.png" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Bitcoin</span>
+                                <span class="coin-symbol">BTC</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="btc-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="btc-sell">...</div>
+                    </div>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="/static/img/tether-usdt-logo.png" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Tether</span>
+                                <span class="coin-symbol">USDT</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="usdt-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="usdt-sell">...</div>
+                    </div>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=026" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Ethereum</span>
+                                <span class="coin-symbol">ETH</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="eth-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="eth-sell">...</div>
+                    </div>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png?v=026" class="coin-logo">
+                            <div>
+                                <span class="coin-name">BNB Chain</span>
+                                <span class="coin-symbol">BNB</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="bnb-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="bnb-sell">...</div>
+                    </div>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Solana</span>
+                                <span class="coin-symbol">SOL</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="sol-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="sol-sell">...</div>
+                    </div>
+            
+                    <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="/static/img/bus-310x310.png" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Bits</span>
+                                <span class="coin-symbol">MicroBTC</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="bustabit-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="bustabit-sell">...</div>
+                    </div>
+                    
+                     <div class="price-item row">
+                        <div class="col-xs-12 col-sm-5 coin-info">
+                            <img src="/static/img/ether.jpg" class="coin-logo">
+                            <div>
+                                <span class="coin-name">Ethos</span>
+                                <span class="coin-symbol">MicroETH</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-3 text-right price-buy" id="ether-buy">...</div>
+                        <div class="col-xs-6 col-sm-4 text-right price-sell" id="ether-sell">...</div>
+                    </div>
+            
                 </div>
             </div>
 

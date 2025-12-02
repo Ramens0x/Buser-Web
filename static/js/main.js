@@ -35,17 +35,18 @@ function escapeHTML(str) {
 
 $(document).ready(function () {
 
+    var csrf_token = $('meta[name=csrf-token]').attr('content');
+
     $.ajaxSetup({
+
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        },
         error: function(xhr) {
-            // Mã 401 là Unauthorized (Hết hạn token hoặc Token sai)
-            if (xhr.status === 401) {
-                alert("⏳ Phiên đăng nhập đã hết hạn (60 phút). Vui lòng đăng nhập lại!");
-                
-                // Xóa token cũ
-                localStorage.removeItem('buser_user');
-                localStorage.removeItem('buser_login_data');
-                
-                // Chuyển hướng về trang login
+             if (xhr.status === 401) {
+                alert("⏳ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
                 window.location.href = "login.html";
             }
         }
@@ -337,18 +338,6 @@ $(document).ready(function () {
         updateBalanceDisplay();
     });
 
-    // --- HÀM HỖ TRỢ XÁC THỰC ---
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try {
-            const loginData = JSON.parse(loginDataString);
-            return loginData.token; // Lấy token (là username)
-        } catch (e) {
-            return null;
-        }
-    }
-
     // --- QUẢN LÝ PHIÊN ĐĂNG NHẬP (UI) ---
     function checkLoginState() {
         const userDataString = localStorage.getItem('buser_user');
@@ -413,9 +402,6 @@ $(document).ready(function () {
         $.ajax({
             url: API_URL + "/api/user/my-transactions",
             type: 'GET',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (response) {
                 const historyBody = $('#personal-history-body');
                 if (response.success && response.transactions.length > 0) {
@@ -469,8 +455,7 @@ $(document).ready(function () {
         let requests = coins.map(coin => {
             return $.ajax({
                 url: `${API_URL}/api/user/wallets?coin_type=${coin}`,
-                type: 'GET',
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
+                type: 'GET'
             });
         });
 
@@ -549,62 +534,6 @@ $(document).ready(function () {
             tableBody.html('<tr><td colspan="4" class="text-center text-danger">Lỗi khi tải dữ liệu ví. Vui lòng thử lại.</td></tr>');
         });
     }
-    // function loadWalletsList() {
-    //     const token = getAuthToken();
-    //     const tableBody = $('#wallets-table-body');
-    //     const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol'];
-    //     let requests = [];
-    
-    //     // Hiển thị đang tải
-    //     tableBody.html('<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>');
-    
-    //     coins.forEach(coin => {
-    //         requests.push(
-    //             $.ajax({
-    //                 url: `${API_URL}/api/user/wallets?coin_type=${coin}`,
-    //                 type: 'GET',
-    //                 beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
-    //             })
-    //         );
-    //     });
-    
-    //     // Khi tất cả request hoàn thành (dù thành công hay thất bại)
-    //     Promise.allSettled(requests).then((results) => {
-    //         tableBody.empty();
-    //         let allWallets = [];
-    
-    //         results.forEach((result) => {
-    //             if (result.status === 'fulfilled' && result.value.wallets) {
-    //                 allWallets = allWallets.concat(result.value.wallets);
-    //             }
-    //         });
-    
-    //         if (allWallets.length === 0) {
-    //             tableBody.html('<tr><td colspan="4" class="text-center">Bạn chưa lưu ví nào.</td></tr>');
-    //             return;
-    //         }
-    
-    //         allWallets.forEach(wallet => {
-    //             let type = escapeHTML(wallet.coin_type.toUpperCase());
-    //             let address = escapeHTML(wallet.address);
-    //             let name = escapeHTML(wallet.name);
-    //             // Fix hiển thị chi tiết
-    //             let details = "";
-    //             if (wallet.tag && wallet.tag !== 'null') details += `Tag: ${escapeHTML(wallet.tag)}<br>`;
-    //             if (wallet.phone) details += `Phone: ${escapeHTML(wallet.phone)}`;
-    //             if (details === "") details = "Không có";
-    
-    //             const row = `
-    //             <tr id="wallet-row-${escapeHTML(wallet.id)}">
-    //                 <td><span class="label label-primary">${type}</span></td>
-    //                 <td><b>${name || 'Chưa đặt tên'}</b><br><small style="color:#777; font-family:monospace;">${address}</small></td>
-    //                 <td><small>${details}</small></td>
-    //                 <td><button class="btn btn-xs btn-danger btn-delete-wallet" data-id="${escapeHTML(wallet.id)}"><i class="fa fa-trash"></i> Xóa</button></td>
-    //             </tr>`;
-    //             tableBody.append(row);
-    //         });
-    //     });
-    // }
 
     // --- [MỚI] Hàm tải danh sách NGÂN HÀNG (Bank) đã lưu ---
     function loadBanksList() {
@@ -614,7 +543,6 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/user/banks`,
             type: 'GET',
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (response) {
                 tableBody.empty(); // Xóa "Đang tải..."
                 if (response.success && response.banks.length > 0) {
@@ -651,9 +579,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ wallet_id: walletId }),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 $(`#wallet-row-${walletId}`).fadeOut(500, function () { $(this).remove(); });
@@ -676,9 +601,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ bank_id: bankId }),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 $(`#bank-row-${bankId}`).fadeOut(500, function () { $(this).remove(); });
@@ -692,7 +614,6 @@ $(document).ready(function () {
     $('#btn-logout').on('click', function (e) {
         e.preventDefault();
         localStorage.removeItem('buser_user');
-        localStorage.removeItem('buser_login_data'); // Xóa cả token
         alert("Đăng xuất thành công!");
         window.location.href = "index.html";
     });
@@ -735,7 +656,6 @@ $(document).ready(function () {
             success: function (response) {
                 alert(response.message);
                 localStorage.setItem('buser_user', JSON.stringify(response.user));
-                localStorage.setItem('buser_login_data', JSON.stringify(response));
                 window.location.href = "index.html";
             },
             error: function (xhr) {
@@ -844,10 +764,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
-            beforeSend: function (xhr) {
-                // [ĐÃ SỬA LỖI] 'Bearer ' +
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 $('#change-pass-form')[0].reset();
@@ -868,10 +784,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
-            beforeSend: function (xhr) {
-                // [ĐÃ SỬA LỖI] 'Bearer ' +
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 // Cập nhật email trong localStorage
@@ -910,9 +822,6 @@ $(document).ready(function () {
         $.ajax({
             url: API_URL + "/api/admin/settings",
             type: 'GET',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 if (response.success) {
                     $('select[name="maintenance_mode"]').val(response.settings.maintenance_mode || 'off');
@@ -1037,9 +946,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(settingsData),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) { alert(response.message); location.reload(); },
             error: function (xhr) { alert("Lỗi: " + xhr.responseJSON.message); }
         });
@@ -1140,9 +1046,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 if (document.referrer && document.referrer.includes('profile.html')) {
@@ -1172,9 +1075,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + getAuthToken());
-            },
             success: function (response) {
                 alert(response.message);
                 if (document.referrer && document.referrer.includes('profile.html')) {
@@ -1226,5 +1126,14 @@ $(document).ready(function () {
             $('#liquidity-warning').remove();
             return true;
         }
+    }
+    function copyToClipboard(elementId) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(elementId).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+        // Hiệu ứng thông báo nhỏ (Optional)
+        alert("Đã sao chép: " + $(elementId).text());
     }
 });

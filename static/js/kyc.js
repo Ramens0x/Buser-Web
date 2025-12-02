@@ -15,7 +15,6 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/user/kyc-status`,
         type: 'GET',
-        beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
         success: function (res) {
             if (res.kyc) {
                 const kyc = res.kyc;
@@ -107,7 +106,6 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
-            beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
             success: function (res) {
                 alert('✅ Gửi xác minh thành công! Chúng tôi sẽ xét duyệt trong 24h.');
                 location.reload();

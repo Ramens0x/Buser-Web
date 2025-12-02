@@ -27,9 +27,6 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/user/banks`,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-        },
         success: function (response) {
             const bankListDiv = $('.wallet-list');
             bankListDiv.empty(); // Xóa các bank tĩnh
@@ -91,9 +88,6 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(orderData),
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (response) {
 
                 localStorage.setItem('current_order', JSON.stringify(response.order));

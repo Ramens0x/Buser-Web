@@ -1,8 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 body {
-    background-color: #E6E6FA;
-    /* Màu nền giống trang gốc */
+    background-color: #f0f2f5; 
+    font-family: 'Inter', sans-serif; 
+    color: #333;
     padding-top: 0;
-    /* Navbar đã có rồi */
+}
+
+.navbar-default {
+    background: linear-gradient(90deg, #101820 0%, #2882C0 100%); /* Gradient đen xanh */
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Định dạng chung cho các khung */
@@ -65,11 +73,13 @@ body {
    CSS CHO FORM SWAP MỚI
    ======================== */
 
-#swap-form-panel {
-    border-radius: 8px;
-    background-color: #fff;
+   #swap-form-panel {
+    background: #ffffff;
     border: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 16px; /* Bo góc tròn hơn */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Đổ bóng mềm mại */
+    padding: 20px;
+    margin-bottom: 30px;
 }
 
 /* Tùy chỉnh Tab Mua/Bán */
@@ -114,30 +124,23 @@ body {
 }
 
 .swap-field {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 8px;
+    background-color: #f7f9fc;
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
     padding: 15px;
+    transition: all 0.2s;
 }
 
-.swap-field label {
-    font-size: 14px;
-    color: #777;
-    font-weight: normal;
-}
-
-.swap-field .input-group {
-    margin-bottom: 5px;
+.swap-field:focus-within {
+    border-color: #2882C0;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(40, 130, 192, 0.1);
 }
 
 .swap-field .form-control {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-    font-size: 28px;
-    font-weight: bold;
-    padding-left: 0;
-    height: 45px;
+    font-size: 24px;
+    color: #111;
+    font-weight: 700;
 }
 
 .swap-field .balance-info {
@@ -162,16 +165,30 @@ body {
 
 /* Nút chuyển đổi */
 .swap-toggle {
-    display: none;
+    display: flex; /* Dùng flex để căn giữa */
+    justify-content: center;
+    margin: -10px 0; /* Thu hẹp khoảng cách */
+    position: relative;
+    z-index: 10;
+}
+.swap-toggle .btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    color: #2882C0;
+    font-size: 16px;
+    padding: 0;
+    line-height: 38px;
+    transition: all 0.3s;
 }
 
-.swap-toggle .btn {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    color: #2882C0;
+.swap-toggle .btn:hover {
+    transform: rotate(180deg); /* Xoay khi di chuột vào */
+    background: #f0f8ff;
+    border-color: #2882C0;
 }
 
 /* Thông tin tỷ giá */
@@ -185,20 +202,19 @@ body {
 
 /* Nút chính */
 #btn-submit-swap {
-    background-color: #6cb55a;
-    /* Màu xanh */
+    border-radius: 12px;
+    font-size: 18px;
+    padding: 14px;
+    background: linear-gradient(90deg, #2882C0 0%, #005f9e 100%);
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px;
-    transition: background-color 0.2s;
+    box-shadow: 0 4px 15px rgba(40, 130, 192, 0.3);
+    margin-top: 15px;
 }
 
 #btn-submit-swap:hover {
-    background-color: #5a9c4a;
+    transform: translateY(-2px); /* Hiệu ứng nhấn nổi */
+    box-shadow: 0 6px 20px rgba(40, 130, 192, 0.4);
 }
-
 /* --- CSS CHO FOOTER MỚI --- */
 .buser-footer {
     background-color: #222;
@@ -262,6 +278,82 @@ body {
     border: 1px solid #ddd;
     background-color: #f9f9f9;
     color: #333;
+}
+
+/* [CSS MỚI CHO BẢNG GIÁ] */
+.price-list {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.price-header {
+    background-color: #f8f9fa;
+    padding: 15px;
+    font-weight: bold;
+    color: #6c757d;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+.price-item {
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+    transition: background 0.2s;
+    margin: 0 !important; /* Fix lỗi row của bootstrap */
+}
+
+.price-item:last-child { border-bottom: none; }
+.price-item:hover { background-color: #f9fcff; }
+
+.coin-info {
+    display: flex;
+    align-items: center;
+}
+
+.coin-logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    border-radius: 50%;
+}
+
+.coin-name {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.coin-symbol {
+    display: block;
+    font-size: 11px;
+    color: #999;
+}
+
+.price-buy {
+    color: #28a745; /* Màu xanh lá */
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.price-sell {
+    color: #dc3545; /* Màu đỏ */
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .price-item .text-right {
+        text-align: left !important;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+    .price-buy::before { content: "Mua: "; color: #999; font-weight: normal; }
+    .price-sell::before { content: "Bán: "; color: #999; font-weight: normal; }
 }
 
 /* Ngăn bảng giá xuống dòng */

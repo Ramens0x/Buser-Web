@@ -1,6 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 from flask import Flask, jsonify, request, send_file
+from flask_wtf.csrf import CSRFProtect
 from flask import render_template, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -52,6 +53,7 @@ app.config['KYC_UPLOAD_FOLDER'] = KYC_UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024  # Giới hạn 15MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa có
 os.makedirs(KYC_UPLOAD_FOLDER, exist_ok=True)
+csrf = CSRFProtect(app)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -60,20 +62,45 @@ def allowed_kyc_file(filename):
     ALLOWED = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED
 
+# [SỬA LẠI HÀM clean_old_bills]
 def clean_old_bills():
     try:
-        retention_period = 90 * 24 * 60 * 60 
+        retention_period = 90 * 24 * 60 * 60  # 90 ngày
         now = time.time()
         folder = app.config.get('UPLOAD_FOLDER')
         if not folder or not os.path.exists(folder): return
+        
         count = 0
-        for filename in os.listdir(folder):
-            filepath = os.path.join(folder, filename)
-            if os.path.isfile(filepath):
-                if now - os.path.getmtime(filepath) > retention_period:
-                    os.remove(filepath); count += 1
-        if count > 0: print(f"🧹 Đã xóa {count} bill cũ.")
-    except Exception as e: print(f"❌ Lỗi dọn dẹp: {e}")
+        with app.app_context(): # Cần context để truy cập DB
+            for filename in os.listdir(folder):
+                filepath = os.path.join(folder, filename)
+                if os.path.isfile(filepath):
+                    # Kiểm tra thời gian
+                    if now - os.path.getmtime(filepath) > retention_period:
+                        try:
+                            # 1. Xóa file vật lý
+                            os.remove(filepath)
+                            
+                            # 2. Cập nhật Database (Tìm đơn hàng có file này)
+                            # Lưu ý: Vì payment_info lưu JSON dạng string, ta dùng LIKE để tìm
+                            orders = Order.query.filter(Order.payment_info.like(f'%{filename}%')).all()
+                            for order in orders:
+                                if order.payment_info:
+                                    info = json.loads(order.payment_info)
+                                    if info.get('bill_image') == filename:
+                                        info['bill_image'] = None # Xóa link ảnh
+                                        order.payment_info = json.dumps(info)
+                            
+                            count += 1
+                        except Exception as inner_e:
+                            print(f"⚠️ Lỗi khi xóa file {filename}: {inner_e}")
+            
+            if count > 0: 
+                db.session.commit() # Lưu thay đổi vào DB
+                print(f"🧹 Đã xóa {count} bill cũ và cập nhật CSDL.")
+                
+    except Exception as e: 
+        print(f"❌ Lỗi dọn dẹp: {e}")
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -116,6 +143,8 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False, default='User')
     reset_token = db.Column(db.String(100), nullable=True)
     reset_expiry = db.Column(db.DateTime, nullable=True)
+    is_verified = db.Column(db.Boolean, default=False)
+    verification_token = db.Column(db.String(100), nullable=True)
     wallets = db.relationship('Wallet', backref='owner', lazy=True)
     banks = db.relationship('Bank', backref='owner', lazy=True)
     kyc = db.relationship('KYC', backref='user', uselist=False, lazy=True)
@@ -271,35 +300,23 @@ def send_reset_email(user_email, reset_link):
 
 # --- HÀM LẤY USER TỪ TOKEN ---
 def get_user_from_request():
-    auth_header = request.headers.get('Authorization')
-    if not auth_header: 
+    token = request.cookies.get('access_token')
+    
+        if not token:
+        auth_header = request.headers.get('Authorization')
+        if auth_header and len(auth_header.split(" ")) > 1:
+            token = auth_header.split(" ")[1]
+
+    if not token:
         return None
 
     try:
-        # Tách lấy token từ "Bearer <token>"
-        token = auth_header.split(" ")[1]
-        if not token:
-            return None
-
-        # [MỚI] Giải mã token JWT
         payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-
-        # Lấy username từ bên trong token đã giải mã
         username = payload.get('username')
         if not username:
             return None
-
-        # Trả về user dựa trên username đó
         return User.query.filter_by(username=username.lower()).first()
-
-    except jwt.ExpiredSignatureError:
-        # Token đã hết hạn
-        return None 
-    except jwt.InvalidTokenError:
-        # Token không hợp lệ
-        return None
-    except Exception as e:
-        # Các lỗi khác (ví dụ: header không có 'Bearer ')
+    except Exception:
         return None
 
 def generate_random_id(prefix="Chuyen Tien"):
@@ -425,27 +442,67 @@ def api_calculate_swap():
         print(f"Calc Error: {e}")
         return jsonify({"amount_out": 0}), 200
 
-# --- API USER (ĐÃ CẬP NHẬT DÙNG CSDL) ---
+# --- API USER ---
 @app.route("/api/register", methods=['POST'])
 @limiter.limit("10 per hour")
 def api_register_user():
     data = request.json
-    username_raw, email, password = data.get('username'), data.get('email'), data.get('password') # 1. Lấy tên gốc
+    username_raw, email, password = data.get('username'), data.get('email'), data.get('password')
     if not all([username_raw, email, password]): 
         return jsonify({"success": False, "message": "Vui lòng nhập đủ thông tin"}), 400
     
-    username = username_raw.lower() # 2. *** CHUYỂN SANG CHỮ THƯỜNG ***
-    
-    if User.query.filter_by(username=username).first(): # 3. Kiểm tra bằng chữ thường
+    username = username_raw.lower()
+    if User.query.filter_by(username=username).first():
         return jsonify({"success": False, "message": "Tên đăng nhập đã tồn tại"}), 400
     if User.query.filter_by(email=email).first():
         return jsonify({"success": False, "message": "Email đã được sử dụng"}), 400
     
     hashed_password = generate_password_hash(password)
-    new_user = User(username=username, email=email, password=hashed_password, role="User") # 4. Lưu bằng chữ thường
+    
+    # Tạo token xác thực
+    verify_token = secrets.token_hex(20)
+    
+    # Lưu user với trạng thái chưa xác thực
+    new_user = User(
+        username=username, 
+        email=email, 
+        password=hashed_password, 
+        role="User",
+        is_verified=False,              
+        verification_token=verify_token 
+    )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"success": True, "message": "Đăng ký thành công!"})
+    
+    try:
+        domain = os.environ.get('SITE_DOMAIN', request.host_url.rstrip('/'))
+        link = f"{domain}/api/verify-email/{verify_token}" 
+        
+        msg = Message('Xác thực tài khoản - Buser.com',
+                      sender=app.config.get('MAIL_USERNAME'),
+                      recipients=[email])
+        msg.body = f"Chào {username},\n\nVui lòng click vào link sau để kích hoạt tài khoản:\n{link}\n\nCảm ơn!"
+        mail.send(msg)
+    except Exception as e:
+        print(f"Lỗi gửi mail: {e}")
+    
+    return jsonify({"success": True, "message": "Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản."})
+
+# [ API VERIFY EMAIL]
+@app.route("/api/verify-email/<token>", methods=['GET'])
+def verify_email_token(token):
+    user = User.query.filter_by(verification_token=token).first()
+    if not user:
+        return "<h3>Lỗi: Link xác thực không hợp lệ hoặc đã hết hạn!</h3>", 400
+    
+    if user.is_verified:
+        return "<h3>Tài khoản đã được xác thực trước đó. <a href='/login.html'>Đăng nhập ngay</a></h3>"
+        
+    user.is_verified = True
+    user.verification_token = None # Xóa token sau khi dùng
+    db.session.commit()
+    
+    return "<h3>✅ Xác thực thành công! Bạn có thể <a href='/login.html'>Đăng nhập ngay</a></h3>"
 
 @app.route("/api/login", methods=['POST'])
 @limiter.limit("20 per minute")
@@ -455,27 +512,47 @@ def api_login_user():
     if not all([username_raw, password]): 
         return jsonify({"success": False, "message": "Vui lòng nhập đủ thông tin"}), 400
     username = username_raw.lower()
+    
     user = User.query.filter_by(username=username).first()
     if not user:
         return jsonify({"success": False, "message": "Tên đăng nhập không tồn tại"}), 404
-        
+    if not user.is_verified:
+        return jsonify({"success": False, "message": "Tài khoản chưa kích hoạt. Vui lòng kiểm tra Email!"}), 403
+
     if check_password_hash(user.password, password):
-        # [MỚI] Tạo token JWT
-        # Token sẽ hết hạn sau 24 giờ
+        # Tạo payload
         payload = {
             'username': user.username,
-            'exp': datetime.now() + timedelta(minutes=60) 
+            'exp': datetime.now() + timedelta(hours=24) # Tăng lên 24h cho tiện
         }
-        # Ký (tạo) token bằng SECRET_KEY
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
-        return jsonify({
-            "success": True, "message": "Đăng nhập thành công!",
-            "user": {"username": user.username, "email": user.email, "role": user.role},
-            "token": token
+        # Tạo response
+        response = jsonify({
+            "success": True, 
+            "message": "Đăng nhập thành công!",
+            "user": {"username": user.username, "email": user.email, "role": user.role}
+            # KHÔNG trả về token ở đây nữa để tránh lộ
         })
+        
+        # [QUAN TRỌNG] Set HttpOnly Cookie
+        response.set_cookie(
+            'access_token', 
+            token, 
+            httponly=True,  # JS không đọc được
+            secure=False,   # Đặt True nếu chạy HTTPS (Production), False nếu chạy Localhost
+            samesite='Lax', # Chống CSRF cơ bản
+            max_age=24*60*60
+        )
+        return response
     else:
         return jsonify({"success": False, "message": "Sai mật khẩu"}), 401
+
+@app.route("/api/logout", methods=['POST'])
+def api_logout():
+    response = jsonify({"success": True, "message": "Đăng xuất thành công"})
+    response.set_cookie('access_token', '', expires=0) # Xóa cookie
+    return response
 
 @app.route("/api/change-password", methods=['POST'])
 def api_change_password():

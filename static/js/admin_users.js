@@ -19,11 +19,8 @@ $(document).ready(function () {
     // --- Tải dữ liệu Người dùng ---
     function loadUsers() {
         $.ajax({
-            url: `${API_URL}/api/admin/users`, // GỌI API MỚI
+            url: `${API_URL}/api/admin/users`, 
             type: 'GET',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (response) {
                 if (response.success) {
                     renderUsersTable(response.users);

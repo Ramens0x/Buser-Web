@@ -21,9 +21,6 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/admin/transactions/history`,
             type: 'GET',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            },
             success: function (response) {
                 if (response.success) {
                     renderHistoryTable(response.transactions);
