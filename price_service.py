@@ -22,15 +22,7 @@ class PriceService:
             'usdt': {'buy': 1.01, 'sell': 0.99},        # +1% mua, -1% bán
             'eth': {'buy': 1.015, 'sell': 0.985},
             'bnb': {'buy': 1.015, 'sell': 0.985},
-            'doge': {'buy': 1.02, 'sell': 0.98},
-            'sol': {'buy': 1.015, 'sell': 0.985},
-            'ada': {'buy': 1.02, 'sell': 0.98},
-            'xrp': {'buy': 1.02, 'sell': 0.98},
-            'xlm': {'buy': 1.02, 'sell': 0.98},
-            'ltc': {'buy': 1.02, 'sell': 0.98},
-            'cake': {'buy': 1.02, 'sell': 0.98},
-            'near': {'buy': 1.02, 'sell': 0.98}
-
+            'sol': {'buy': 1.015, 'sell': 0.985}
         }
         
         # Timeout cho cache
@@ -219,16 +211,13 @@ class PriceService:
         return None
 
     def get_all_prices(self):
-        """Trả về tất cả giá coin"""
-        result = {}
-        for coin in ['ether','bustabit', 'btc', 'usdt', 'eth', 'bnb', 'doge', 'sol', 'ada', 'xrp', 'xlm', 'ltc', 'cake', 'near']:
-            rates = self.get_rate_buy_sell(coin)
-            if rates:
-                result[coin] = {
-                    'buy': rates['buy'],
-                    'sell': rates['sell']
-                }
-        return result
+    result = {}
+    target_coins = ['bustabit', 'ether', 'btc', 'usdt', 'eth', 'bnb', 'sol'] 
+    for coin in target_coins:
+        rates = self.get_rate_buy_sell(coin)
+        if rates:
+            result[coin] = {'buy': rates['buy'], 'sell': rates['sell']}
+    return result
 
     def update_spread(self, coin_key, buy_percent, sell_percent):
         """Cập nhật spread cho coin"""

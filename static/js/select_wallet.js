@@ -7,22 +7,6 @@ $(document).ready(function () {
         return;
     }
 
-    // --- Hàm lấy Token (Cần thiết cho API) ---
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try {
-            const loginData = JSON.parse(loginDataString);
-            return loginData.token;
-        } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
-
     // Cập nhật Tiêu đề
     let coinName = draftOrder.coin === 'bustabit' ? 'Bustabit (BTC)' : 'USDT (BEP20)';
     $('.panel-heading h4').html(`<i class="fa fa-credit-card"></i> Chọn tài khoản ${coinName} để nhận`);

@@ -62,7 +62,6 @@ $(document).ready(function () {
             if (xhr.status === 401) {
                 alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
                 localStorage.removeItem('buser_user');
-                localStorage.removeItem('buser_login_data');
                 window.location.href = "login.html";
             }
         }

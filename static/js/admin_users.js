@@ -1,21 +1,5 @@
 $(document).ready(function () {
 
-    // --- Hàm lấy Token (Cần thiết cho API) ---
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try {
-            const loginData = JSON.parse(loginDataString);
-            return loginData.token;
-        } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
-
     // --- Tải dữ liệu Người dùng ---
     function loadUsers() {
         $.ajax({

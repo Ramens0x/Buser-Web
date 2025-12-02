@@ -1,20 +1,5 @@
 $(document).ready(function () {
-    // --- Hàm lấy Token (Cần thiết cho API) ---
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try {
-            const loginData = JSON.parse(loginDataString);
-            return loginData.token;
-        } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
-
+   
     // --- Xử lý nút "Hủy Đơn" (Admin) ---
     $(document).on('click', '.btn-cancel-admin', function () {
         const btn = $(this); // [MỚI] Lưu lại nút đang bấm

@@ -7,22 +7,6 @@ $(document).ready(function () {
         return;
     }
 
-    // --- Hàm lấy Token (Cần thiết cho API) ---
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try {
-            const loginData = JSON.parse(loginDataString);
-            return loginData.token;
-        } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
-
     // --- 1. Tải danh sách ngân hàng đã lưu ---
     $.ajax({
         url: `${API_URL}/api/user/banks`,

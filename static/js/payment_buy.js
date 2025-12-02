@@ -1,23 +1,5 @@
 $(document).ready(function () {
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try { return JSON.parse(loginDataString).token; } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) { window.location.href = "login.html"; return; }
-
-    // 1. Lấy ID từ URL (Ví dụ: checkout_payment_buy.html?id=BUSER123)
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('id');
-
-    if (!orderId) {
-        alert("Thiếu mã đơn hàng!");
-        window.location.href = "index.html";
-        return;
-    }
-
+    
     // 2. Gọi API lấy chi tiết đơn hàng
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,

@@ -1,16 +1,5 @@
 $(document).ready(function () {
-    function getAuthToken() {
-        const loginDataString = localStorage.getItem('buser_login_data');
-        if (!loginDataString) return null;
-        try { return JSON.parse(loginDataString).token; } catch (e) { return null; }
-    }
-
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
-
+    
     // Kiểm tra trạng thái KYC hiện tại
     $.ajax({
         url: `${API_URL}/api/user/kyc-status`,
