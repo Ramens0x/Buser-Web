@@ -53,14 +53,7 @@ class PriceService:
             'eth': 'ETHUSDT',
             'ethereum': 'ETHUSDT',
             'bnb': 'BNBUSDT',
-            'doge': 'DOGEUSDT',
-            'sol': 'SOLUSDT',
-            'ada': 'ADAUSDT',
-            'xrp': 'XRPUSDT',
-            'xlm': 'XLMUSDT',
-            'ltc': 'LTCUSDT',
-            'cake': 'CAKEUSDT',
-            'near': 'NEARUSDT'
+            'sol': 'SOLUSDT'
         }
         
         print("✅ PriceService initialized")

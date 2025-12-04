@@ -112,21 +112,12 @@ $(document).ready(function () {
                 $('#sol-sell').html(showPrice(data.sol.sell));
             }
             
-            // Các coin khác (Doge, ADA, XRP...) làm tương tự nếu cần
-            if (data.doge) { $('#doge-buy').html(showPrice(data.doge.buy)); $('#doge-sell').html(showPrice(data.doge.sell)); }
-            if (data.ada) { $('#ada-buy').html(showPrice(data.ada.buy)); $('#ada-sell').html(showPrice(data.ada.sell)); }
-            if (data.xrp) { $('#xrp-buy').html(showPrice(data.xrp.buy)); $('#xrp-sell').html(showPrice(data.xrp.sell)); }
-            if (data.xlm) { $('#xlm-buy').html(showPrice(data.xlm.buy)); $('#xlm-sell').html(showPrice(data.xlm.sell)); }
-            if (data.ltc) { $('#ltc-buy').html(showPrice(data.ltc.buy)); $('#ltc-sell').html(showPrice(data.ltc.sell)); }
-            if (data.cake) { $('#cake-buy').html(showPrice(data.cake.buy)); $('#cake-sell').html(showPrice(data.cake.sell)); }
-            if (data.near) { $('#near-buy').html(showPrice(data.near.buy)); $('#near-sell').html(showPrice(data.near.sell)); }
-
             // Cập nhật tỷ giá bên dưới form
             updateRateDisplay(data);
         }).fail(function () {
             console.error("Không thể kết nối đến API backend " + API_URL);
             // Khi lỗi toàn bộ API, chuyển hết thành "Lỗi"
-            $('.rate_buy, .rate_sell').text("Bảo trì").css('color', 'red').css('font-size', '12px');
+            $('.price-buy, .price-sell').text("Bảo trì").css('color', 'red').css('font-size', '12px');
         });
     }
 

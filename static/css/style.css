@@ -30,22 +30,6 @@ body {
     font-weight: bold;
 }
 
-/* Định dạng Bảng giá */
-.rate_header {
-    background-color: #2882C0;
-    color: #b8860b;
-}
-
-.rate_buy {
-    color: #468847;
-    font-weight: bold;
-}
-
-.rate_sell {
-    color: #b94a48;
-    font-weight: bold;
-}
-
 .icon {
     width: 20px;
     margin-right: 5px;
@@ -356,13 +340,54 @@ body {
     .price-sell::before { content: "Bán: "; color: #999; font-weight: normal; }
 }
 
-/* Ngăn bảng giá xuống dòng */
-#table-conten-rate th {
-    white-space: nowrap;
-    /* Bắt buộc hiển thị trên 1 dòng */
-    font-size: 13px;
-    /* Giảm nhẹ cỡ chữ nếu cần */
-    padding-left: 5px;
-    /* Căn chỉnh lại lề chút cho gọn */
-    padding-right: 5px;
+/* --- SỬA LỖI HIỂN THỊ GIÁ --- */
+/* Target đúng vào class đang dùng trong HTML mới */
+.price-buy, .price-sell {
+    white-space: nowrap !important; /* Bắt buộc thẳng hàng */
+    display: inline-block;          /* Giữ khối để không bị vỡ layout */
+    width: 100%;                    /* Căn chỉnh lại chiều rộng */
 }
+
+/* Tinh chỉnh cho mobile để chữ nhỏ hơn chút nếu màn hình quá bé */
+@media (max-width: 768px) {
+    .price-buy, .price-sell {
+        font-size: 13px !important; /* Giảm size chữ trên điện thoại */
+    }
+}
+
+/* Style cho khung đăng nhập hiện đại */
+.auth-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: none;
+}
+.auth-bg {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+/* Input đẹp hơn */
+.form-control {
+    height: 45px; /* Cao hơn, dễ bấm */
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+    box-shadow: none;
+    transition: all 0.3s;
+}
+.form-control:focus {
+    border-color: #2882C0;
+    box-shadow: 0 0 0 3px rgba(40, 130, 192, 0.1);
+}
+
+.tb-history tr td {
+    border: none !important; /* Bỏ viền */
+    padding: 12px 8px !important;
+    font-size: 13px;
+}
+.tb-history tr:nth-child(odd) {
+    background-color: #f9fbfd; /* Màu nền xen kẽ nhẹ nhàng */
+}
+.history-buy { color: #28a745; font-weight: 600; } /* Màu xanh tươi hơn */
+.history-sell { color: #dc3545; font-weight: 600; } /* Màu đỏ tươi hơn */
+

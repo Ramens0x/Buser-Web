@@ -1698,7 +1698,8 @@ if __name__ == '__main__':
                 username=env_admin_user,
                 email=f"{env_admin_user}@buser.com",
                 password=hashed_pass,
-                role="Admin"
+                role="Admin",
+                is_verified=True
             )
             db.session.add(admin_user)
             db.session.commit()
