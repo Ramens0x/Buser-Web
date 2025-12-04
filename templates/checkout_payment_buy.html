@@ -66,82 +66,80 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-
-                <div class="payment-box text-center">
-                    <h3 style="margin-top: 0;">Đơn hàng Mua: <span id="order-id">#...</span></h3>
-                    <p style="font-size: 14px; color: #777; margin-top: -10px;">Tạo lúc: <span
-                            id="order-time">...</span></p>
-                    <p class="lead">Vui lòng chuyển khoản chính xác thông tin dưới đây:</p>
-                    <div class="row">
-                        <div class="col-sm-7 text-left">
-                            <ul class="payment-info" style="padding-left: 0;">
-                                <li><strong>Ngân hàng:</strong> <span id="payment-bank">...</span></li>
-                                <li><strong>Số tài khoản:</strong> <span id="payment-account-number">...</span>
-                                    <button class="btn btn-default btn-xs" onclick="copyToClipboard('#payment-account-number')" title="Sao chép">
-                                        <i class="fa fa-copy"></i>
-                                    </button>
-                                </li>
-                                <li><strong>Chủ tài khoản:</strong> <span id="payment-account-name">...</span></li>
-                                <li><strong>Số tiền:</strong> <span id="payment-amount">...</span></li>
-                                <li><strong>Nội dung:</strong> <span id="payment-content">...</span>
-                                    <button class="btn btn-default btn-xs" onclick="copyToClipboard('#payment-content')" title="Sao chép">
-                                        <i class="fa fa-copy"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                            <div class="alert alert-warning"><strong>LƯU Ý:</strong> Phải nhập chính xác <strong>Nội
-                                    dung</strong>.</div>
-                        </div>
-                        <div class="col-sm-5">
-                            <div class="qr-code">
-                                <img src="" id="qr-image" class="img-responsive" alt="Đang tải mã VietQR...">
-                                <p style="margin-top: 10px; font-weight: bold;">Quét mã VietQR để thanh toán</p>
-                            </div>
-                            <div class="alert alert-warning text-center" style="margin-top: 10px; font-size: 13px;">
-                                <i class="fa fa-clock-o"></i> Lưu ý: Đơn hàng sẽ tự động bị hủy sau <strong>60
-                                    phút</strong> nếu chưa thanh toán.
-                            </div>
-                        </div>
+                
+                <div class="stepper" style="margin-top: 40px;">
+                    <div class="step">
+                        <div class="circle"><i class="fa fa-check"></i></div>
+                        <div class="label">Chọn Ví</div>
+                    </div>
+                    <div class="step active">
+                        <div class="circle">2</div>
+                        <div class="label">Thanh Toán</div>
+                    </div>
+                    <div class="step">
+                        <div class="circle">3</div>
+                        <div class="label">Hoàn Tất</div>
                     </div>
                 </div>
 
-                <div class="payment-box confirmation-box" style="margin-top: 20px;">
-                    <h4 style="margin-top: 0; color: #468847;"><i class="fa fa-check-circle"></i> Thông tin nhận coin
-                        (Xác nhận)</h4>
-                    <p>Coin sẽ được gửi đến tài khoản của bạn sau khi chúng tôi nhận được thanh toán.</p>
+                <div class="auth-box" style="padding: 0; overflow: hidden;">
+                    <div style="background: #f9fbfd; padding: 20px; text-align: center; border-bottom: 1px solid #eee;">
+                        <h4 style="margin: 0; color: #333;">Đơn Hàng Mua: <span id="order-id" style="color: #2882C0;">#...</span></h4>
+                        <p class="text-muted" style="margin-bottom: 0;">Tạo lúc: <span id="order-time">...</span></p>
+                    </div>
 
-                    <ul class="payment-info" style="padding-left: 0;" id="confirmation-details-list">
-                        <li><strong>Loại Coin:</strong> <span id="confirm-coin-type" style="color: #333;">...</span>
-                        </li>
-                        <li><strong>Số lượng:</strong> <span id="confirm-coin-amount" style="color: #333;">...</span>
-                        </li>
-                    </ul>
-                </div>
+                    <div style="padding: 30px;">
+                        <div class="row">
+                            <div class="col-sm-7">
+                                <h5 style="font-weight: bold; text-transform: uppercase; color: #555; margin-bottom: 15px;">Thông tin chuyển khoản:</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item"><strong>Ngân hàng:</strong> <span class="pull-right" id="payment-bank">...</span></li>
+                                    <li class="list-group-item"><strong>Số tài khoản:</strong> 
+                                        <span class="pull-right" style="font-weight: bold; color: #333; font-size: 16px;" id="payment-account-number">...</span>
+                                        <button class="btn btn-xs btn-default pull-right" onclick="copyToClipboard('#payment-account-number')" style="margin-right: 10px;"><i class="fa fa-copy"></i></button>
+                                    </li>
+                                    <li class="list-group-item"><strong>Chủ tài khoản:</strong> <span class="pull-right" id="payment-account-name">...</span></li>
+                                    <li class="list-group-item"><strong>Số tiền:</strong> <span class="pull-right" style="font-weight: bold; color: #d9534f; font-size: 18px;" id="payment-amount">...</span></li>
+                                    <li class="list-group-item" style="background: #fffbe6;">
+                                        <strong>Nội dung CK:</strong> 
+                                        <span class="pull-right" style="font-weight: bold; color: #d9534f;" id="payment-content">...</span>
+                                        <button class="btn btn-xs btn-warning pull-right" onclick="copyToClipboard('#payment-content')" style="margin-right: 10px;"><i class="fa fa-copy"></i></button>
+                                    </li>
+                                </ul>
+                            </div>
 
-                <div class="alert alert-info" style="margin-top: 15px; border-left: 4px solid #31708f;">
-                    <h4><i class="fa fa-camera"></i> Xác nhận chuyển khoản</h4>
-                    <p>Sau khi chuyển khoản, vui lòng tải ảnh biên lai để chúng tôi xử lý nhanh hơn.</p>
-
-                    <form id="upload-bill-form" style="margin-top: 10px;">
-
-                        <input type="hidden" name="order_id" id="upload-order-id" value="">
-
-                        <div class="form-group">
-                            <input type="file" name="bill_image" accept="image/*" class="form-control" required>
+                            <div class="col-sm-5 text-center">
+                                <div style="border: 2px solid #2882C0; border-radius: 10px; padding: 10px; display: inline-block;">
+                                    <img src="" id="qr-image" class="img-responsive" style="max-width: 100%;" alt="QR Code">
+                                </div>
+                                <p style="margin-top: 10px; font-size: 12px; color: #777;"><i class="fa fa-camera"></i> Mở App ngân hàng để quét</p>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-upload"></i> Tải ảnh lên
-                        </button>
-                    </form>
-                </div>
 
-                <div class="text-center" style="margin: 20px 0;">
-                    <button class="btn btn-danger" id="btn-user-cancel" style="margin-right: 10px;">
-                        <i class="fa fa-times"></i> Hủy Đơn Hàng
-                    </button>
-                    <a href="/" class="btn btn-default"><i class="fa fa-arrow-left"></i> Quay về Trang chủ</a>
+                        <hr>
+
+                        <div class="alert alert-info" style="border-radius: 8px;">
+                            <h5 style="margin-top: 0; font-weight: bold;"><i class="fa fa-upload"></i> Xác nhận thanh toán</h5>
+                            <p>Sau khi chuyển khoản, vui lòng tải ảnh biên lai để hệ thống xử lý ngay lập tức.</p>
+                            <form id="upload-bill-form" style="margin-top: 10px;">
+                                <div class="input-group">
+                                    <input type="hidden" name="order_id" id="upload-order-id" value="">
+                                    <input type="file" name="bill_image" accept="image/*" class="form-control" required>
+                                    <span class="input-group-btn">
+                                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Gửi Xác Nhận</button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="text-center" style="margin-top: 20px;">
+                            <button class="btn btn-link text-danger" id="btn-user-cancel">Hủy bỏ đơn hàng này</button>
+                            <span style="color: #ddd;">|</span>
+                            <a href="/" class="btn btn-link">Về trang chủ</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+                </div>
         </div>
     </div>
 

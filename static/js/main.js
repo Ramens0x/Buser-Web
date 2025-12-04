@@ -341,6 +341,9 @@ $(document).ready(function () {
                 $('#menu-admin').show();
             }
             $('#btn-submit-swap').text('Tiếp tục').removeClass('btn-primary').addClass('btn-success');
+            if ($('#sidebar-username').length > 0) {
+                $('#sidebar-username').text(user.username);
+            }
         } else {
             $('#menu-register').show();
             $('#menu-login').show();
@@ -351,7 +354,7 @@ $(document).ready(function () {
         }
     }
 
-    // --- [MỚI] Hàm tải Lịch sử Giao dịch Công khai ---
+    // --- [CẬP NHẬT] Hàm tải Lịch sử Giao dịch Công khai ---
     function loadPublicHistory() {
         $.ajax({
             url: API_URL + "/api/public-transactions",
@@ -361,22 +364,34 @@ $(document).ready(function () {
                 if (response.success && response.transactions.length > 0) {
                     historyTableBody.empty();
                     response.transactions.forEach(tx => {
+                        const timeOnly = tx.created_at.split(' ')[1] || tx.created_at;
                         const amountFormatted = numberFormat(tx.amount_coin, 2);
+
+                        // [MỚI] Logic Icon và Màu sắc
+                        let typeHtml = '';
+                        if (tx.mode === 'Mua' || tx.mode === 'buy') {
+                            // Mũi tên xuống màu xanh
+                            typeHtml = `<span class="tx-buy"><i class="fa fa-arrow-down"></i> Mua</span>`;
+                        } else {
+                            // Mũi tên lên màu đỏ
+                            typeHtml = `<span class="tx-sell"><i class="fa fa-arrow-up"></i> Bán</span>`;
+                        }
+
                         const row = `
-                     <tr>
-                     <td class="left">${escapeHTML(tx.mode)}</td>
-                     <td>${escapeHTML(tx.coin)}</td>
-                     <td class="center">${amountFormatted}</td>
-                     <td class="center">${escapeHTML(tx.created_at)}</td>
-                     </tr>`;
+                        <tr>
+                            <td>${typeHtml}</td>
+                            <td style="font-weight:600; color:#333;">${escapeHTML(tx.coin)}</td>
+                            <td class="text-right" style="font-family:monospace; font-size:13px;">${amountFormatted}</td>
+                            <td class="text-right text-muted" style="font-size:12px;">${escapeHTML(timeOnly)}</td>
+                        </tr>`;
                         historyTableBody.append(row);
                     });
                 } else {
-                    historyTableBody.html('<tr><td colspan="4" class="text-center">Chưa có lịch sử giao dịch.</td></tr>');
+                    historyTableBody.html('<tr><td colspan="4" class="text-center" style="padding:20px;">Chưa có giao dịch nào.</td></tr>');
                 }
             },
             error: function () {
-                $('#history-table-body').html('<tr><td colspan="4" class="text-center">Lỗi khi tải lịch sử.</td></tr>');
+                $('#history-table-body').html('<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>');
             }
         });
     }

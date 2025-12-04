@@ -49,36 +49,51 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                <div class="panel panel-default" style="margin-top: 30px;">
-                    <div class="panel-heading">
-                        <h4><i class="fa fa-university"></i> Chọn tài khoản ngân hàng để nhận VNĐ</h4>
+            <div class="col-md-8 col-md-offset-2">
+                
+                <div class="stepper" style="margin-top: 40px;">
+                    <div class="step active">
+                        <div class="circle">1</div>
+                        <div class="label">Chọn Ngân Hàng</div>
                     </div>
-                    <div class="panel-body">
+                    <div class="step">
+                        <div class="circle">2</div>
+                        <div class="label">Thanh Toán</div>
+                    </div>
+                    <div class="step">
+                        <div class="circle">3</div>
+                        <div class="label">Hoàn Tất</div>
+                    </div>
+                </div>
 
-                        <form id="select-bank-form">
-                            <div class="wallet-list">
-                                <p>Đang tải danh sách ngân hàng của bạn...</p>
-                            </div>
+                <div class="auth-box">
+                    <div class="text-center" style="margin-bottom: 20px;">
+                        <h4 style="margin: 0;">Chọn Tài Khoản Nhận Tiền</h4>
+                        <p class="text-muted">Chọn ngân hàng bạn muốn nhận VNĐ</p>
+                    </div>
 
-                            <hr>
+                    <form id="select-bank-form">
+                        <div class="wallet-list" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải danh sách...</p>
+                        </div>
 
+                        <div style="margin-top: 25px;">
                             <div class="row">
                                 <div class="col-xs-6">
-                                    <a href="add-bank.html" class="btn btn-default btn-block">
-                                        <i class="fa fa-plus"></i> Thêm tài khoản mới
+                                    <a href="add-bank.html" class="btn btn-default btn-block btn-lg" style="border-radius: 8px;">
+                                        <i class="fa fa-plus"></i> Thêm Mới
                                     </a>
                                 </div>
                                 <div class="col-xs-6">
-                                    <button type="submit" class="btn btn-success btn-block">
-                                        Xác nhận <i class="fa fa-arrow-right"></i>
+                                    <button type="submit" class="btn btn-success btn-block btn-lg" style="background: #28a745; border: none; border-radius: 8px;">
+                                        Tiếp Tục <i class="fa fa-arrow-right"></i>
                                     </button>
                                 </div>
                             </div>
-                        </form>
-
-                    </div>
+                        </div>
+                    </form>
                 </div>
+
             </div>
         </div>
     </div>
@@ -87,31 +102,6 @@
     <script src="/static/js/config.js"></script>
     <script src="/static/js/main.js"></script>
     <script src="/static/js/select_bank.js"></script>
-
-    <style>
-        .floating-telegram {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            background-color: #0088cc;
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            text-align: center;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-        }
-        .floating-telegram:hover {
-            background-color: #0077b5;
-            transform: scale(1.1);
-        }
-        .floating-telegram i {
-            line-height: 60px;
-            font-size: 30px;
-        }
-        </style>
 
     </body>
 </html>
