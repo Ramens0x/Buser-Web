@@ -75,6 +75,17 @@ $(document).ready(function () {
         }
     });
 
+    $('#paper').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#preview_paper').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     // Submit form
     $('#kyc-form').on('submit', function (e) {
         e.preventDefault();
@@ -82,8 +93,8 @@ $(document).ready(function () {
         const formData = new FormData(this);
 
         // Validate
-        if (!formData.get('id_front').name || !formData.get('id_back').name || !formData.get('selfie').name) {
-            alert('Vui lòng tải lên đủ 3 ảnh!');
+        if (!formData.get('id_front').name || !formData.get('id_back').name || !formData.get('selfie').name || !formData.get('paper').name) {
+            alert('Vui lòng tải lên đủ 4 ảnh theo yêu cầu!');
             return;
         }
 

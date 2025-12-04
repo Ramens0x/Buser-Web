@@ -105,6 +105,21 @@
                             </div>
                         </div>
 
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ảnh Cầm Giấy Xác Nhận <span class="text-danger">*</span></label>
+                                <div class="upload-dropzone" onclick="$('#paper').click()">
+                                    <i class="fa fa-pencil-square-o fa-3x"></i>
+                                    <p style="margin: 10px 0 0; font-weight: 600;">Chọn ảnh cầm giấy</p>
+                                    <p class="text-muted small" style="font-size: 11px;">
+                                        Viết tay: <em>"Tôi xác nhận tài khoản ngân hàng [Tên Bank] - [Số TK] thuộc về tôi - [Ngày/Tháng/Năm]" + Chữ ký</em>
+                                    </p>
+                                    <img id="preview_paper" class="preview-image" style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
+                                </div>
+                                <input type="file" id="paper" name="paper" accept="image/*" style="display: none;" required>
+                            </div>
+                        </div>
+
                         <hr style="margin: 30px 0;">
 
                         <button type="submit" class="btn btn-success btn-lg btn-block" id="btn-submit-kyc" style="background: linear-gradient(90deg, #28a745 0%, #218838 100%); border: none; font-weight: bold;">

@@ -162,6 +162,7 @@ class KYC(db.Model):
     id_front_image = db.Column(db.String(200), nullable=True)  # Ảnh mặt trước
     id_back_image = db.Column(db.String(200), nullable=True)   # Ảnh mặt sau
     selfie_image = db.Column(db.String(200), nullable=True)    # Ảnh selfie cầm CMND
+    paper_image = db.Column(db.String(200), nullable=True)     # Ảnh giấy viết tay
     status = db.Column(db.String(20), nullable=False, default='pending')  # pending/approved/rejected
     submitted_at = db.Column(db.DateTime, default=datetime.now)
     reviewed_at = db.Column(db.DateTime, nullable=True)
@@ -579,6 +580,10 @@ def create_order():
 
     data = request.json
     mode, coin_type = data.get('mode'), data.get('coin')
+
+    if coin_type not in ALLOWED_COINS:
+        return jsonify({"success": False, "message": "Loại coin không hợp lệ"}), 400
+        
     amount_from, amount_to = float(data.get('amount_from', 0)), float(data.get('amount_to', 0))
     wallet_id, bank_id = data.get('wallet_id'), data.get('bank_id')
 
@@ -635,7 +640,7 @@ def create_order():
                 "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
             }), 400
             
-    transfer_keywords = ["transfer", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien"]
+    transfer_keywords = ["transfer", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan"]
     random_suffix = random.choice(transfer_keywords)
 
     full_transfer_content = f"{transaction_id} {user_account_name} {random_suffix}"
@@ -876,12 +881,18 @@ def get_user_wallets():
     wallets_list = [{"id": w.id, "coin_type": w.coin_type, "address": w.address, "tag": w.tag, "name": w.name, "phone": w.phone} for w in wallets]
     return jsonify({"success": True, "wallets": wallets_list})
 
+ALLOWED_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'btc', 'eth']
+
 @app.route("/api/user/add-wallet", methods=['POST'])
 def add_user_wallet():
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
     
     data = request.json
+    coin_type = data.get('coin_type')
+    if coin_type not in ALLOWED_COINS:
+        return jsonify({"success": False, "message": "Loại coin không hợp lệ"}), 400
+
     new_wallet = Wallet(
         coin_type=data.get('coin_type'), address=data.get('address'),
         tag=data.get('tag'), name=data.get('name'), phone=data.get('phone'),
@@ -1323,20 +1334,23 @@ def submit_kyc():
     id_number = request.form.get('id_number')
     
     # Kiểm tra file
-    if 'id_front' not in request.files or 'id_back' not in request.files or 'selfie' not in request.files:
-        return jsonify({"success": False, "message": "Vui lòng tải lên đủ 3 ảnh"}), 400
+    if 'id_front' not in request.files or 'id_back' not in request.files or 'selfie' not in request.files or 'paper' not in request.files:
+        return jsonify({"success": False, "message": "Vui lòng tải lên đủ 4 ảnh yêu cầu!"}), 400
 
     file_front = request.files['id_front']
     if not is_valid_image(file_front):
-         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
+         return jsonify({"success": False, "message": "File tải lên không hợp lệ hoặc bị lỗi!"}), 400
     file_back = request.files['id_back']
     if not is_valid_image(file_back):
-         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
+         return jsonify({"success": False, "message": "File tải lên không hợp lệ hoặc bị lỗi!"}), 400
     file_selfie = request.files['selfie']
     if not is_valid_image(file_selfie):
-         return jsonify({"success": False, "message": "File mặt trước không phải là ảnh hợp lệ!"}), 400
+         return jsonify({"success": False, "message": "File tải lên không hợp lệ hoặc bị lỗi!"}), 400
+    file_paper = request.files['paper']
+    if not is_valid_image(file_paper):
+         return jsonify({"success": False, "message": "File tải lên không hợp lệ hoặc bị lỗi!"}), 400
 
-    if not all([allowed_kyc_file(f.filename) for f in [file_front, file_back, file_selfie]]):
+    if not all([allowed_kyc_file(f.filename) for f in [file_front, file_back, file_selfie, file_paper]]):
          return jsonify({"success": False, "message": "Chỉ chấp nhận file ảnh (PNG, JPG, JPEG)"}), 400
 
     try:
@@ -1345,11 +1359,13 @@ def submit_kyc():
         fname_front = secure_filename(f"{user.username}_{ts}_front.jpg")
         fname_back = secure_filename(f"{user.username}_{ts}_back.jpg")
         fname_selfie = secure_filename(f"{user.username}_{ts}_selfie.jpg")
+        fname_paper = secure_filename(f"{user.username}_{ts}_paper.jpg")
 
         # Lưu file
         file_front.save(os.path.join(KYC_UPLOAD_FOLDER, fname_front))
         file_back.save(os.path.join(KYC_UPLOAD_FOLDER, fname_back))
         file_selfie.save(os.path.join(KYC_UPLOAD_FOLDER, fname_selfie))
+        file_paper.save(os.path.join(KYC_UPLOAD_FOLDER, fname_paper))
 
         # Lưu vào DB (Update nếu bị từ chối trước đó, hoặc tạo mới)
         if existing_kyc:
@@ -1358,12 +1374,13 @@ def submit_kyc():
             existing_kyc.id_front_image = fname_front
             existing_kyc.id_back_image = fname_back
             existing_kyc.selfie_image = fname_selfie
+            existing_kyc.paper_image = fname_paper
             existing_kyc.status = 'pending'
             existing_kyc.submitted_at = datetime.now()
             existing_kyc.admin_note = None
         else:
             new_kyc = KYC(user_id=user.id, full_name=full_name, id_number=id_number,
-                          id_front_image=fname_front, id_back_image=fname_back, selfie_image=fname_selfie, status='pending')
+                          id_front_image=fname_front, id_back_image=fname_back, selfie_image=fname_selfie, paper_image=fname_paper, status='pending')
             db.session.add(new_kyc)
         
         db.session.commit()
@@ -1424,6 +1441,7 @@ def admin_get_kyc_list():
             "id_front": k.id_front_image, # Tên file ảnh
             "id_back": k.id_back_image,
             "selfie": k.selfie_image,
+            "paper": k.paper_image,
             "admin_note": k.admin_note
         })
     return jsonify({"success": True, "requests": result})

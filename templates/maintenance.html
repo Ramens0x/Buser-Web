@@ -1,37 +1,115 @@
 <!DOCTYPE html>
 <html lang="vi">
-
-<meta name="csrf-token" content="{{ csrf_token() }}">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Đang Bảo Trì - Buser.com</title>
+
+    <!-- Font & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+
     <style>
-        body { background-color: #f4f6f9; text-align: center; padding-top: 100px; font-family: sans-serif; }
-        .maintenance-box {
-            background: white; max-width: 600px; margin: 0 auto;
-            padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        body {
+            height: 100vh;
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #4f8dfc, #6cc7f5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
         }
-        h1 { color: #d9534f; font-weight: bold; }
-        p { color: #555; font-size: 16px; line-height: 1.6; }
-        .icon { font-size: 80px; color: #f0ad4e; margin-bottom: 20px; }
+
+        .maintenance-box {
+            background: #fff;
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+            padding: 50px 40px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            animation: fadeIn 1.2s ease;
+        }
+
+        .icon {
+            font-size: 90px;
+            margin-bottom: 25px;
+            color: #ffb400;
+            animation: spin 3s linear infinite;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .btn-check {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            background: #3498db;
+            color: white;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .btn-check:hover {
+            background: #217dbb;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px);}
+            to   { opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #fff;
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+
 <body>
-    <div class="container">
+
+    <div>
         <div class="maintenance-box">
-            <i class="fa fa-cogs icon"></i>
+            <i class="fa-solid fa-gears icon"></i>
+
             <h1>HỆ THỐNG ĐANG BẢO TRÌ</h1>
-            <hr>
             <p>Xin chào quý khách,</p>
-            <p>Hệ thống <strong>BUSER.COM</strong> hiện đang tiến hành nâng cấp để phục vụ tốt hơn. Chúng tôi sẽ quay trở lại trong thời gian sớm nhất.</p>
+
+            <p>
+                Hệ thống <strong>BUSER.COM</strong> đang tiến hành nâng cấp để mang lại trải nghiệm tốt hơn.
+                Vui lòng quay lại trong thời gian ngắn nhất.
+            </p>
+
             <p>Mọi thắc mắc vui lòng liên hệ Admin qua Telegram hoặc Email.</p>
-            <br>
-            <a href="#" class="btn btn-default" onclick="location.reload()">Kiểm tra lại</a>
+
+            <button class="btn-check" onclick="location.reload()">Kiểm tra lại</button>
         </div>
-        <p style="margin-top: 20px; color: #999;">&copy; 2025 Buser.com</p>
+
+        <footer>&copy; 2025 Buser.com</footer>
     </div>
+
 </body>
 </html>

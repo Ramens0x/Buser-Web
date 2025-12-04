@@ -71,6 +71,7 @@ $(document).ready(function () {
                 $('#modal-img-front').attr('src', `${API_URL}/api/kyc-image/${kyc.id_front}`);
                 $('#modal-img-back').attr('src', `${API_URL}/api/kyc-image/${kyc.id_back}`);
                 $('#modal-img-selfie').attr('src', `${API_URL}/api/kyc-image/${kyc.selfie}`);
+                $('#modal-img-paper').attr('src', `${API_URL}/api/kyc-image/${kyc.paper}`);
                 $('#modal-admin-note').val(kyc.admin_note || '');
 
                 // Ẩn nút nếu đã duyệt/từ chối
