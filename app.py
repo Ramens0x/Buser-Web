@@ -640,7 +640,8 @@ def create_order():
                 "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
             }), 400
             
-    transfer_keywords = ["transfer", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan"]
+    transfer_keywords = ["ck tien", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan", "tra tien hang"]
+    
     random_suffix = random.choice(transfer_keywords)
 
     full_transfer_content = f"{transaction_id} {user_account_name} {random_suffix}"
