@@ -211,13 +211,14 @@ class PriceService:
         return None
 
     def get_all_prices(self):
-    result = {}
-    target_coins = ['bustabit', 'ether', 'btc', 'usdt', 'eth', 'bnb', 'sol'] 
-    for coin in target_coins:
-        rates = self.get_rate_buy_sell(coin)
-        if rates:
-            result[coin] = {'buy': rates['buy'], 'sell': rates['sell']}
-    return result
+
+        result = {}
+        target_coins = ['bustabit', 'ether', 'btc', 'usdt', 'eth', 'bnb', 'sol'] 
+        for coin in target_coins:
+            rates = self.get_rate_buy_sell(coin)
+            if rates:
+                result[coin] = {'buy': rates['buy'], 'sell': rates['sell']}
+        return result
 
     def update_spread(self, coin_key, buy_percent, sell_percent):
         """Cập nhật spread cho coin"""

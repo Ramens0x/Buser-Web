@@ -392,11 +392,7 @@ $(document).ready(function () {
 
     // --- [MỚI] Hàm tải Lịch sử Giao dịch CÁ NHÂN ---
     function loadPersonalHistory() {
-        const token = getAuthToken();
-        if (!token) {
-            $('#personal-history-body').html(`<tr><td colspan="6" class="text-center">Lỗi: Bạn chưa đăng nhập.</td></tr>`);
-            return;
-        }
+        if (!localStorage.getItem('buser_user')) return;
 
         $.ajax({
             url: API_URL + "/api/user/my-transactions",
@@ -444,9 +440,9 @@ $(document).ready(function () {
     }
 
     // --- Hàm tải danh sách VÍ (Wallet) đã lưu ---
-    // --- [CẬP NHẬT] Hàm tải danh sách VÍ (Wallet) - Hỗ trợ 5 Coin & Hiển thị chuẩn ---
     function loadWalletsList() {
-        const token = getAuthToken();
+        if (!localStorage.getItem('buser_user')) return;
+
         const tableBody = $('#wallets-table-body');
         const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol'];
         
@@ -536,7 +532,7 @@ $(document).ready(function () {
 
     // --- [MỚI] Hàm tải danh sách NGÂN HÀNG (Bank) đã lưu ---
     function loadBanksList() {
-        const token = getAuthToken();
+        if (!localStorage.getItem('buser_user')) return;
         const tableBody = $('#banks-table-body');
 
         $.ajax({
@@ -665,11 +661,7 @@ $(document).ready(function () {
 
     // --- XỬ LÝ NÚT "TIẾP TỤC" (LƯU LỰA CHỌN) ---
     $('#btn-submit-swap').on('click', function () {
-        const token = getAuthToken();
-        if (!token) {
-            window.location.href = "login.html";
-            return;
-        }
+        if (!localStorage.getItem('buser_user')) return;
 
         // [SỬA LỖI] Đọc từ các ID input mới
         let amountCoin = parseFloat($('#input-coin').val().replace(/,/g, '')) || 0;

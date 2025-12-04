@@ -184,7 +184,6 @@
             $.ajax({
                 url: `${API_URL}/api/admin/get-spread`,
                 type: 'GET',
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
                 success: function (res) {
                     renderSpreadTable(res.spread_config);
                 }
@@ -213,7 +212,6 @@
             $.ajax({
                 url: `${API_URL}/api/admin/get-spread`,
                 type: 'GET',
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
                 success: function (res) {
                     const spreadConfig = res.spread_config;
                     const tableBody = $('#spread-table-body');
@@ -271,7 +269,6 @@
                     buy_percent: buyPercent,
                     sell_percent: sellPercent
                 }),
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); },
                 success: function (res) {
                     alert(`✅ ${res.message}`);
                     setTimeout(() => {

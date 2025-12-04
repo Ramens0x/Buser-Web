@@ -62,45 +62,34 @@ def allowed_kyc_file(filename):
     ALLOWED = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED
 
-# [SỬA LẠI HÀM clean_old_bills]
 def clean_old_bills():
-    try:
-        retention_period = 90 * 24 * 60 * 60  # 90 ngày
-        now = time.time()
-        folder = app.config.get('UPLOAD_FOLDER')
-        if not folder or not os.path.exists(folder): return
+    with app.app_context():
+        # Chỉ tìm những đơn hàng cũ > 90 ngày
+        cutoff_date = datetime.now() - timedelta(days=90)
+        old_orders = Order.query.filter(Order.created_at < cutoff_date).all()
         
         count = 0
-        with app.app_context(): # Cần context để truy cập DB
-            for filename in os.listdir(folder):
-                filepath = os.path.join(folder, filename)
-                if os.path.isfile(filepath):
-                    # Kiểm tra thời gian
-                    if now - os.path.getmtime(filepath) > retention_period:
-                        try:
-                            # 1. Xóa file vật lý
-                            os.remove(filepath)
-                            
-                            # 2. Cập nhật Database (Tìm đơn hàng có file này)
-                            # Lưu ý: Vì payment_info lưu JSON dạng string, ta dùng LIKE để tìm
-                            orders = Order.query.filter(Order.payment_info.like(f'%{filename}%')).all()
-                            for order in orders:
-                                if order.payment_info:
-                                    info = json.loads(order.payment_info)
-                                    if info.get('bill_image') == filename:
-                                        info['bill_image'] = None # Xóa link ảnh
-                                        order.payment_info = json.dumps(info)
-                            
-                            count += 1
-                        except Exception as inner_e:
-                            print(f"⚠️ Lỗi khi xóa file {filename}: {inner_e}")
-            
-            if count > 0: 
-                db.session.commit() # Lưu thay đổi vào DB
-                print(f"🧹 Đã xóa {count} bill cũ và cập nhật CSDL.")
-                
-    except Exception as e: 
-        print(f"❌ Lỗi dọn dẹp: {e}")
+        for order in old_orders:
+            try:
+                if order.payment_info:
+                    info = json.loads(order.payment_info)
+                    img_name = info.get('bill_image')
+                    if img_name:
+                        # Xóa file vật lý
+                        file_path = os.path.join(app.config['UPLOAD_FOLDER'], img_name)
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                        
+                        # Cập nhật DB
+                        info['bill_image'] = None
+                        order.payment_info = json.dumps(info)
+                        count += 1
+            except Exception as e:
+                print(f"Lỗi xóa bill đơn {order.id}: {e}")
+        
+        if count > 0:
+            db.session.commit()
+            print(f"🧹 Đã dọn dẹp {count} ảnh hóa đơn cũ.")
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
