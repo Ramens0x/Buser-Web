@@ -38,7 +38,7 @@ $(document).ready(function () {
                             <td>${escapeHTML(kyc.full_name)}</td>
                             <td>${escapeHTML(kyc.id_number)}</td>
                             <td>
-                            <img src="${API_URL}/api/kyc-image/${kyc.id_front}?token=${token}" class="kyc-image-thumb" onclick="window.open('${API_URL}/api/kyc-image/${kyc.id_front}?token=${token}', '_blank')">
+                            <img src="${API_URL}/api/kyc-image/${kyc.id_front}" class="kyc-image-thumb" onclick="window.open('${API_URL}/api/kyc-image/${kyc.id_front}', '_blank')">
                             </td>
                             <td>${kyc.submitted_at}</td>
                             <td><span class="${statusClass}">${statusText}</span></td>
@@ -68,9 +68,9 @@ $(document).ready(function () {
                 if (!kyc) return;
 
                 $('#modal-username').text(kyc.username);
-                $('#modal-img-front').attr('src', `${API_URL}/api/kyc-image/${kyc.id_front}?token=${token}`);
-                $('#modal-img-back').attr('src', `${API_URL}/api/kyc-image/${kyc.id_back}?token=${token}`);
-                $('#modal-img-selfie').attr('src', `${API_URL}/api/kyc-image/${kyc.selfie}?token=${token}`);
+                $('#modal-img-front').attr('src', `${API_URL}/api/kyc-image/${kyc.id_front}`);
+                $('#modal-img-back').attr('src', `${API_URL}/api/kyc-image/${kyc.id_back}`);
+                $('#modal-img-selfie').attr('src', `${API_URL}/api/kyc-image/${kyc.selfie}`);
                 $('#modal-admin-note').val(kyc.admin_note || '');
 
                 // Ẩn nút nếu đã duyệt/từ chối
