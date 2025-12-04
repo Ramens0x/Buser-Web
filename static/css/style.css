@@ -1,16 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 body {
-    background-color: #f0f2f5; 
-    font-family: 'Inter', sans-serif; 
+    background-color: #f0f2f5;
+    font-family: 'Inter', sans-serif;
     color: #333;
     padding-top: 0;
 }
 
 .navbar-default {
-    background: linear-gradient(90deg, #101820 0%, #2882C0 100%); /* Gradient đen xanh */
+    background: linear-gradient(90deg, #101820 0%, #2882C0 100%);
+    /* Gradient đen xanh */
     border: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Định dạng chung cho các khung */
@@ -57,11 +58,13 @@ body {
    CSS CHO FORM SWAP MỚI
    ======================== */
 
-   #swap-form-panel {
+#swap-form-panel {
     background: #ffffff;
     border: none;
-    border-radius: 16px; /* Bo góc tròn hơn */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Đổ bóng mềm mại */
+    border-radius: 16px;
+    /* Bo góc tròn hơn */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    /* Đổ bóng mềm mại */
     padding: 20px;
     margin-bottom: 30px;
 }
@@ -149,19 +152,22 @@ body {
 
 /* Nút chuyển đổi */
 .swap-toggle {
-    display: flex; /* Dùng flex để căn giữa */
+    display: flex;
+    /* Dùng flex để căn giữa */
     justify-content: center;
-    margin: -10px 0; /* Thu hẹp khoảng cách */
+    margin: -10px 0;
+    /* Thu hẹp khoảng cách */
     position: relative;
     z-index: 10;
 }
+
 .swap-toggle .btn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e1e4e8;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     color: #2882C0;
     font-size: 16px;
     padding: 0;
@@ -170,7 +176,8 @@ body {
 }
 
 .swap-toggle .btn:hover {
-    transform: rotate(180deg); /* Xoay khi di chuột vào */
+    transform: rotate(180deg);
+    /* Xoay khi di chuột vào */
     background: #f0f8ff;
     border-color: #2882C0;
 }
@@ -196,9 +203,11 @@ body {
 }
 
 #btn-submit-swap:hover {
-    transform: translateY(-2px); /* Hiệu ứng nhấn nổi */
+    transform: translateY(-2px);
+    /* Hiệu ứng nhấn nổi */
     box-shadow: 0 6px 20px rgba(40, 130, 192, 0.4);
 }
+
 /* --- CSS CHO FOOTER MỚI --- */
 .buser-footer {
     background-color: #222;
@@ -268,7 +277,7 @@ body {
 .price-list {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -286,11 +295,17 @@ body {
     border-bottom: 1px solid #f0f0f0;
     align-items: center;
     transition: background 0.2s;
-    margin: 0 !important; /* Fix lỗi row của bootstrap */
+    margin: 0 !important;
+    /* Fix lỗi row của bootstrap */
 }
 
-.price-item:last-child { border-bottom: none; }
-.price-item:hover { background-color: #f9fcff; }
+.price-item:last-child {
+    border-bottom: none;
+}
+
+.price-item:hover {
+    background-color: #f9fcff;
+}
 
 .coin-info {
     display: flex;
@@ -318,13 +333,15 @@ body {
 }
 
 .price-buy {
-    color: #28a745; /* Màu xanh lá */
+    color: #28a745;
+    /* Màu xanh lá */
     font-weight: 700;
     font-size: 15px;
 }
 
 .price-sell {
-    color: #dc3545; /* Màu đỏ */
+    color: #dc3545;
+    /* Màu đỏ */
     font-weight: 700;
     font-size: 15px;
 }
@@ -336,8 +353,18 @@ body {
         margin-top: 5px;
         font-size: 13px;
     }
-    .price-buy::before { content: "Mua: "; color: #999; font-weight: normal; }
-    .price-sell::before { content: "Bán: "; color: #999; font-weight: normal; }
+
+    .price-buy::before {
+        content: "Mua: ";
+        color: #999;
+        font-weight: normal;
+    }
+
+    .price-sell::before {
+        content: "Bán: ";
+        color: #999;
+        font-weight: normal;
+    }
 }
 
 .floating-telegram {
@@ -351,30 +378,35 @@ body {
     height: 60px;
     border-radius: 50%;
     text-align: center;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s;
 }
+
 .floating-telegram:hover {
     background-color: #0077b5;
     transform: scale(1.1);
 }
+
 .floating-telegram i {
     line-height: 60px;
     font-size: 30px;
 }
 
-/* --- SỬA LỖI HIỂN THỊ GIÁ --- */
 /* Target đúng vào class đang dùng trong HTML mới */
-.price-buy, .price-sell {
-    white-space: nowrap !important; /* Bắt buộc thẳng hàng */
-    display: inline-block;          /* Giữ khối để không bị vỡ layout */
-    width: 100%;                    /* Căn chỉnh lại chiều rộng */
+.price-buy,
+.price-sell {
+    white-space: nowrap !important;
+    /* Bắt buộc thẳng hàng */
+    display: block;
 }
 
 /* Tinh chỉnh cho mobile để chữ nhỏ hơn chút nếu màn hình quá bé */
 @media (max-width: 768px) {
-    .price-buy, .price-sell {
-        font-size: 13px !important; /* Giảm size chữ trên điện thoại */
+
+    .price-buy,
+    .price-sell {
+        font-size: 11px !important;
+        /* Giảm size chữ trên điện thoại */
     }
 }
 
@@ -383,36 +415,54 @@ body {
     background: #fff;
     padding: 40px;
     border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     border: none;
 }
+
 .auth-bg {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     min-height: 100vh;
 }
+
 /* Input đẹp hơn */
 .form-control {
-    height: 45px; /* Cao hơn, dễ bấm */
+    height: 45px;
+    /* Cao hơn, dễ bấm */
     border-radius: 8px;
     border: 1px solid #e1e1e1;
     box-shadow: none;
     transition: all 0.3s;
 }
+
 .form-control:focus {
     border-color: #2882C0;
     box-shadow: 0 0 0 3px rgba(40, 130, 192, 0.1);
 }
 
 .tb-history tr td {
-    border: none !important; /* Bỏ viền */
+    border: none !important;
+    /* Bỏ viền */
     padding: 12px 8px !important;
     font-size: 13px;
 }
+
 .tb-history tr:nth-child(odd) {
-    background-color: #f9fbfd; /* Màu nền xen kẽ nhẹ nhàng */
+    background-color: #f9fbfd;
+    /* Màu nền xen kẽ nhẹ nhàng */
 }
-.history-buy { color: #28a745; font-weight: 600; } /* Màu xanh tươi hơn */
-.history-sell { color: #dc3545; font-weight: 600; } /* Màu đỏ tươi hơn */
+
+.history-buy {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Màu xanh tươi hơn */
+.history-sell {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Màu đỏ tươi hơn */
 
 /* 1. AUTH PAGES (Trang Đăng nhập/Đăng ký) */
 .auth-bg {
@@ -421,15 +471,17 @@ body {
     display: flex;
     align-items: center;
 }
+
 .auth-box {
     background: #fff;
     padding: 40px;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border: none;
     position: relative;
     overflow: hidden;
 }
+
 .auth-box h4 {
     font-weight: 700;
     color: #2882C0;
@@ -437,6 +489,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
 .auth-box .form-control {
     height: 45px;
     border-radius: 8px;
@@ -444,10 +497,12 @@ body {
     border: 1px solid #eee;
     box-shadow: none;
 }
+
 .auth-box .form-control:focus {
     background: #fff;
     border-color: #2882C0;
 }
+
 .auth-box .input-group-addon {
     background: #f9f9f9;
     border: 1px solid #eee;
@@ -458,30 +513,34 @@ body {
 .profile-sidebar {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     margin-bottom: 20px;
 }
-.profile-sidebar .nav-pills > li > a {
+
+.profile-sidebar .nav-pills>li>a {
     border-radius: 0;
     color: #555;
     padding: 15px 20px;
     border-left: 4px solid transparent;
     font-weight: 600;
 }
-.profile-sidebar .nav-pills > li.active > a, 
-.profile-sidebar .nav-pills > li.active > a:hover {
+
+.profile-sidebar .nav-pills>li.active>a,
+.profile-sidebar .nav-pills>li.active>a:hover {
     background-color: #f0f8ff;
     color: #2882C0;
     border-left-color: #2882C0;
 }
-.profile-sidebar .nav-pills > li > a:hover {
+
+.profile-sidebar .nav-pills>li>a:hover {
     background-color: #fafafa;
 }
+
 .profile-content {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 30px;
     min-height: 500px;
 }
@@ -493,6 +552,7 @@ body {
     margin-bottom: 30px;
     position: relative;
 }
+
 .stepper::before {
     content: '';
     position: absolute;
@@ -503,13 +563,16 @@ body {
     background: #eee;
     z-index: 1;
 }
+
 .step {
-    background: #f9f9f9; /* Nền để che đường kẻ */
+    background: #f9f9f9;
+    /* Nền để che đường kẻ */
     z-index: 2;
     text-align: center;
     width: 33.33%;
     position: relative;
 }
+
 .step .circle {
     width: 30px;
     height: 30px;
@@ -521,34 +584,60 @@ body {
     font-weight: bold;
     margin-bottom: 5px;
 }
+
 .step.active .circle {
     background: #2882C0;
     color: #fff;
     box-shadow: 0 0 0 4px rgba(40, 130, 192, 0.2);
 }
+
 .step.active .label {
     color: #2882C0;
     font-weight: bold;
 }
 
 /* 4. BẢNG & BADGE */
-.table-clean > thead > tr > th { border-bottom: 2px solid #f0f0f0; color: #888; font-weight: 600; }
-.table-clean > tbody > tr > td { border-top: 1px solid #f9f9f9; padding: 12px 8px; vertical-align: middle; }
+.table-clean>thead>tr>th {
+    border-bottom: 2px solid #f0f0f0;
+    color: #888;
+    font-weight: 600;
+}
+
+.table-clean>tbody>tr>td {
+    border-top: 1px solid #f9f9f9;
+    padding: 12px 8px;
+    vertical-align: middle;
+}
 
 /* 5. ADMIN DASHBOARD STATS */
 .stat-card {
     background: #fff;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
     margin-bottom: 20px;
     transition: transform 0.2s;
 }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-card h3 { font-weight: 800; margin-top: 5px; color: #333; }
-.stat-card p { color: #777; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card h3 {
+    font-weight: 800;
+    margin-top: 5px;
+    color: #333;
+}
+
+.stat-card p {
+    color: #777;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .stat-card .icon-bg {
     position: absolute;
     right: -10px;
@@ -569,5 +658,12 @@ body {
     cursor: pointer;
     transition: all 0.3s;
 }
-.upload-dropzone:hover { background: #e6f2ff; }
-.upload-dropzone i { color: #2882C0; margin-bottom: 10px; }
+
+.upload-dropzone:hover {
+    background: #e6f2ff;
+}
+
+.upload-dropzone i {
+    color: #2882C0;
+    margin-bottom: 10px;
+}
