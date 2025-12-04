@@ -157,14 +157,7 @@
     <script src="/static/js/main.js"></script>
 
     <script>
-        function getAuthToken() {
-            const loginDataString = localStorage.getItem('buser_login_data');
-            if (!loginDataString) return null;
-            try { return JSON.parse(loginDataString).token; } catch (e) { return null; }
-        }
-
-        const token = getAuthToken();
-        if (!token) {
+        if (!localStorage.getItem('buser_user')) {
             window.location.href = "login.html";
         }
 
