@@ -1297,6 +1297,10 @@ def is_valid_image(file_stream):
         file_stream.seek(0, 2)  # Di chuyển đến cuối file
         size = file_stream.tell()
         file_stream.seek(0)  # Quay lại đầu
+        img = Image.open(file_stream)
+        width, height = img.size
+        if width > 4000 or height > 4000:  # Chặn ảnh quá lớn
+            return False
         
         if size > 5 * 1024 * 1024:  # 5MB
             return False
