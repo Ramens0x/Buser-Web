@@ -65,6 +65,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Tự tạo thư mục nếu chưa c�
 os.makedirs(KYC_UPLOAD_FOLDER, exist_ok=True)
 csrf = CSRFProtect(app)
 
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print(f"✅ Đã gửi email tới {msg.recipients[0]}")
+        except Exception as e:
+            print(f"❌ Lỗi gửi email async: {e}")
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -378,45 +386,49 @@ def api_calculate_swap():
     amount_in = float(data.get('amount', 0))
     direction = data.get('direction', 'from') 
     mode = data.get('mode', 'sell')
-    coin_type = data.get('coin', 'bustabit, ether, usdt, sol, bnb') 
+    coin_type = data.get('coin', 'bustabit') 
     
     settings = load_settings()
     coin_fees = settings.get('coin_fees', {})
-
     fee_data = coin_fees.get(coin_type, {})
 
     if isinstance(fee_data, (int, float)):
         base_fee = float(fee_data)
-        threshold = 0
+        threshold = 0.0
     else:
         base_fee = float(fee_data.get('fee', 0))
         threshold = float(fee_data.get('threshold', 0))
     
-    current_fee = base_fee
-    if threshold > 0 and amount_in >= threshold:
-        current_fee = 0
-
     if current_rates.get(coin_type, {}).get('buy', 0) == 0:
         from price_service import price_service
         all_prices = price_service.get_all_prices()
         if all_prices:
             current_rates.update(all_prices)
         
-    amount_out = 0
-    
+    amount_out = 0.0
+    current_fee = base_fee 
+
     try:
         if mode == 'buy':
-            rate = current_rates[coin_type]['buy']
+            rate = float(current_rates.get(coin_type, {}).get('buy', 0))
             if rate > 0:
+                if threshold > 0:
+                    amount_in_coin = amount_in
+                    if direction == 'from': 
+                        amount_in_coin = amount_in / rate
+                    
+                    if amount_in_coin >= threshold:
+                        current_fee = 0.0
+
                 if direction == 'from': 
                     net_vnd = amount_in - current_fee
-                    if net_vnd < 0: net_vnd = 0
+                    if net_vnd < 0: net_vnd = 0.0
                     amount_out = net_vnd / rate
                 else:
                     amount_out = (amount_in * rate) + current_fee
 
         elif mode == 'sell':
-            rate = current_rates[coin_type]['sell']
+            rate = float(current_rates.get(coin_type, {}).get('sell', 0))
             if rate > 0:
                 if direction == 'from':
                     amount_out = amount_in * rate
@@ -425,8 +437,8 @@ def api_calculate_swap():
                 
         return jsonify({
             'amount_out': amount_out,
-            'fee_applied': current_fee,  
-            'threshold_info': threshold  
+            'fee_applied': current_fee,     
+            'threshold_info': threshold   
         })
 
     except Exception as e:
@@ -488,9 +500,11 @@ def api_register_user():
                       sender=app.config.get('MAIL_USERNAME'),
                       recipients=[email])
         msg.body = f"Chào {username},\n\nVui lòng click vào link sau để kích hoạt tài khoản:\n{link}\n\nCảm ơn!"
-        mail.send(msg)
+        
+        eventlet.spawn(send_async_email, app, msg)
+        
     except Exception as e:
-        print(f"Lỗi gửi mail: {e}")
+        print(f"Lỗi setup gửi mail: {e}")
     
     return jsonify({"success": True, "message": "Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản."})
 
