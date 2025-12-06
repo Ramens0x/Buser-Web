@@ -424,7 +424,7 @@ def api_calculate_swap():
                     net_vnd = amount_in - current_fee
                     if net_vnd < 0: net_vnd = 0.0
                     amount_out = net_vnd / rate
-                else:
+                else: 
                     amount_out = (amount_in * rate) + current_fee
 
         elif mode == 'sell':
@@ -438,7 +438,7 @@ def api_calculate_swap():
         return jsonify({
             'amount_out': amount_out,
             'fee_applied': current_fee,     
-            'threshold_info': threshold   
+            'threshold_info': threshold     
         })
 
     except Exception as e:

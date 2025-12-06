@@ -82,6 +82,8 @@ $(document).ready(function () {
             global: false,
             success: function (data) {
 
+                current_rates = data;
+
                 const showPrice = (price) => {
                     return (price && price > 0) ? numberFormat(price, 0) + ' ₫' : '<span style="font-size:12px; color:#999;">Đang cập nhật</span>';
                 };
@@ -186,12 +188,14 @@ $(document).ready(function () {
                 } else {
                     $('#input-coin').val(numberFormat(data.amount_out, 8));
                 }
+
                 if (currentMode === 'buy' && inputType === 'coin') {
                     let threshold = data.threshold_info || 0;
                     let feeToShow = data.fee_applied || 0;
 
                     let currentRate = 0;
-                    if (current_rates[currentCoin]) {
+
+                    if (current_rates && current_rates[currentCoin]) {
                         currentRate = current_rates[currentCoin].buy;
                     }
 
@@ -213,9 +217,11 @@ $(document).ready(function () {
                             $('#rate-display').text(baseRateText);
                         }
                     } else {
+                        // Các coin khác
                         $('#rate-display').text(baseRateText);
                     }
                 }
+
                 isCalculating = false;
                 validateLiquidity();
             },
@@ -745,7 +751,10 @@ $(document).ready(function () {
 
     // --- XỬ LÝ NÚT "TIẾP TỤC" (LƯU LỰA CHỌN) ---
     $('#btn-submit-swap').on('click', function () {
-        if (!localStorage.getItem('buser_user')) return;
+        if (!localStorage.getItem('buser_user')) {
+            window.location.href = "login.html";
+            return;
+        }
 
         // [SỬA LỖI] Đọc từ các ID input mới
         let amountCoin = parseFloat($('#input-coin').val().replace(/,/g, '')) || 0;
