@@ -112,9 +112,8 @@ class PriceService:
                 return self.cache['usd_vnd_rate']
         
         # Fallback cuối cùng: giá cố định
-        fallback_rate = 25000
-        print(f"⚠️ All forex APIs failed. Using fallback rate: {fallback_rate}")
-        return fallback_rate
+        print(f"⚠️ All forex APIs failed. Cannot update price.")
+        return None 
 
     def get_crypto_price_usd(self, coin_key):
         """Lấy giá crypto theo USD (có cache)"""

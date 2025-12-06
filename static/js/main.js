@@ -186,6 +186,36 @@ $(document).ready(function () {
                 } else {
                     $('#input-coin').val(numberFormat(data.amount_out, 8));
                 }
+                if (currentMode === 'buy' && inputType === 'coin') {
+                    let threshold = data.threshold_info || 0;
+                    let feeToShow = data.fee_applied || 0;
+
+                    let currentRate = 0;
+                    if (current_rates[currentCoin]) {
+                        currentRate = current_rates[currentCoin].buy;
+                    }
+
+                    let baseRateText = `1 ${currentCoin.toUpperCase()} = ${numberFormat(currentRate, 0)} VNĐ`;
+
+                    if (currentCoin === 'bustabit' && threshold > 0) {
+                        if (amountIn > 0 && amountIn < threshold) {
+                            $('#rate-display').html(`
+                                ${baseRateText} <br>
+                                <span style="color:#d9534f;">Phí giao dịch: ${numberFormat(feeToShow)} đ</span> <br> 
+                                <small style="color:#28a745; font-weight:bold;">💡 Mua >= ${numberFormat(threshold)} Bits để được Miễn Phí!</small>
+                            `);
+                        } else if (amountIn >= threshold) {
+                            $('#rate-display').html(`
+                                ${baseRateText} <br>
+                                <span style="color:#28a745; font-weight:bold;">🎉 Đã đạt ngưỡng miễn phí giao dịch!</span>
+                            `);
+                        } else {
+                            $('#rate-display').text(baseRateText);
+                        }
+                    } else {
+                        $('#rate-display').text(baseRateText);
+                    }
+                }
                 isCalculating = false;
                 validateLiquidity();
             },
@@ -219,6 +249,30 @@ $(document).ready(function () {
         $('#input-vnd').val('0.00');
         updatePrices();
     }
+
+    function validateInput(input) {
+        let value = input.value.replace(/[^0-9.]/g, '');
+
+        if ((value.match(/\./g) || []).length > 1) {
+            value = value.replace(/\.+$/, "");
+        }
+
+        if (value !== input.value) {
+            input.value = value;
+        }
+    }
+
+    $('#input-coin, #input-vnd').on('input', function () {
+        validateInput(this);
+    });
+
+    $('#input-coin, #input-vnd').on('paste', function (e) {
+        let pastedData = e.originalEvent.clipboardData.getData('text');
+        if (!/^[0-9.]+$/.test(pastedData)) {
+            e.preventDefault();
+            alert("Vui lòng chỉ dán số!");
+        }
+    });
 
     // --- KÍCH HOẠT CÁC SỰ KIỆN FORM SWAP ---
     $('#input-coin').on('keyup', function () {
@@ -291,7 +345,7 @@ $(document).ready(function () {
     function updateBalanceDisplay() {
         if (!window.siteLiquidity) return;
 
-        $('#input-vnd').closest('.swap-field').find('.balance-info').text(`Số dư hệ thống: ${numberFormat(window.siteLiquidity.vnd, 0)} VNĐ`);
+        $('#input-vnd').closest('.swap-field').find('.balance-info').text('');
 
         let coinBal = 0;
         let unit = currentCoin.toUpperCase();
@@ -861,11 +915,25 @@ $(document).ready(function () {
                     $('input[name="liquidity_bnb"]').val(response.settings.liquidity_bnb);
                     $('input[name="liquidity_sol"]').val(response.settings.liquidity_sol);
                     if (response.settings.coin_fees) {
-                        $('input[name="fee_bustabit"]').val(response.settings.coin_fees.bustabit);
-                        $('input[name="fee_ether"]').val(response.settings.coin_fees.ether);
-                        $('input[name="fee_usdt"]').val(response.settings.coin_fees.usdt);
-                        $('input[name="fee_sol"]').val(response.settings.coin_fees.sol);
-                        $('input[name="fee_bnb"]').val(response.settings.coin_fees.bnb);
+                        const fees = response.settings.coin_fees;
+
+                        const getFee = (coin) => (fees[coin] && typeof fees[coin] === 'object') ? fees[coin].fee : (fees[coin] || 0);
+                        const getThresh = (coin) => (fees[coin] && typeof fees[coin] === 'object') ? fees[coin].threshold : 0;
+
+                        $('input[name="fee_bustabit_amount"]').val(getFee('bustabit'));
+                        $('input[name="fee_bustabit_threshold"]').val(getThresh('bustabit'));
+
+                        $('input[name="fee_ether_amount"]').val(getFee('ether'));
+                        $('input[name="fee_ether_threshold"]').val(getThresh('ether'));
+
+                        $('input[name="fee_usdt_amount"]').val(getFee('usdt'));
+                        $('input[name="fee_usdt_threshold"]').val(getThresh('usdt'));
+
+                        $('input[name="fee_sol_amount"]').val(getFee('sol'));
+                        $('input[name="fee_sol_threshold"]').val(getThresh('sol'));
+
+                        $('input[name="fee_bnb_amount"]').val(getFee('bnb'));
+                        $('input[name="fee_bnb_threshold"]').val(getThresh('bnb'));
                     }
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
 
@@ -979,11 +1047,26 @@ $(document).ready(function () {
             liquidity_bnb: $('input[name="liquidity_bnb"]').val(),
             liquidity_sol: $('input[name="liquidity_sol"]').val(),
             coin_fees: {
-                bustabit: $('input[name="fee_bustabit"]').val(),
-                ether: $('input[name="fee_ether"]').val(),
-                usdt: $('input[name="fee_usdt"]').val(),
-                sol: $('input[name="fee_sol"]').val(),
-                bnb: $('input[name="fee_bnb"]').val()
+                bustabit: {
+                    fee: $('input[name="fee_bustabit_amount"]').val(),
+                    threshold: $('input[name="fee_bustabit_threshold"]').val()
+                },
+                ether: {
+                    fee: $('input[name="fee_ether_amount"]').val(),
+                    threshold: $('input[name="fee_ether_threshold"]').val()
+                },
+                usdt: {
+                    fee: $('input[name="fee_usdt_amount"]').val(),
+                    threshold: $('input[name="fee_usdt_threshold"]').val()
+                },
+                sol: {
+                    fee: $('input[name="fee_sol_amount"]').val(),
+                    threshold: $('input[name="fee_sol_threshold"]').val()
+                },
+                bnb: {
+                    fee: $('input[name="fee_bnb_amount"]').val(),
+                    threshold: $('input[name="fee_bnb_threshold"]').val()
+                }
             },
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
             admin_banks: cleanBanks

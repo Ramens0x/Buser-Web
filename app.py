@@ -32,6 +32,8 @@ from utils import VietQR, generate_qr_code_image, remove_accents
 import logging
 from logging.handlers import RotatingFileHandler
 from sqlalchemy import or_
+from functools import wraps
+from PIL import Image, ImageOps
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,19 @@ def allowed_file(filename):
 def allowed_kyc_file(filename):
     ALLOWED = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED
+
+def save_secure_image(file_storage, folder, prefix):
+    try:
+        img = Image.open(file_storage)
+        img = ImageOps.exif_transpose(img)
+        img = img.convert('RGB')
+        filename = f"{prefix}_{int(time.time())}.jpg"
+        file_path = os.path.join(folder, secure_filename(filename))
+        img.save(file_path, format='JPEG', quality=85, optimize=True)
+        return filename
+    except Exception as e:
+        print(f"Lỗi xử lý ảnh: {e}")
+        return None
 
 def clean_old_bills():
     with app.app_context():
@@ -248,19 +263,18 @@ def load_settings():
             "TELEGRAM_BOT_TOKEN": "",
             "TELEGRAM_CHAT_ID": "",
             "admin_banks": default_banks,
-            "liquidity_vnd": 500000000,
             "liquidity_usdt": 10000,
             "liquidity_btc": 1000000,
             "liquidity_eth": 1000000,
             "liquidity_bnb": 10,
             "liquidity_sol": 10,
             "coin_fees": {
-                "bustabit": 50000,  
-                "ether": 100000,     
-                "usdt": 10000,      
-                "sol": 10000,       
-                "bnb": 10000       
-                },
+                "bustabit": {"fee": 50000, "threshold": 20000},  # Phí 50k, miễn phí nếu > 20k
+                "ether": {"fee": 100000, "threshold": 50000},    
+                "usdt": {"fee": 10000, "threshold": 1000},
+                "sol": {"fee": 10000, "threshold": 10},
+                "bnb": {"fee": 10000, "threshold": 5}
+            },
             "supported_banks": [
             {"name": "Vietcombank (VCB)", "bin": "970436", "short_name": "Vietcombank"},
             {"name": "VietinBank (ICB)", "bin": "970415", "short_name": "VietinBank"},
@@ -336,6 +350,18 @@ def get_user_from_request():
     except Exception:
         return None
 
+# --- DECORATOR KIỂM TRA QUYỀN ADMIN ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = get_user_from_request()
+        if not user:
+            return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
+        if user.role != 'Admin':
+            return jsonify({"success": False, "message": "Bạn không có quyền truy cập (Admin only)"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route("/api/config/supported-banks", methods=['GET'])
 def get_supported_banks():
     settings = load_settings()
@@ -356,8 +382,19 @@ def api_calculate_swap():
     
     settings = load_settings()
     coin_fees = settings.get('coin_fees', {})
+
+    fee_data = coin_fees.get(coin_type, {})
+
+    if isinstance(fee_data, (int, float)):
+        base_fee = float(fee_data)
+        threshold = 0
+    else:
+        base_fee = float(fee_data.get('fee', 0))
+        threshold = float(fee_data.get('threshold', 0))
     
-    current_fee = float(coin_fees.get(coin_type, 0))
+    current_fee = base_fee
+    if threshold > 0 and amount_in >= threshold:
+        current_fee = 0
 
     if current_rates.get(coin_type, {}).get('buy', 0) == 0:
         from price_service import price_service
@@ -386,7 +423,12 @@ def api_calculate_swap():
                 else:
                     amount_out = amount_in / rate
                 
-        return jsonify({'amount_out': amount_out})
+        return jsonify({
+            'amount_out': amount_out,
+            'fee_applied': current_fee,  
+            'threshold_info': threshold  
+        })
+
     except Exception as e:
         print(f"Calc Error: {e}")
         return jsonify({"amount_out": 0}), 200
@@ -691,7 +733,7 @@ def create_order():
 
     transaction_id = get_unique_order_id() 
     
-    # --- [LOGIC MỚI] Lấy tên người dùng cho nội dung CK (Mua) ---
+    # --- Lấy tên người dùng cho nội dung CK (Mua) ---
     user_account_name = ""
     kyc_info = KYC.query.filter_by(user_id=user.id).first()
     
@@ -705,11 +747,17 @@ def create_order():
             if selected_wallet and selected_wallet.name:
                 user_account_name = remove_accents(selected_wallet.name)
         
-        # 3. Chặn nếu thiếu tên
+        # 3. Lấy từ Tên trong NGÂN HÀNG (Dùng cho đơn BÁN)
+        if not user_account_name and bank_id:
+            selected_bank = Bank.query.filter_by(id=bank_id).first()
+            if selected_bank and selected_bank.account_name:
+                user_account_name = remove_accents(selected_bank.account_name)
+
+        # 4. Chặn nếu vẫn thiếu tên
         if not user_account_name:
             return jsonify({
                 "success": False, 
-                "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví (Ví dụ: NGUYEN VAN A) để nội dung chuyển khoản được chính xác."
+                "message": "Vui lòng cập nhật Họ và Tên chính xác trong Ví hoặc Ngân hàng để tạo đơn."
             }), 400
             
     transfer_keywords = ["ck tien", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan", "tra tien hang"]
@@ -772,6 +820,8 @@ def create_order():
     db.session.add(new_order)
     db.session.commit()
 
+    socketio.emit('admin_new_order', {'order_id': new_order.id})
+
     # Gửi Telegram
     try:
         if new_order.mode == 'buy':
@@ -801,8 +851,11 @@ def upload_bill():
         return jsonify({"success": False, "message": "File không hợp lệ hoặc bị lỗi!"}), 400
     
     if file and allowed_file(file.filename):
-        filename = secure_filename(f"{order_id}_{user.username}_{file.filename}")
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        prefix = f"{order_id}_{user.username}"
+        filename = save_secure_image(file, app.config['UPLOAD_FOLDER'], prefix)
+        
+        if not filename:
+            return jsonify({"success": False, "message": "Lỗi khi xử lý ảnh. Vui lòng thử lại."}), 500
         
         order = Order.query.filter_by(id=order_id, username=user.username).first()
         if order:
@@ -821,9 +874,9 @@ def upload_bill():
     return jsonify({"success": False, "message": "File không hợp lệ"}), 400
 
 @app.route("/api/admin/bill/<path:filename>")
+@admin_required
 def get_bill_image(filename):
     user = get_user_from_request()
-    if not user or user.role != 'Admin': return "Cấm truy cập", 403
     return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 # --- [MỚI] API LẤY CHI TIẾT ĐƠN HÀNG (CHO TRANG THANH TOÁN) ---
@@ -880,14 +933,18 @@ def get_order_detail(order_id):
 
 # --- API ADMIN ---
 @app.route("/api/admin/settings", methods=['GET', 'POST'])
+@admin_required
 def admin_settings():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
     if request.method == 'GET':
         return jsonify({"success": True, "settings": load_settings()})
     if request.method == 'POST':
         save_settings(request.json)
+        try:
+            msg = f"⚠️ *CẢNH BÁO BẢO MẬT*\nAdmin vừa cập nhật CÀI ĐẶT HỆ THỐNG (Bank, Wallet, Phí...).\nVui lòng kiểm tra nếu không phải bạn làm."
+            send_telegram_notification(msg)
+        except: pass
+
         return jsonify({"success": True, "message": "Cài đặt đã được lưu!"})
 
 @app.route("/api/generate-qr")
@@ -1057,10 +1114,9 @@ def user_cancel_order():
     return jsonify({"success": True, "message": "Đã hủy đơn hàng thành công!"})
 
 @app.route("/api/admin/cancel-order", methods=['POST'])
+@admin_required
 def admin_cancel_order():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
     data = request.json
     order_id = data.get('order_id')
     order = Order.query.filter_by(id=order_id, status='pending').first()
@@ -1084,9 +1140,9 @@ def admin_cancel_order():
 
     # --- API ADMIN ĐỂ XEM VÀ DUYỆT GIAO DỊCH ---
 @app.route("/api/admin/transactions", methods=['GET'])
+@admin_required
 def get_admin_transactions():
     user = get_user_from_request()
-    if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Không có quyền"}), 403
 
     # 1. Lấy danh sách đơn hàng đang chờ (Pending)
     pending_orders = Order.query.filter_by(status='pending').order_by(Order.created_at.desc()).all()
@@ -1200,10 +1256,9 @@ def get_admin_transactions():
     return jsonify({"success": True, "transactions": orders_list, "stats": stats_dict})
 
 @app.route("/api/admin/transactions/complete", methods=['POST'])
+@admin_required
 def complete_admin_transaction():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
     
     data = request.json
     order_id = data.get('order_id')
@@ -1254,10 +1309,9 @@ def get_public_transactions():
     
     # ---API ADMIN XEM LỊCH SỬ GIAO DỊCH ĐÃ HOÀN THÀNH ---
 @app.route("/api/admin/transactions/history", methods=['GET'])
+@admin_required
 def get_admin_transactions_history():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
 
     # Lấy tham số từ URL
     page = request.args.get('page', 1, type=int)
@@ -1326,10 +1380,9 @@ def get_admin_transactions_history():
     
     # ---API ADMIN QUẢN LÝ NGƯỜI DÙNG ---
 @app.route("/api/admin/users", methods=['GET'])
+@admin_required
 def get_admin_all_users():
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
 
     try:
         # Lấy tất cả người dùng, trừ chính admin
@@ -1542,9 +1595,9 @@ def get_kyc_status():
 
 # 3. Admin lấy danh sách KYC
 @app.route("/api/admin/kyc-list", methods=['GET'])
+@admin_required
 def admin_get_kyc_list():
     user = get_user_from_request()
-    if not user or user.role != 'Admin': return jsonify({"success": False, "message": "Cấm truy cập"}), 403
     
     # Lấy danh sách, sắp xếp pending lên đầu
     reqs = KYC.query.order_by(
@@ -1599,9 +1652,9 @@ def serve_kyc_image(filename):
 
 # 5. Admin duyệt/từ chối KYC
 @app.route("/api/admin/kyc-review", methods=['POST'])
+@admin_required
 def admin_review_kyc():
     user = get_user_from_request()
-    if not user or user.role != 'Admin': return jsonify({"success": False}), 403
     
     data = request.json
     kyc = KYC.query.get(data.get('kyc_id'))
@@ -1715,11 +1768,9 @@ def api_usd_vnd_rate():
 # API ADMIN: Quản lý Spread
 
 @app.route("/api/admin/update-spread", methods=['POST'])
+@admin_required
 def admin_update_spread():
-    """API Admin: Cập nhật spread cho coin"""
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền"}), 403
     
     data = request.json
     coin = data.get('coin', '').lower()
@@ -1728,6 +1779,11 @@ def admin_update_spread():
     
     try:
         price_service.update_spread(coin, buy_percent, sell_percent)
+        try:
+            msg = f"📊 *THAY ĐỔI GIÁ (SPREAD)*\nCoin: {coin.upper()}\nMua: +{buy_percent}%\nBán: -{sell_percent}%"
+            send_telegram_notification(msg)
+        except: pass
+        
         return jsonify({
             "success": True,
             "message": f"Đã cập nhật spread cho {coin}",
@@ -1739,11 +1795,9 @@ def admin_update_spread():
         return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route("/api/admin/get-spread", methods=['GET'])
+@admin_required
 def admin_get_spread():
-    """API Admin: Xem spread hiện tại"""
     user = get_user_from_request()
-    if not user or user.role != 'Admin':
-        return jsonify({"success": False, "message": "Không có quyền"}), 403
     
     return jsonify({
         "success": True,
@@ -1757,7 +1811,6 @@ def get_site_config():
     return jsonify({
         "success": True,
         "liquidity": {
-            "vnd": settings.get('liquidity_vnd', 0),
             "usdt": settings.get('liquidity_usdt', 0),
             "btc": settings.get('liquidity_btc', 0),
             "eth": settings.get('liquidity_eth', 0),

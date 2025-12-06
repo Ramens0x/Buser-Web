@@ -99,11 +99,6 @@
                             khách xem)</div>
                         <div class="panel-body">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Số dư VNĐ:</label>
-                                <div class="col-sm-9"><input type="number" class="form-control" name="liquidity_vnd">
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Số dư USDT:</label>
                                 <div class="col-sm-9"><input type="number" class="form-control" name="liquidity_usdt">
                                 </div>
@@ -239,37 +234,103 @@
                     </div>
 
                     <div class="panel panel-warning">
-                        <div class="panel-heading"><i class="fa fa-ticket"></i> Cấu hình Phí Mua (Cộng thêm VNĐ vào đơn
-                            MUA)</div>
+                        <div class="panel-heading"><i class="fa fa-ticket"></i> Cấu hình Phí Mua </div>
                         <div class="panel-body">
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Phí Bits (BTC):</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" name="fee_bustabit" placeholder="0">
+                            <div class="panel-body">
+                                <div class="alert alert-warning">
+                                    <small><i class="fa fa-info-circle"></i> Nếu khách mua số lượng <strong>lớn hơn hoặc
+                                            bằng</strong> "Ngưỡng Miễn Phí", hệ thống sẽ tự động tính phí là 0đ. Để 0
+                                        nếu không muốn miễn phí.</small>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Phí Ethos (ETH):</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" name="fee_ether" placeholder="0">
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Bits (BTC):</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Phí VNĐ</span>
+                                            <input type="number" class="form-control" name="fee_bustabit_amount"
+                                                placeholder="50000">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Miễn phí nếu mua &ge;</span>
+                                            <input type="number" class="form-control" name="fee_bustabit_threshold"
+                                                placeholder="20000">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Phí USDT (BEP20):</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" name="fee_usdt" placeholder="0">
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Ethos (ETH):</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Phí VNĐ</span>
+                                            <input type="number" class="form-control" name="fee_ether_amount"
+                                                placeholder="100000">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Miễn phí nếu mua &ge;</span>
+                                            <input type="number" class="form-control" name="fee_ether_threshold"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Phí Solana (SOL):</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" name="fee_sol" placeholder="0">
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">USDT (BEP20):</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Phí VNĐ</span>
+                                            <input type="number" class="form-control" name="fee_usdt_amount"
+                                                placeholder="10000">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Miễn phí nếu mua &ge;</span>
+                                            <input type="number" class="form-control" name="fee_usdt_threshold"
+                                                placeholder="1000">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Phí BNB (BEP20):</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" name="fee_bnb" placeholder="0">
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">BNB (BEP20):</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Phí VNĐ</span>
+                                            <input type="number" class="form-control" name="fee_bnb_amount"
+                                                placeholder="10000">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Miễn phí nếu mua &ge;</span>
+                                            <input type="number" class="form-control" name="fee_bnb_threshold"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Solana (SOL):</label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Phí VNĐ</span>
+                                            <input type="number" class="form-control" name="fee_sol_amount"
+                                                placeholder="10000">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Miễn phí nếu mua &ge;</span>
+                                            <input type="number" class="form-control" name="fee_sol_threshold"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-sm-12 text-right">

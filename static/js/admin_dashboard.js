@@ -1,9 +1,18 @@
 $(document).ready(function () {
-   
+
+    const socket = io();
+
+    socket.on('admin_new_order', function (data) {
+        new Audio('/static/sound/ding.mp3').play();
+        console.log("Có đơn mới:", data.order_id);
+        loadTransactions();
+        alert("🔔 Có đơn hàng mới: " + data.order_id);
+    });
+
     // --- Xử lý nút "Hủy Đơn" (Admin) ---
     $(document).on('click', '.btn-cancel-admin', function () {
-        const btn = $(this); 
-        const orderId = btn.data('id'); 
+        const btn = $(this);
+        const orderId = btn.data('id');
 
         if (!confirm(`ADMIN: Bạn có chắc chắn muốn HỦY đơn hàng ${orderId} không?`)) {
             return;
@@ -43,13 +52,13 @@ $(document).ready(function () {
                         $('#stat-vnd-out').text(numberFormat(response.stats.total_vnd_out, 0) + ' ₫');
                         $('#stat-vnd-in-month').text(numberFormat(response.stats.total_vnd_in_month, 0) + ' ₫');
                         $('#stat-vnd-out-month').text(numberFormat(response.stats.total_vnd_out_month, 0) + ' ₫');
-                        
+
                         $('#stat-bustabit').text(numberFormat(response.stats.total_bustabit_volume, 8));
-                        $('#stat-ether').text(numberFormat(response.stats.total_ether_volume, 8)); 
+                        $('#stat-ether').text(numberFormat(response.stats.total_ether_volume, 8));
                         $('#stat-usdt').text(numberFormat(response.stats.total_usdt_volume, 2));
-                        $('#stat-bnb').text(numberFormat(response.stats.total_bnb_volume, 4));     
+                        $('#stat-bnb').text(numberFormat(response.stats.total_bnb_volume, 4));
                         $('#stat-sol').text(numberFormat(response.stats.total_sol_volume, 4));
-                    
+
                         // 2. [MỚI] Vẽ Biểu đồ Pie (Mua vs Bán)
                         const ctxVnd = document.getElementById('vndChart').getContext('2d');
                         if (window.myVndChart) window.myVndChart.destroy(); // Xóa biểu đồ cũ nếu có để vẽ lại
@@ -65,7 +74,7 @@ $(document).ready(function () {
                             },
                             options: { responsive: true }
                         });
-                    
+
                         // 3. [MỚI] Vẽ Biểu đồ Bar (Volume các Coin)
                         const ctxCoin = document.getElementById('coinChart').getContext('2d');
                         if (window.myCoinChart) window.myCoinChart.destroy();
@@ -94,7 +103,7 @@ $(document).ready(function () {
                     }
                 }
             },
-            
+
             error: function (xhr) {
                 alert("Lỗi tải giao dịch: " + xhr.responseJSON.message);
                 window.location.href = "index.html"; // Đá về trang chủ nếu không phải Admin
@@ -108,16 +117,16 @@ $(document).ready(function () {
         $.ajax({
             url: `${API_URL}/api/config/supported-banks`,
             type: 'GET',
-            success: function(res) {
-                if(res.success && res.banks) {
+            success: function (res) {
+                if (res.success && res.banks) {
                     dynamicBinMap = {};
                     res.banks.forEach(b => {
                         // Map cả tên đầy đủ và tên ngắn vào BIN để dễ tìm
                         dynamicBinMap[b.name] = b.bin;
-                        dynamicBinMap[b.short_name] = b.bin; 
+                        dynamicBinMap[b.short_name] = b.bin;
                     });
                     // Sau khi có map thì mới load giao dịch để đảm bảo render đúng QR
-                    loadTransactions(); 
+                    loadTransactions();
                 }
             }
         });
@@ -142,8 +151,8 @@ $(document).ready(function () {
             }
             actionBtns += `<br><button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top:5px;"><i class="fa fa-times"></i> Hủy đơn</button>`;
 
-            let billLink = (order.bill_image && order.bill_image !== 'null') ? 
-                `<br><a href="${API_URL}/api/admin/bill/${order.bill_image}" target="_blank" class="btn btn-xs btn-info" style="margin-top:5px;"><i class="fa fa-picture-o"></i> Xem Bill</a>` : 
+            let billLink = (order.bill_image && order.bill_image !== 'null') ?
+                `<br><a href="${API_URL}/api/admin/bill/${order.bill_image}" target="_blank" class="btn btn-xs btn-info" style="margin-top:5px;"><i class="fa fa-picture-o"></i> Xem Bill</a>` :
                 `<br><small style="color:#999;">Chưa có bill</small>`;
 
             if (order.mode === 'buy') {
@@ -163,20 +172,20 @@ $(document).ready(function () {
                 // Bảng BÁN: 5 cột + QR Code + Copy Content
                 let qrBtn = '';
                 const copyBtn = `<button class="btn btn-xs btn-default" onclick="navigator.clipboard.writeText('${order.sell_content}');alert('Đã copy nội dung!')"><i class="fa fa-copy"></i> Copy ND</button>`;
-                
+
                 if (order.user_bank_raw) {
                     // 1. Tìm mã BIN dựa trên tên ngân hàng
                     let targetBin = '';
                     let bankNameRaw = order.user_bank_raw.bankName; // Lấy tên ngân hàng từ dữ liệu raw
-                    
+
                     if (dynamicBinMap[bankNameRaw]) {
                         targetBin = dynamicBinMap[bankNameRaw];
                     } else {
                         // 2. Tìm gần đúng (Fallback)
                         for (const [name, bin] of Object.entries(dynamicBinMap)) {
-                            if (bankNameRaw.includes(name) || name.includes(bankNameRaw)) { 
-                                targetBin = bin; 
-                                break; 
+                            if (bankNameRaw.includes(name) || name.includes(bankNameRaw)) {
+                                targetBin = bin;
+                                break;
                             }
                         }
                     }
