@@ -52,16 +52,15 @@ $(document).ready(function () {
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
-            // 1. Giữ nguyên logic thêm CSRF Token
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
-
-            // 2. Thêm Loading Indicator (Dùng FontAwesome để đồng bộ giao diện)
-            $('body').append('<div id="ajax-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;"><i class="fa fa-spinner fa-spin fa-3x" style="color:white;"></i></div>');
+            if (settings.global !== false) {
+                $('body').append('<div id="ajax-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;"><i class="fa fa-spinner fa-spin fa-3x" style="color:white;"></i></div>');
+            }
         },
-        complete: function () {
-            // 3. Ẩn Loading khi request xong
+        complete: function (xhr, status) {
+            // Ẩn Loading
             $('#ajax-loader').remove();
         },
         error: function (xhr) {
@@ -77,56 +76,56 @@ $(document).ready(function () {
     let isCalculating = false;
 
     function updatePrices() {
-        $.get(API_URL + "/api/prices", function (data) {
+        $.ajax({
+            url: API_URL + "/api/prices",
+            type: 'GET',
+            global: false,
+            success: function (data) {
 
-            // Hàm phụ để hiển thị giá an toàn
-            // Nếu giá > 0 thì format số, ngược lại hiện "Đang cập nhật"
-            const showPrice = (price) => {
-                return (price && price > 0) ? numberFormat(price, 0) + ' ₫' : '<span style="font-size:12px; color:#999;">Đang cập nhật</span>';
-            };
+                const showPrice = (price) => {
+                    return (price && price > 0) ? numberFormat(price, 0) + ' ₫' : '<span style="font-size:12px; color:#999;">Đang cập nhật</span>';
+                };
 
-            // Cập nhật từng coin
-            if (data.bustabit) {
-                $('#bustabit-buy').html(showPrice(data.bustabit.buy));
-                $('#bustabit-sell').html(showPrice(data.bustabit.sell));
+                if (data.bustabit) {
+                    $('#bustabit-buy').html(showPrice(data.bustabit.buy));
+                    $('#bustabit-sell').html(showPrice(data.bustabit.sell));
+                }
+
+                if (data.ether) {
+                    $('#ether-buy').html(showPrice(data.ether.buy));
+                    $('#ether-sell').html(showPrice(data.ether.sell));
+                }
+
+                if (data.btc) {
+                    $('#btc-buy').html(showPrice(data.btc.buy));
+                    $('#btc-sell').html(showPrice(data.btc.sell));
+                }
+
+                if (data.usdt) {
+                    $('#usdt-buy').html(showPrice(data.usdt.buy));
+                    $('#usdt-sell').html(showPrice(data.usdt.sell));
+                }
+
+                if (data.eth) {
+                    $('#eth-buy').html(showPrice(data.eth.buy));
+                    $('#eth-sell').html(showPrice(data.eth.sell));
+                }
+
+                if (data.bnb) {
+                    $('#bnb-buy').html(showPrice(data.bnb.buy));
+                    $('#bnb-sell').html(showPrice(data.bnb.sell));
+                }
+
+                if (data.sol) {
+                    $('#sol-buy').html(showPrice(data.sol.buy));
+                    $('#sol-sell').html(showPrice(data.sol.sell));
+                }
+                updateRateDisplay(data);
+            },
+            error: function () {
+                console.error("Không thể kết nối đến API backend " + API_URL);
+                $('.price-buy, .price-sell').text("Bảo trì").css('color', 'red').css('font-size', '12px');
             }
-
-            if (data.ether) {
-                $('#ether-buy').html(showPrice(data.ether.buy));
-                $('#ether-sell').html(showPrice(data.ether.sell));
-            }
-
-            if (data.btc) {
-                $('#btc-buy').html(showPrice(data.btc.buy));
-                $('#btc-sell').html(showPrice(data.btc.sell));
-            }
-
-            if (data.usdt) {
-                $('#usdt-buy').html(showPrice(data.usdt.buy));
-                $('#usdt-sell').html(showPrice(data.usdt.sell));
-            }
-
-            if (data.eth) {
-                $('#eth-buy').html(showPrice(data.eth.buy));
-                $('#eth-sell').html(showPrice(data.eth.sell));
-            }
-
-            if (data.bnb) {
-                $('#bnb-buy').html(showPrice(data.bnb.buy));
-                $('#bnb-sell').html(showPrice(data.bnb.sell));
-            }
-
-            if (data.sol) {
-                $('#sol-buy').html(showPrice(data.sol.buy));
-                $('#sol-sell').html(showPrice(data.sol.sell));
-            }
-
-            // Cập nhật tỷ giá bên dưới form
-            updateRateDisplay(data);
-        }).fail(function () {
-            console.error("Không thể kết nối đến API backend " + API_URL);
-            // Khi lỗi toàn bộ API, chuyển hết thành "Lỗi"
-            $('.price-buy, .price-sell').text("Bảo trì").css('color', 'red').css('font-size', '12px');
         });
     }
 
