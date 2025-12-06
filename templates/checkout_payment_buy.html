@@ -2,10 +2,11 @@
 <html lang="vi">
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh toán Đơn hàng - Buser.com</title>
+    <title>Thanh toán Đơn hàng - Buser.ink</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -57,7 +58,7 @@
         <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
             <div class="container">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM</a>
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.INK</a>
                 </div>
             </div>
         </nav>
@@ -66,7 +67,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                
+
                 <div class="stepper" style="margin-top: 40px;">
                     <div class="step">
                         <div class="circle"><i class="fa fa-check"></i></div>
@@ -84,49 +85,68 @@
 
                 <div class="auth-box" style="padding: 0; overflow: hidden;">
                     <div style="background: #f9fbfd; padding: 20px; text-align: center; border-bottom: 1px solid #eee;">
-                        <h4 style="margin: 0; color: #333;">Đơn Hàng Mua: <span id="order-id" style="color: #2882C0;">#...</span></h4>
+                        <h4 style="margin: 0; color: #333;">Đơn Hàng Mua: <span id="order-id"
+                                style="color: #2882C0;">#...</span></h4>
                         <p class="text-muted" style="margin-bottom: 0;">Tạo lúc: <span id="order-time">...</span></p>
                     </div>
 
                     <div style="padding: 30px;">
                         <div class="row">
                             <div class="col-sm-7">
-                                <h5 style="font-weight: bold; text-transform: uppercase; color: #555; margin-bottom: 15px;">Thông tin chuyển khoản:</h5>
+                                <h5
+                                    style="font-weight: bold; text-transform: uppercase; color: #555; margin-bottom: 15px;">
+                                    Thông tin chuyển khoản:</h5>
                                 <ul class="list-group">
-                                    <li class="list-group-item"><strong>Ngân hàng:</strong> <span class="pull-right" id="payment-bank">...</span></li>
-                                    <li class="list-group-item"><strong>Số tài khoản:</strong> 
-                                        <span class="pull-right" style="font-weight: bold; color: #333; font-size: 16px;" id="payment-account-number">...</span>
-                                        <button class="btn btn-xs btn-default pull-right" onclick="copyToClipboard('#payment-account-number')" style="margin-right: 10px;"><i class="fa fa-copy"></i></button>
+                                    <li class="list-group-item"><strong>Ngân hàng:</strong> <span class="pull-right"
+                                            id="payment-bank">...</span></li>
+                                    <li class="list-group-item"><strong>Số tài khoản:</strong>
+                                        <span class="pull-right"
+                                            style="font-weight: bold; color: #333; font-size: 16px;"
+                                            id="payment-account-number">...</span>
+                                        <button class="btn btn-xs btn-default pull-right"
+                                            onclick="copyToClipboard('#payment-account-number')"
+                                            style="margin-right: 10px;"><i class="fa fa-copy"></i></button>
                                     </li>
-                                    <li class="list-group-item"><strong>Chủ tài khoản:</strong> <span class="pull-right" id="payment-account-name">...</span></li>
-                                    <li class="list-group-item"><strong>Số tiền:</strong> <span class="pull-right text-danger-bold" style="font-size: 18px;" id="payment-amount">...</span></li>
+                                    <li class="list-group-item"><strong>Chủ tài khoản:</strong> <span class="pull-right"
+                                            id="payment-account-name">...</span></li>
+                                    <li class="list-group-item"><strong>Số tiền:</strong> <span
+                                            class="pull-right text-danger-bold" style="font-size: 18px;"
+                                            id="payment-amount">...</span></li>
                                     <li class="list-group-item" style="background: #fffbe6;">
-                                        <strong>Nội dung CK:</strong> 
-                                        <span class="pull-right" style="font-weight: bold; color: #d9534f;" id="payment-content">...</span>
-                                        <button class="btn btn-xs btn-warning pull-right" onclick="copyToClipboard('#payment-content')" style="margin-right: 10px;"><i class="fa fa-copy"></i></button>
+                                        <strong>Nội dung CK:</strong>
+                                        <span class="pull-right" style="font-weight: bold; color: #d9534f;"
+                                            id="payment-content">...</span>
+                                        <button class="btn btn-xs btn-warning pull-right"
+                                            onclick="copyToClipboard('#payment-content')" style="margin-right: 10px;"><i
+                                                class="fa fa-copy"></i></button>
                                     </li>
                                 </ul>
                             </div>
 
                             <div class="col-sm-5 text-center">
-                                <div style="border: 2px solid #2882C0; border-radius: 10px; padding: 10px; display: inline-block;">
-                                    <img src="" id="qr-image" class="img-responsive" style="max-width: 100%;" alt="QR Code">
+                                <div
+                                    style="border: 2px solid #2882C0; border-radius: 10px; padding: 10px; display: inline-block;">
+                                    <img src="" id="qr-image" class="img-responsive" style="max-width: 100%;"
+                                        alt="QR Code">
                                 </div>
-                                <p style="margin-top: 10px; font-size: 12px; color: #777;"><i class="fa fa-camera"></i> Mở App ngân hàng để quét</p>
+                                <p style="margin-top: 10px; font-size: 12px; color: #777;"><i class="fa fa-camera"></i>
+                                    Mở App ngân hàng để quét</p>
                             </div>
                         </div>
 
                         <hr>
 
                         <div class="alert alert-info" style="border-radius: 8px;">
-                            <h5 style="margin-top: 0; font-weight: bold;"><i class="fa fa-upload"></i> Xác nhận thanh toán</h5>
+                            <h5 style="margin-top: 0; font-weight: bold;"><i class="fa fa-upload"></i> Xác nhận thanh
+                                toán</h5>
                             <p>Sau khi chuyển khoản, vui lòng tải ảnh biên lai để hệ thống xử lý ngay lập tức.</p>
                             <form id="upload-bill-form" style="margin-top: 10px;">
                                 <div class="input-group">
                                     <input type="hidden" name="order_id" id="upload-order-id" value="">
                                     <input type="file" name="bill_image" accept="image/*" class="form-control" required>
                                     <span class="input-group-btn">
-                                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Gửi Xác Nhận</button>
+                                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i>
+                                            Gửi Xác Nhận</button>
                                     </span>
                                 </div>
                             </form>
@@ -139,7 +159,7 @@
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 

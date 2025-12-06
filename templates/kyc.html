@@ -2,10 +2,11 @@
 <html lang="vi">
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác Minh Danh Tính (KYC) - Buser.com</title>
+    <title>Xác Minh Danh Tính (KYC) - Buser.ink</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -17,11 +18,12 @@
         <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
             <div class="container">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM</a>
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.INK</a>
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="profile.html" style="color: #fff;"><i class="fa fa-arrow-left"></i> Quay lại Hồ sơ</a></li>
+                        <li><a href="profile.html" style="color: #fff;"><i class="fa fa-arrow-left"></i> Quay lại Hồ
+                                sơ</a></li>
                     </ul>
                 </div>
             </div>
@@ -31,7 +33,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                
+
                 <div class="auth-box" style="margin-top: 20px;">
                     <div class="text-center" style="margin-bottom: 30px;">
                         <h3 style="font-weight: bold; color: #333; margin-top: 0;">🛡️ Xác Minh Danh Tính (KYC)</h3>
@@ -41,26 +43,30 @@
                     <div id="kyc-status-box" style="display: none; margin-bottom: 20px;"></div>
 
                     <form id="kyc-form">
-                        <h5 style="font-weight: bold; color: #2882C0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h5
+                            style="font-weight: bold; color: #2882C0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
                             1. Thông Tin Cá Nhân
                         </h5>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Họ và Tên (Trên giấy tờ):</label>
-                                    <input type="text" name="full_name" class="form-control" placeholder="VD: NGUYEN VAN A" required>
+                                    <input type="text" name="full_name" class="form-control"
+                                        placeholder="VD: NGUYEN VAN A" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Số CMND/CCCD/Hộ Chiếu:</label>
-                                    <input type="text" name="id_number" class="form-control" placeholder="VD: 001234567890" required>
+                                    <input type="text" name="id_number" class="form-control"
+                                        placeholder="VD: 001234567890" required>
                                 </div>
                             </div>
                         </div>
 
-                        <h5 style="font-weight: bold; color: #2882C0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px;">
+                        <h5
+                            style="font-weight: bold; color: #2882C0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px;">
                             2. Hình Ảnh Xác Minh
                         </h5>
 
@@ -71,9 +77,11 @@
                                     <div class="upload-dropzone" onclick="$('#id_front').click()">
                                         <i class="fa fa-id-card-o fa-3x"></i>
                                         <p style="margin: 10px 0 0; font-weight: 600;">Chọn ảnh mặt trước</p>
-                                        <img id="preview_front" class="preview-image" style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
+                                        <img id="preview_front" class="preview-image"
+                                            style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
                                     </div>
-                                    <input type="file" id="id_front" name="id_front" accept="image/*" style="display: none;" required>
+                                    <input type="file" id="id_front" name="id_front" accept="image/*"
+                                        style="display: none;" required>
                                 </div>
                             </div>
 
@@ -83,9 +91,11 @@
                                     <div class="upload-dropzone" onclick="$('#id_back').click()">
                                         <i class="fa fa-id-card fa-3x"></i>
                                         <p style="margin: 10px 0 0; font-weight: 600;">Chọn ảnh mặt sau</p>
-                                        <img id="preview_back" class="preview-image" style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
+                                        <img id="preview_back" class="preview-image"
+                                            style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
                                     </div>
-                                    <input type="file" id="id_back" name="id_back" accept="image/*" style="display: none;" required>
+                                    <input type="file" id="id_back" name="id_back" accept="image/*"
+                                        style="display: none;" required>
                                 </div>
                             </div>
                         </div>
@@ -97,10 +107,13 @@
                                     <div class="upload-dropzone" onclick="$('#selfie').click()">
                                         <i class="fa fa-camera fa-3x"></i>
                                         <p style="margin: 10px 0 0; font-weight: 600;">Chọn ảnh chân dung</p>
-                                        <p class="text-muted small">Vui lòng chụp rõ mặt và giấy tờ tùy thân trên tay</p>
-                                        <img id="preview_selfie" class="preview-image" style="display: none; margin-top: 10px; max-height: 200px; width: auto;">
+                                        <p class="text-muted small">Vui lòng chụp rõ mặt và giấy tờ tùy thân trên tay
+                                        </p>
+                                        <img id="preview_selfie" class="preview-image"
+                                            style="display: none; margin-top: 10px; max-height: 200px; width: auto;">
                                     </div>
-                                    <input type="file" id="selfie" name="selfie" accept="image/*" style="display: none;" required>
+                                    <input type="file" id="selfie" name="selfie" accept="image/*" style="display: none;"
+                                        required>
                                 </div>
                             </div>
                         </div>
@@ -112,17 +125,21 @@
                                     <i class="fa fa-pencil-square-o fa-3x"></i>
                                     <p style="margin: 10px 0 0; font-weight: 600;">Chọn ảnh cầm giấy</p>
                                     <p class="text-muted small" style="font-size: 11px;">
-                                        Viết tay: <em>"Tôi xác nhận tài khoản ngân hàng [Tên Bank] - [Số TK] thuộc về tôi - [Ngày/Tháng/Năm]" + Chữ ký</em>
+                                        Viết tay: <em>"Tôi xác nhận tài khoản ngân hàng [Tên Bank] - [Số TK] thuộc về
+                                            tôi - [Ngày/Tháng/Năm]" + Chữ ký</em>
                                     </p>
-                                    <img id="preview_paper" class="preview-image" style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
+                                    <img id="preview_paper" class="preview-image"
+                                        style="display: none; margin-top: 10px; max-height: 150px; width: auto;">
                                 </div>
-                                <input type="file" id="paper" name="paper" accept="image/*" style="display: none;" required>
+                                <input type="file" id="paper" name="paper" accept="image/*" style="display: none;"
+                                    required>
                             </div>
                         </div>
 
                         <hr style="margin: 30px 0;">
 
-                        <button type="submit" class="btn btn-success btn-lg btn-block" id="btn-submit-kyc" style="background: linear-gradient(90deg, #28a745 0%, #218838 100%); border: none; font-weight: bold;">
+                        <button type="submit" class="btn btn-success btn-lg btn-block" id="btn-submit-kyc"
+                            style="background: linear-gradient(90deg, #28a745 0%, #218838 100%); border: none; font-weight: bold;">
                             <i class="fa fa-paper-plane"></i> GỬI HỒ SƠ XÉT DUYỆT
                         </button>
                     </form>
@@ -141,9 +158,10 @@
         /* Tinh chỉnh riêng cho trang KYC nếu cần */
         .preview-image {
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border: 2px solid #fff;
         }
     </style>
 </body>
+
 </html>

@@ -51,14 +51,21 @@ $(document).ready(function () {
     var csrf_token = $('meta[name=csrf-token]').attr('content');
 
     $.ajaxSetup({
-
-        beforeSend: function(xhr, settings) {
+        beforeSend: function (xhr, settings) {
+            // 1. Giữ nguyên logic thêm CSRF Token
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
+
+            // 2. Thêm Loading Indicator (Dùng FontAwesome để đồng bộ giao diện)
+            $('body').append('<div id="ajax-loader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;"><i class="fa fa-spinner fa-spin fa-3x" style="color:white;"></i></div>');
         },
-        error: function(xhr) {
-             if (xhr.status === 401) {
+        complete: function () {
+            // 3. Ẩn Loading khi request xong
+            $('#ajax-loader').remove();
+        },
+        error: function (xhr) {
+            if (xhr.status === 401) {
                 alert("⏳ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
                 window.location.href = "login.html";
             }
@@ -69,20 +76,9 @@ $(document).ready(function () {
     let currentCoin = 'bustabit';
     let isCalculating = false;
 
-    $.ajaxSetup({
-        error: function(xhr) {
-            // Nếu server trả về 401 (Unauthorized) -> Token hết hạn hoặc sai
-            if (xhr.status === 401) {
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-                localStorage.removeItem('buser_user');
-                window.location.href = "login.html";
-            }
-        }
-    });
-
     function updatePrices() {
         $.get(API_URL + "/api/prices", function (data) {
-            
+
             // Hàm phụ để hiển thị giá an toàn
             // Nếu giá > 0 thì format số, ngược lại hiện "Đang cập nhật"
             const showPrice = (price) => {
@@ -124,7 +120,7 @@ $(document).ready(function () {
                 $('#sol-buy').html(showPrice(data.sol.buy));
                 $('#sol-sell').html(showPrice(data.sol.sell));
             }
-            
+
             // Cập nhật tỷ giá bên dưới form
             updateRateDisplay(data);
         }).fail(function () {
@@ -464,7 +460,7 @@ $(document).ready(function () {
 
         const tableBody = $('#wallets-table-body');
         const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol'];
-        
+
         // Tạo mảng các request Ajax
         let requests = coins.map(coin => {
             return $.ajax({
@@ -503,7 +499,7 @@ $(document).ready(function () {
 
             allWallets.forEach(wallet => {
                 let type = escapeHTML(wallet.coin_type.toUpperCase());
-                
+
                 // Xử lý hiển thị riêng cho từng loại Coin
                 let mainInfoLabel = "Địa chỉ";
                 let mainInfoValue = escapeHTML(wallet.address);
@@ -514,13 +510,13 @@ $(document).ready(function () {
                     mainInfoLabel = "Ethos ID";
                     // Thông tin phụ: Tên, SĐT
                     details = `<b>Tên:</b> ${escapeHTML(wallet.name)}<br><b>SĐT:</b> ${escapeHTML(wallet.phone)}`;
-                } 
+                }
                 else if (wallet.coin_type === 'bustabit') {
                     // Với Bustabit: Cần hiện Tag
                     mainInfoLabel = "Địa chỉ";
                     let tagShow = (wallet.tag && wallet.tag !== 'null') ? wallet.tag : 'N/A';
                     details = `<b>Tag:</b> ${escapeHTML(tagShow)}<br><b>Tên:</b> ${escapeHTML(wallet.name)}<br><b>SĐT:</b> ${escapeHTML(wallet.phone)}`;
-                } 
+                }
                 else {
                     // Với USDT, BNB, SOL: Chỉ hiện Tên, SĐT
                     mainInfoLabel = "Địa chỉ";
@@ -627,14 +623,29 @@ $(document).ready(function () {
 
     $('#btn-logout').on('click', function (e) {
         e.preventDefault();
+
+        if (!confirm("Bạn có chắc muốn đăng xuất?")) {
+            return;
+        }
+
         localStorage.removeItem('buser_user');
         alert("Đăng xuất thành công!");
         window.location.href = "index.html";
     });
 
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
     // --- XỬ LÝ FORM ĐĂNG KÝ ---
     $("#register-form").on('submit', function (e) {
         e.preventDefault();
+        const email = $(this).find('input[name="email"]').val();
+        if (!isValidEmail(email)) {
+            alert("Email không hợp lệ!");
+            return;
+        }
         var data = {
             username: $(this).find('input[name="username"]').val(),
             email: $(this).find('input[name="email"]').val(),
@@ -900,11 +911,11 @@ $(document).ready(function () {
             tbody.append(row);
         });
     }
-    
-    window.updateSupBank = function(index, field, value) { supportedBanks[index][field] = value; }
-    window.removeSupBank = function(index) { supportedBanks.splice(index, 1); renderSupportedBanks(); }
-    $('#btn-add-supported-bank').click(function() {
-        supportedBanks.push({name: "", short_name: "", bin: ""});
+
+    window.updateSupBank = function (index, field, value) { supportedBanks[index][field] = value; }
+    window.removeSupBank = function (index) { supportedBanks.splice(index, 1); renderSupportedBanks(); }
+    $('#btn-add-supported-bank').click(function () {
+        supportedBanks.push({ name: "", short_name: "", bin: "" });
         renderSupportedBanks();
     });
 
@@ -1003,27 +1014,27 @@ $(document).ready(function () {
     if ($('#add-wallet-form').length > 0) {
         function toggleWalletFields() {
             const type = $('#coin-type-select').val();
-            
+
 
             // 1. Mặc định: Hiện Địa chỉ, Ẩn Tag
             $('#field-address-group').show();
             $('#field-tag-group').hide();
-            
+
             // [SỬA ĐỔI QUAN TRỌNG] Luôn hiện nhóm thông tin cá nhân cho TẤT CẢ các coin
-            $('#field-personal-group').show(); 
+            $('#field-personal-group').show();
 
             if (type === 'bustabit') {
                 // Bustabit: Cần thêm Tag
                 $('#field-tag-group').show();
                 $('#label-tag').text('Destination Tag:');
-            } 
+            }
             else if (type === 'ether') {
                 // Ether: ẨN địa chỉ ví, Hiện Tag (làm ID)
-                $('#field-address-group').hide(); 
+                $('#field-address-group').hide();
                 $('#field-tag-group').show();
                 $('#label-tag').text('Ethos ID (Destination Tag):');
-            } 
-            else { 
+            }
+            else {
                 // USDT, BNB, SOL: Chỉ cần Địa chỉ ví (Tag vẫn ẩn)
                 // Họ tên & SĐT đã được hiện ở dòng mặc định bên trên
             }
@@ -1045,7 +1056,7 @@ $(document).ready(function () {
         var coinType = $(this).find('select[name="coin_type"]').val();
         var inputAddress = $(this).find('input[name="address"]').val();
         var inputTag = $(this).find('input[name="tag"]').val();
-        
+
         // [QUAN TRỌNG] Luôn lấy thông tin Họ tên & SĐT cho mọi loại coin
         var inputName = $(this).find('input[name="name"]').val();
         var inputPhone = $(this).find('input[name="phone"]').val();
@@ -1057,10 +1068,10 @@ $(document).ready(function () {
                 return;
             }
             // Ether dùng Tag làm Address
-            inputAddress = inputTag; 
-        } 
+            inputAddress = inputTag;
+        }
         else if (coinType === 'bustabit') {
-             if (!inputAddress) { alert("Vui lòng nhập địa chỉ!"); return; }
+            if (!inputAddress) { alert("Vui lòng nhập địa chỉ!"); return; }
         }
         else {
             if (!inputAddress) { alert("Vui lòng nhập địa chỉ ví!"); return; }

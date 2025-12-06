@@ -222,4 +222,27 @@ class PriceService:
         }
         print(f"✅ Updated spread for {coin_key}: buy={buy_percent}%, sell={sell_percent}%")
 
+def fetch_binance_price(self, symbol, retries=3):
+    for attempt in range(retries):
+        try:
+            url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
+            response = requests.get(url, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return float(data['price'])
+            else:
+                print(f"❌ Binance API error for {symbol}: {response.status_code}")
+                if attempt < retries - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                continue
+                
+        except Exception as e:
+            print(f"❌ Error fetching Binance price for {symbol}: {e}")
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+            continue
+    
+    return None
+
 price_service = PriceService()

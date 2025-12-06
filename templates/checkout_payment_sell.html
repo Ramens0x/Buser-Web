@@ -2,10 +2,11 @@
 <html lang="vi">
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gửi Coin - Buser.com</title>
+    <title>Gửi Coin - Buser.ink</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -57,7 +58,7 @@
         <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
             <div class="container">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.COM</a>
+                    <a class="navbar-brand" href="/" style="color: #fff; font-weight: bold;">BUSER.INK</a>
                 </div>
             </div>
         </nav>
@@ -66,7 +67,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                
+
                 <div class="stepper" style="margin-top: 40px;">
                     <div class="step">
                         <div class="circle"><i class="fa fa-check"></i></div>
@@ -83,7 +84,8 @@
                 </div>
 
                 <div class="auth-box" style="padding: 0; overflow: hidden;">
-                    <div style="background: #fff5f5; padding: 20px; text-align: center; border-bottom: 1px solid #ffdcdc;">
+                    <div
+                        style="background: #fff5f5; padding: 20px; text-align: center; border-bottom: 1px solid #ffdcdc;">
                         <h4 style="margin: 0; color: #b94a48;">Đơn Hàng Bán: <span id="order-id">#...</span></h4>
                         <p class="text-muted" style="margin-bottom: 0;">Tạo lúc: <span id="order-time">...</span></p>
                     </div>
@@ -97,22 +99,27 @@
                         </div>
 
                         <div class="well" style="background: #fff; border: 2px dashed #b94a48; border-radius: 8px;">
-                            <h5 style="margin-top: 0; font-weight: bold; color: #777;">ĐỊA CHỈ VÍ NHẬN (Của Hệ Thống):</h5>
-                            
+                            <h5 style="margin-top: 0; font-weight: bold; color: #777;">ĐỊA CHỈ VÍ NHẬN (Của Hệ Thống):
+                            </h5>
+
                             <div class="form-group">
                                 <label>Mạng lưới (Network):</label>
                                 <div class="input-group">
                                     <span class="input-group-addon"><i class="fa fa-globe"></i></span>
-                                    <input type="text" class="form-control" id="admin-wallet-network" readonly style="background: #fff; font-weight: bold;">
+                                    <input type="text" class="form-control" id="admin-wallet-network" readonly
+                                        style="background: #fff; font-weight: bold;">
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label>Địa chỉ ví:</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="admin-wallet-address" readonly style="background: #fff; color: #b94a48; font-weight: bold;">
+                                    <input type="text" class="form-control" id="admin-wallet-address" readonly
+                                        style="background: #fff; color: #b94a48; font-weight: bold;">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-default" onclick="copyToClipboard('#admin-wallet-address')"><i class="fa fa-copy"></i> Copy</button>
+                                        <button class="btn btn-default"
+                                            onclick="copyToClipboard('#admin-wallet-address')"><i
+                                                class="fa fa-copy"></i> Copy</button>
                                     </span>
                                 </div>
                             </div>
@@ -120,9 +127,12 @@
                             <div class="form-group" id="admin-wallet-memo-li" style="display: none;">
                                 <label>Memo / Destination Tag (BẮT BUỘC):</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="admin-wallet-memo" readonly style="background: #fff; color: #d9534f; font-weight: bold;">
+                                    <input type="text" class="form-control" id="admin-wallet-memo" readonly
+                                        style="background: #fff; color: #d9534f; font-weight: bold;">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-default" onclick="copyToClipboard('#admin-wallet-memo')"><i class="fa fa-copy"></i> Copy</button>
+                                        <button class="btn btn-default"
+                                            onclick="copyToClipboard('#admin-wallet-memo')"><i class="fa fa-copy"></i>
+                                            Copy</button>
                                     </span>
                                 </div>
                             </div>
@@ -131,7 +141,8 @@
                         <div class="alert alert-success">
                             <strong><i class="fa fa-info-circle"></i> Thông tin nhận tiền:</strong>
                             <br>
-                            Bạn sẽ nhận được <strong id="receive-amount-vnd">...</strong> VNĐ vào tài khoản <strong id="user-bank-name">...</strong> - <strong id="user-bank-account">...</strong>
+                            Bạn sẽ nhận được <strong id="receive-amount-vnd">...</strong> VNĐ vào tài khoản <strong
+                                id="user-bank-name">...</strong> - <strong id="user-bank-account">...</strong>
                         </div>
 
                         <div class="text-center" style="margin-top: 20px;">

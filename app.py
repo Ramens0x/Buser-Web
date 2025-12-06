@@ -30,22 +30,29 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask_migrate import Migrate
 from utils import VietQR, generate_qr_code_image, remove_accents
 import logging
+from logging.handlers import RotatingFileHandler
 from sqlalchemy import or_
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('buser.log'),
-        logging.StreamHandler()
-    ]
-)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 # --- [MỚI] CẤU HÌNH CSDL ---
 app = Flask(__name__, static_folder='static', template_folder='templates')
+# --- [START] CẤU HÌNH LOGGING NÂNG CAO ---
+if not app.debug:
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    file_handler = RotatingFileHandler('logs/buser.log', maxBytes=10240 * 1024, backupCount=10)
+    
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Buser startup - Hệ thống đã khởi động')
 UPLOAD_FOLDER = 'uploads/bills'
 KYC_UPLOAD_FOLDER = 'uploads/kyc'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
@@ -103,7 +110,21 @@ limiter = Limiter(
     get_remote_address,
     app=app
 )
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}}, expose_headers=["Authorization"])
+allowed_origins_env = os.environ.get('ALLOWED_ORIGINS')
+if allowed_origins_env:
+    ALLOWED_ORIGINS = allowed_origins_env.split(',')
+else:
+    # Mặc định cho phép cả production và localhost để dev dễ dàng
+    ALLOWED_ORIGINS = ['https://Buser.ink', 'http://127.0.0.1:5500', 'http://localhost:5500']
+
+CORS(app, supports_credentials=True, resources={
+    r"/api/*": {
+        "origins": ALLOWED_ORIGINS,
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 # Lấy địa chỉ Database từ biến môi trường
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///buser.db')
 
@@ -112,7 +133,10 @@ if database_url and database_url.startswith("postgres://"):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-that-you-should-change')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is required!")
+app.config['SECRET_KEY'] = SECRET_KEY
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 socketio = SocketIO(app, 
@@ -138,6 +162,9 @@ class User(db.Model):
     wallets = db.relationship('Wallet', backref='owner', lazy=True)
     banks = db.relationship('Bank', backref='owner', lazy=True)
     kyc = db.relationship('KYC', backref='user', uselist=False, lazy=True)
+    __table_args__ = (
+    db.Index('idx_user_email', 'email'),
+    db.Index('idx_user_username', 'username'),)
 
 class Wallet(db.Model):
     id = db.Column(db.String(10), primary_key=True, default=lambda: secrets.token_hex(4))
@@ -168,6 +195,9 @@ class KYC(db.Model):
     submitted_at = db.Column(db.DateTime, default=datetime.now)
     reviewed_at = db.Column(db.DateTime, nullable=True)
     admin_note = db.Column(db.Text, nullable=True)
+    __table_args__ = (
+    db.Index('idx_kyc_user_id', 'user_id'),
+    db.Index('idx_kyc_status', 'status'),)
 
 class Order(db.Model):
     id = db.Column(db.String(20), primary_key=True)
@@ -281,7 +311,7 @@ def save_settings(settings):
 
 def send_reset_email(user_email, reset_link):
     try:
-        msg = Message('Đặt lại mật khẩu - Buser.com',
+        msg = Message('Đặt lại mật khẩu - Buser.ink',
                       sender=app.config.get('MAIL_USERNAME'),
                       recipients=[user_email])
         msg.body = f'Xin chào,\n\nBạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link sau:\n{reset_link}\n\nLink này sẽ hết hạn sau 15 phút.\n\nTrân trọng,\nBuser Team'
@@ -363,7 +393,7 @@ def api_calculate_swap():
 
 # --- API USER ---
 @app.route("/api/register", methods=['POST'])
-@limiter.limit("10 per hour")
+@limiter.limit("3 per hour")
 def api_register_user():
     data = request.json
     username_raw, email, password = data.get('username'), data.get('email'), data.get('password')
@@ -412,7 +442,7 @@ def api_register_user():
         domain = os.environ.get('SITE_DOMAIN', request.host_url.rstrip('/'))
         link = f"{domain}/api/verify-email/{verify_token}" 
         
-        msg = Message('Xác thực tài khoản - Buser.com',
+        msg = Message('Xác thực tài khoản - Buser.ink',
                       sender=app.config.get('MAIL_USERNAME'),
                       recipients=[email])
         msg.body = f"Chào {username},\n\nVui lòng click vào link sau để kích hoạt tài khoản:\n{link}\n\nCảm ơn!"
@@ -439,7 +469,7 @@ def verify_email_token(token):
     return "<h3>✅ Xác thực thành công! Bạn có thể <a href='/login.html'>Đăng nhập ngay</a></h3>"
 
 @app.route("/api/login", methods=['POST'])
-@limiter.limit("20 per minute")
+@limiter.limit("10 per 15 minute")
 def api_login_user():
     data = request.json
     username_raw, password = data.get('username'), data.get('password')
@@ -457,7 +487,7 @@ def api_login_user():
         # Tạo payload
         payload = {
             'username': user.username,
-            'exp': datetime.now() + timedelta(hours=24) # Tăng lên 24h cho tiện
+            'exp': datetime.now() + timedelta(hours=2) 
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -474,9 +504,9 @@ def api_login_user():
             'access_token', 
             token, 
             httponly=True,  # JS không đọc được
-            secure=False,   # Đặt True nếu chạy HTTPS (Production), False nếu chạy Localhost
-            samesite='Lax', # Chống CSRF cơ bản
-            max_age=24*60*60
+            secure=True,   # Đặt True nếu chạy HTTPS (Production), False nếu chạy Localhost
+            samesite='Strict', # Chống CSRF cơ bản
+            max_age=2*60*60
         )
         return response
     else:
@@ -565,7 +595,7 @@ def api_reset_password():
     return jsonify({"success": True, "message": "Đặt lại mật khẩu thành công!"})
 
 @app.route("/api/send-contact", methods=['POST'])
-@limiter.limit("3 per hour") # Chống spam: Chỉ cho gửi 3 mail/giờ/IP
+@limiter.limit("5 per hour") # Chống spam: Chỉ cho gửi 5 mail/giờ/IP
 def send_contact_email():
     data = request.json
     name = data.get('name')
@@ -609,8 +639,9 @@ def send_contact_email():
 
 # --- API TẠO ĐƠN HÀNG (DÙNG CSDL) ---
 @app.route("/api/create-order", methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("5 per minute")
 def create_order():
+    coin_type = data.get('coin', '').lower()
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
 
@@ -969,6 +1000,19 @@ def add_user_bank():
     if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
     
     data = request.json
+    account_number = data.get('account_number', '').strip()
+    account_name = data.get('account_name', '').strip().upper()
+
+    if not account_number.isdigit():
+        return jsonify({"success": False, "message": "Số tài khoản chỉ được chứa chữ số"}), 400
+    
+    if len(account_number) < 6 or len(account_number) > 20:
+        return jsonify({"success": False, "message": "Số tài khoản không hợp lệ (6-20 ký tự)"}), 400
+    
+    if not account_name or len(account_name) < 3:
+        return jsonify({"success": False, "message": "Tên chủ tài khoản không hợp lệ"}), 400
+    
+
     new_bank = Bank(
         bank_name=data.get('bank_name'),
         account_number=data.get('account_number'),
@@ -1793,7 +1837,7 @@ if __name__ == '__main__':
             hashed_pass = generate_password_hash(env_admin_pass) 
             admin_user = User(
                 username=env_admin_user,
-                email=f"{env_admin_user}@buser.com",
+                email=f"{env_admin_user}@Buser.ink",
                 password=hashed_pass,
                 role="Admin",
                 is_verified=True

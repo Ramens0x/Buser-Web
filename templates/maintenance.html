@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Đang Bảo Trì - Buser.com</title>
+    <title>Hệ Thống Đang Bảo Trì - Buser.ink</title>
 
     <!-- Font & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -31,7 +32,7 @@
             text-align: center;
             padding: 50px 40px;
             border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
             animation: fadeIn 1.2s ease;
         }
 
@@ -67,17 +68,29 @@
 
         .btn-check:hover {
             background: #217dbb;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px);}
-            to   { opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         footer {
@@ -99,7 +112,7 @@
             <p>Xin chào quý khách,</p>
 
             <p>
-                Hệ thống <strong>BUSER.COM</strong> đang tiến hành nâng cấp để mang lại trải nghiệm tốt hơn.
+                Hệ thống <strong>BUSER.INK</strong> đang tiến hành nâng cấp để mang lại trải nghiệm tốt hơn.
                 Vui lòng quay lại trong thời gian ngắn nhất.
             </p>
 
@@ -108,8 +121,9 @@
             <button class="btn-check" onclick="location.reload()">Kiểm tra lại</button>
         </div>
 
-        <footer>&copy; 2025 Buser.com</footer>
+        <footer>&copy; 2025 Buser.ink</footer>
     </div>
 
 </body>
+
 </html>
