@@ -248,18 +248,18 @@ def load_settings():
             "TELEGRAM_BOT_TOKEN": "",
             "TELEGRAM_CHAT_ID": "",
             "admin_banks": default_banks,
-            "liquidity_vnd": 50000000,
+            "liquidity_vnd": 500000000,
             "liquidity_usdt": 10000,
-            "liquidity_btc": 1,
-            "liquidity_eth": 1,
-            "liquidity_bnb": 1,
-            "liquidity_sol": 1,
+            "liquidity_btc": 1000000,
+            "liquidity_eth": 1000000,
+            "liquidity_bnb": 10,
+            "liquidity_sol": 10,
             "coin_fees": {
-                "bustabit": 0,  
-                "ether": 0,     
-                "usdt": 0,      
-                "sol": 0,       
-                "bnb": 0       
+                "bustabit": 50000,  
+                "ether": 100000,     
+                "usdt": 10000,      
+                "sol": 10000,       
+                "bnb": 10000       
                 },
             "supported_banks": [
             {"name": "Vietcombank (VCB)", "bin": "970436", "short_name": "Vietcombank"},
@@ -641,16 +641,21 @@ def send_contact_email():
 @app.route("/api/create-order", methods=['POST'])
 @limiter.limit("5 per minute")
 def create_order():
-    coin_type = data.get('coin', '').lower()
+    
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
 
     data = request.json
-    mode, coin_type = data.get('mode'), data.get('coin')
+    if not data:
+        return jsonify({"success": False, "message": "Dữ liệu không hợp lệ"}), 400
+    
+    mode = data.get('mode')
+    coin_type = data.get('coin', '').lower()
 
     if coin_type not in ALLOWED_COINS:
         return jsonify({"success": False, "message": "Loại coin không hợp lệ"}), 400
         
+    
     amount_from, amount_to = float(data.get('amount_from', 0)), float(data.get('amount_to', 0))
     wallet_id, bank_id = data.get('wallet_id'), data.get('bank_id')
 

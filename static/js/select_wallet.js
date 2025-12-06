@@ -15,7 +15,7 @@ $(document).ready(function () {
     $.ajax({
         url: `${API_URL}/api/user/wallets?coin_type=${draftOrder.coin}`,
         type: 'GET',
-      
+
         success: function (response) {
             const walletListDiv = $('.wallet-list');
             walletListDiv.empty();
@@ -71,7 +71,7 @@ $(document).ready(function () {
         // Gộp thông tin nháp + ví đã chọn
         var orderData = {
             ...draftOrder,
-            wallet_id: selectedWalletId 
+            wallet_id: selectedWalletId
         };
 
         // Gọi API Tạo Đơn hàng
@@ -80,14 +80,15 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(orderData),
-          
+
             success: function (response) {
                 localStorage.setItem('current_order', JSON.stringify(response.order));
                 localStorage.removeItem('draft_order');
                 window.location.href = "checkout_payment_buy.html?id=" + response.order.id;
             },
             error: function (xhr) {
-                alert("Lỗi khi tạo đơn hàng: " + xhr.responseJSON.message);
+                let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "Lỗi hệ thống (" + xhr.status + ")";
+                alert("Lỗi: " + msg);
                 btn.prop('disabled', false).html(originalText);
             }
         });

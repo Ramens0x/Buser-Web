@@ -334,16 +334,23 @@ body {
 
 .price-buy {
     color: #28a745;
-    /* Màu xanh lá */
     font-weight: 700;
-    font-size: 15px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
 }
 
 .price-sell {
     color: #dc3545;
-    /* Màu đỏ */
     font-weight: 700;
-    font-size: 15px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+
+/* Target đúng vào class đang dùng trong HTML mới */
+.price-buy,
+.price-sell {
+    white-space: nowrap !important;
+    display: block;
 }
 
 /* Responsive cho mobile */
@@ -390,14 +397,6 @@ body {
 .floating-telegram i {
     line-height: 60px;
     font-size: 30px;
-}
-
-/* Target đúng vào class đang dùng trong HTML mới */
-.price-buy,
-.price-sell {
-    white-space: nowrap !important;
-    /* Bắt buộc thẳng hàng */
-    display: block;
 }
 
 /* Tinh chỉnh cho mobile để chữ nhỏ hơn chút nếu màn hình quá bé */
@@ -669,12 +668,39 @@ body {
 }
 
 /* Custom Text Utilities */
-.text-brand { color: #2882C0; }
-.text-danger-bold { color: #d9534f; font-weight: bold; }
-.text-dark-bold { color: #333; font-weight: bold; }
-.bg-light-yellow { background: #fffbe6; }
+.text-brand {
+    color: #2882C0;
+}
+
+.text-danger-bold {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.text-dark-bold {
+    color: #333;
+    font-weight: bold;
+}
+
+.bg-light-yellow {
+    background: #fffbe6;
+}
 
 /* Custom Components */
-.stepper-container { margin-top: 40px; }
-.header-order-info { background: #f9fbfd; padding: 20px; text-align: center; border-bottom: 1px solid #eee; }
-.qr-box { border: 2px solid #2882C0; border-radius: 10px; padding: 10px; display: inline-block; }
+.stepper-container {
+    margin-top: 40px;
+}
+
+.header-order-info {
+    background: #f9fbfd;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.qr-box {
+    border: 2px solid #2882C0;
+    border-radius: 10px;
+    padding: 10px;
+    display: inline-block;
+}

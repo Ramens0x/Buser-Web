@@ -172,6 +172,7 @@ $(document).ready(function () {
         $.ajax({
             url: API_URL + "/api/calculate",
             type: 'POST',
+            global: false,
             contentType: 'application/json',
             data: JSON.stringify({
                 amount: amountIn,
