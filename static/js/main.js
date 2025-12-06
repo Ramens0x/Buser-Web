@@ -266,11 +266,11 @@ $(document).ready(function () {
         } else if (currentCoin === 'ether' || currentCoin === 'eth') {
             coinName = 'Ethos (ETH)';
         } else if (currentCoin === 'bnb') {
-            coinName = 'BNB';
+            coinName = 'BNB - BEP20';
         } else if (currentCoin === 'sol') {
-            coinName = 'SOL';
+            coinName = 'SOLANA - SOL';
         } else {
-            coinName = 'USDT';
+            coinName = 'USDT - BEP20';
         }
 
         if (rates[currentCoin]) {
@@ -303,10 +303,10 @@ $(document).ready(function () {
             coinBal = window.siteLiquidity.usdt;
         } else if (currentCoin === 'ether' || currentCoin === 'eth') {
             coinBal = window.siteLiquidity.eth;
-            unit = 'Ethos (ETH)';
+            unit = 'Ethos';
         } else if (currentCoin === 'sol' || currentCoin === 'sol') {
             coinBal = window.siteLiquidity.sol;
-            unit = 'Solana (SOL)';
+            unit = 'SOL';
         } else if (currentCoin === 'bnb' || currentCoin === 'bnb') {
             coinBal = window.siteLiquidity.eth;
             unit = 'BNB (BEP20)';
