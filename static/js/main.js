@@ -33,6 +33,19 @@ function escapeHTML(str) {
     });
 }
 
+function setLoading(buttonSelector, isLoading, loadingText = 'Đang xử lý...') {
+    const btn = $(buttonSelector);
+    if (isLoading) {
+        btn.data('original-text', btn.html()); // Lưu text cũ
+        btn.prop('disabled', true);
+        btn.html(`<i class="fa fa-spinner fa-spin"></i> ${loadingText}`);
+    } else {
+        btn.prop('disabled', false);
+        const original = btn.data('original-text');
+        if (original) btn.html(original);
+    }
+}
+
 $(document).ready(function () {
 
     var csrf_token = $('meta[name=csrf-token]').attr('content');
@@ -814,6 +827,7 @@ $(document).ready(function () {
 
     // --- XỬ LÝ TRANG ADMIN SETTINGS ---
     var adminBanks = [];
+    var supportedBanks = [];
 
     if ($('#settings-form').length > 0) {
         $.ajax({
@@ -860,6 +874,9 @@ $(document).ready(function () {
                         }
                     }
                     renderBankTable();
+
+                    supportedBanks = response.settings.supported_banks || [];
+                    renderSupportedBanks();
                 }
             },
             error: function (xhr) {
@@ -868,6 +885,28 @@ $(document).ready(function () {
             }
         });
     }
+
+    function renderSupportedBanks() {
+        const tbody = $('#supported-bank-table tbody');
+        tbody.empty();
+        supportedBanks.forEach((bank, index) => {
+            const row = `
+                <tr>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.name)}" onchange="updateSupBank(${index}, 'name', this.value)"></td>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.short_name)}" onchange="updateSupBank(${index}, 'short_name', this.value)"></td>
+                    <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.bin)}" onchange="updateSupBank(${index}, 'bin', this.value)"></td>
+                    <td><button type="button" class="btn btn-danger btn-xs" onclick="removeSupBank(${index})"><i class="fa fa-trash"></i></button></td>
+                </tr>`;
+            tbody.append(row);
+        });
+    }
+    
+    window.updateSupBank = function(index, field, value) { supportedBanks[index][field] = value; }
+    window.removeSupBank = function(index) { supportedBanks.splice(index, 1); renderSupportedBanks(); }
+    $('#btn-add-supported-bank').click(function() {
+        supportedBanks.push({name: "", short_name: "", bin: ""});
+        renderSupportedBanks();
+    });
 
     function renderBankTable() {
         const tbody = $('#bank-list-table tbody');
@@ -938,6 +977,9 @@ $(document).ready(function () {
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
             admin_banks: cleanBanks
         };
+
+        settingsData.supported_banks = supportedBanks;
+
         $.ajax({
             url: API_URL + "/api/admin/settings",
             type: 'POST',

@@ -667,3 +667,14 @@ body {
     color: #2882C0;
     margin-bottom: 10px;
 }
+
+/* Custom Text Utilities */
+.text-brand { color: #2882C0; }
+.text-danger-bold { color: #d9534f; font-weight: bold; }
+.text-dark-bold { color: #333; font-weight: bold; }
+.bg-light-yellow { background: #fffbe6; }
+
+/* Custom Components */
+.stepper-container { margin-top: 40px; }
+.header-order-info { background: #f9fbfd; padding: 20px; text-align: center; border-bottom: 1px solid #eee; }
+.qr-box { border: 2px solid #2882C0; border-radius: 10px; padding: 10px; display: inline-block; }

@@ -2,12 +2,13 @@ $(document).ready(function () {
    
     // --- Xử lý nút "Hủy Đơn" (Admin) ---
     $(document).on('click', '.btn-cancel-admin', function () {
-        const btn = $(this); // [MỚI] Lưu lại nút đang bấm
-        const orderId = btn.data('id'); // Sửa $(this) thành btn
+        const btn = $(this); 
+        const orderId = btn.data('id'); 
 
         if (!confirm(`ADMIN: Bạn có chắc chắn muốn HỦY đơn hàng ${orderId} không?`)) {
             return;
         }
+        setLoading(btn, true, 'Đang gửi...');
         $.ajax({
             url: `${API_URL}/api/admin/cancel-order`,
             type: 'POST',
@@ -15,14 +16,13 @@ $(document).ready(function () {
             data: JSON.stringify({ order_id: orderId }),
             success: function (response) {
                 alert(response.message);
-
-                // [SỬA ĐOẠN NÀY] Xóa dòng chứa nút bấm (Chính xác 100%)
                 btn.closest('tr').fadeOut(500, function () {
                     $(this).remove();
                     loadTransactions();
                 });
             },
             error: function (xhr) {
+                setLoading(btn, false);
                 alert("Lỗi: " + xhr.responseJSON.message);
             }
         });
@@ -102,6 +102,27 @@ $(document).ready(function () {
         });
     }
 
+    let dynamicBinMap = {};
+
+    function loadBinMap() {
+        $.ajax({
+            url: `${API_URL}/api/config/supported-banks`,
+            type: 'GET',
+            success: function(res) {
+                if(res.success && res.banks) {
+                    dynamicBinMap = {};
+                    res.banks.forEach(b => {
+                        // Map cả tên đầy đủ và tên ngắn vào BIN để dễ tìm
+                        dynamicBinMap[b.name] = b.bin;
+                        dynamicBinMap[b.short_name] = b.bin; 
+                    });
+                    // Sau khi có map thì mới load giao dịch để đảm bảo render đúng QR
+                    loadTransactions(); 
+                }
+            }
+        });
+    }
+
     // --- Hiển thị dữ liệu lên bảng ---
     function renderTables(transactions) {
         const buyTable = $('#buy-orders-table');
@@ -111,20 +132,6 @@ $(document).ready(function () {
 
         let buyCount = 0;
         let sellCount = 0;
-
-        const binMap = {
-            'Vietcombank (VCB)': '970436',
-            'VietinBank (ICB)': '970415',
-            'BIDV': '970418',
-            'Agribank': '970405',
-            'Á Châu (ACB)': '970416',
-            'MBBank (MB)': '970422',
-            'Techcombank (TCB)': '970407',
-            'Sacombank (STB)': '970403',
-            'VPBank': '970432',
-            'TPBank': '970423',
-            'HDBank': '970437'
-        };
 
         transactions.forEach(order => {
             let actionBtns = '';
@@ -162,13 +169,15 @@ $(document).ready(function () {
                     let targetBin = '';
                     let bankNameRaw = order.user_bank_raw.bankName; // Lấy tên ngân hàng từ dữ liệu raw
                     
-                    // Tra cứu trong danh sách
-                    if (binMap[bankNameRaw]) {
-                        targetBin = binMap[bankNameRaw];
+                    if (dynamicBinMap[bankNameRaw]) {
+                        targetBin = dynamicBinMap[bankNameRaw];
                     } else {
-                        // Nếu không tìm thấy key chính xác, thử tìm theo chuỗi (fallback)
-                        for (const [name, code] of Object.entries(binMap)) {
-                            if (bankNameRaw.includes(name)) { targetBin = code; break; }
+                        // 2. Tìm gần đúng (Fallback)
+                        for (const [name, bin] of Object.entries(dynamicBinMap)) {
+                            if (bankNameRaw.includes(name) || name.includes(bankNameRaw)) { 
+                                targetBin = bin; 
+                                break; 
+                            }
                         }
                     }
 
@@ -216,6 +225,8 @@ $(document).ready(function () {
             return;
         }
 
+        setLoading(btn, true, 'Đang gửi...');
+
         $.ajax({
             // ... (các phần url, type giữ nguyên) ...
             url: `${API_URL}/api/admin/transactions/complete`,
@@ -227,17 +238,17 @@ $(document).ready(function () {
                     alert(response.message);
                     btn.closest('tr').fadeOut(500, function () {
                         $(this).remove();
-
                         loadTransactions();
                     });
                 }
             },
             error: function (xhr) {
+                setLoading(btn, false);
                 alert("Lỗi: " + xhr.responseJSON.message);
             }
         });
     });
 
     // --- Chạy lần đầu ---
-    loadTransactions();
+    loadBinMap();
 });

@@ -30,6 +30,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask_migrate import Migrate
 from utils import VietQR, generate_qr_code_image, remove_accents
 import logging
+from sqlalchemy import or_
 
 logging.basicConfig(
     level=logging.INFO,
@@ -230,6 +231,19 @@ def load_settings():
                 "sol": 0,       
                 "bnb": 0       
                 },
+            "supported_banks": [
+            {"name": "Vietcombank (VCB)", "bin": "970436", "short_name": "Vietcombank"},
+            {"name": "VietinBank (ICB)", "bin": "970415", "short_name": "VietinBank"},
+            {"name": "Techcombank (TCB)", "bin": "970407", "short_name": "Techcombank"},
+            {"name": "MBBank (MB)", "bin": "970422", "short_name": "MBBank"},
+            {"name": "Á Châu (ACB)", "bin": "970416", "short_name": "ACB"},
+            {"name": "BIDV", "bin": "970418", "short_name": "BIDV"},
+            {"name": "Agribank", "bin": "970405", "short_name": "Agribank"},
+            {"name": "Sacombank (STB)", "bin": "970403", "short_name": "Sacombank"},
+            {"name": "VPBank", "bin": "970432", "short_name": "VPBank"},
+            {"name": "TPBank", "bin": "970423", "short_name": "TPBank"},
+            {"name": "HDBank", "bin": "970437", "short_name": "HDBank"}
+            ],
             "fee_html_content": """
                 <tr>
                     <td class="text-center">Bits (BTC)</td>
@@ -258,6 +272,8 @@ def load_settings():
         app_settings['TELEGRAM_CHAT_ID'] = os.environ.get('TELEGRAM_CHAT_ID')
         
     return app_settings
+
+
 def save_settings(settings):
     global app_settings
     with open(CONFIG_FILE, 'w') as f: json.dump(settings, f, indent=4)
@@ -289,6 +305,11 @@ def get_user_from_request():
         return User.query.filter_by(username=username.lower()).first()
     except Exception:
         return None
+
+@app.route("/api/config/supported-banks", methods=['GET'])
+def get_supported_banks():
+    settings = load_settings()
+    return jsonify({"success": True, "banks": settings.get('supported_banks', [])})
 
 # --- API GIÁ & TÍNH TOÁN ---
 @app.route("/api/prices")
@@ -349,7 +370,22 @@ def api_register_user():
     if not all([username_raw, email, password]): 
         return jsonify({"success": False, "message": "Vui lòng nhập đủ thông tin"}), 400
     
-    username = username_raw.lower()
+    username = username_raw.lower().strip()
+
+    forbidden_keywords = [
+        'admin', 'root', 'system', 'buser', 'support', 'manager', 
+        'mod', 'moderator', 'help', 'info', 'contact', 'superuser', 
+        'administrator', 'staff', 'bqt', 'quantri', 'cskh', 'hotro',
+        'bot', 'billing', 'security', 'owner'
+    ]
+
+    for word in forbidden_keywords:
+        if word in username:
+            return jsonify({
+                "success": False, 
+                "message": f"Tên đăng nhập không được chứa từ khóa hệ thống: '{word}'"
+            }), 400
+
     if User.query.filter_by(username=username).first():
         return jsonify({"success": False, "message": "Tên đăng nhập đã tồn tại"}), 400
     if User.query.filter_by(email=email).first():
@@ -1167,19 +1203,52 @@ def get_public_transactions():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     
-    # --- [MỚI] API ADMIN XEM LỊCH SỬ GIAO DỊCH ĐÃ HOÀN THÀNH ---
+    # ---API ADMIN XEM LỊCH SỬ GIAO DỊCH ĐÃ HOÀN THÀNH ---
 @app.route("/api/admin/transactions/history", methods=['GET'])
 def get_admin_transactions_history():
     user = get_user_from_request()
     if not user or user.role != 'Admin':
         return jsonify({"success": False, "message": "Không có quyền truy cập"}), 403
 
-    try:
-        # Lấy các đơn hàng "completed", mới nhất lên đầu
-        completed_orders = Order.query.filter_by(status='completed').order_by(Order.created_at.desc()).all()
+    # Lấy tham số từ URL
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
+    # Bộ lọc
+    filter_username = request.args.get('username')
+    filter_coin = request.args.get('coin')
+    filter_date_from = request.args.get('date_from')
+    filter_date_to = request.args.get('date_to')
 
+    # Query cơ bản
+    query = Order.query.filter_by(status='completed')
+
+    # Áp dụng lọc
+    if filter_username:
+        search_term = f"%{filter_username}%"
+        query = query.filter(or_(
+            Order.username.ilike(search_term),
+            Order.id.ilike(search_term)
+        ))
+    if filter_coin and filter_coin != 'all':
+        query = query.filter(Order.coin == filter_coin)
+    if filter_date_from:
+        try:
+            d_from = datetime.strptime(filter_date_from, '%Y-%m-%d')
+            query = query.filter(Order.created_at >= d_from)
+        except: pass
+    if filter_date_to:
+        try:
+            d_to = datetime.strptime(filter_date_to, '%Y-%m-%d') + timedelta(days=1) # Đến hết ngày đó
+            query = query.filter(Order.created_at < d_to)
+        except: pass
+
+    # Sắp xếp và Phân trang
+    pagination = query.order_by(Order.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    try:
         orders_list = []
-        for order in completed_orders:
+        for order in pagination.items:
             orders_list.append({
                 "id": order.id,
                 "mode": "Mua" if order.mode == 'buy' else "Bán",
@@ -1193,11 +1262,20 @@ def get_admin_transactions_history():
                 "user_bank_id": order.user_bank_id
             })
 
-        return jsonify({"success": True, "transactions": orders_list})
+        return jsonify({
+            "success": True, 
+            "transactions": orders_list,
+            "pagination": {
+                "total_pages": pagination.pages,
+                "current_page": page,
+                "total_items": pagination.total
+            }
+        })
     except Exception as e:
+        print(f"Lỗi API History: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
     
-    # --- [MỚI] API ADMIN QUẢN LÝ NGƯỜI DÙNG ---
+    # ---API ADMIN QUẢN LÝ NGƯỜI DÙNG ---
 @app.route("/api/admin/users", methods=['GET'])
 def get_admin_all_users():
     user = get_user_from_request()
