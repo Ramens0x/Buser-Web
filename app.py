@@ -818,10 +818,20 @@ def create_order():
         elif coin_type == 'bnb': wallet_address = settings.get('admin_bnb_wallet'); network = "BEP-20 (BSC)"
         else: wallet_address = settings.get('admin_usdt_wallet'); network = "BEP-20 (BSC)"
 
+        user_bank_snapshot = {}
+        if bank_id:
+            u_bank = Bank.query.filter_by(id=bank_id).first()
+            if u_bank:
+                user_bank_snapshot = {
+                    "bank_name": u_bank.bank_name,
+                    "account_number": u_bank.account_number,
+                    "account_name": u_bank.account_name
+                }
         payment_info_dict = {
             "memo": "", "wallet_address": wallet_address, "network": network,
             "content": full_transfer_content,
-            "sell_content": sell_transfer_content # <--- Gửi nội dung CK Bán xuống DB
+            "sell_content": sell_transfer_content, # <--- Gửi nội dung CK Bán xuống DB
+            "user_bank_snapshot": user_bank_snapshot
         }
     
     new_order = Order(
@@ -1006,7 +1016,7 @@ def send_telegram_notification(message, order_id=None):
             ]]
          }
         try:
-            response = requests.post(api_url, json=payload, timeout=5)
+            response = requests.post(api_url, json=payload, timeout=3)
             if response.status_code == 200:
                 print(f"✅ Đã gửi Telegram: {message[:50]}...")
             else:

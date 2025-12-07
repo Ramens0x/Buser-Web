@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    
+
     // 2. Gọi API lấy chi tiết đơn hàng
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,
@@ -23,26 +23,26 @@ $(document).ready(function () {
 
         $('#upload-order-id').val(order.id);
 
-        // Hiển thị thông tin thanh toán (Admin nhận tiền)
-        const info = order.payment_info;
-        if (info) {
-            $('#payment-bank').text(info.bank);
-            $('#payment-account-number').text(escapeHTML(info.account_number));
-            $('#payment-account-name').text(escapeHTML(info.account_name));
-            $('#payment-amount').text(numberFormat(info.amount, 0) + ' VNĐ');
-            $('#payment-content').text(escapeHTML(info.content));
+        const info = order.payment_info || {};
 
-            // Hiển thị QR
+        $('#payment-bank').text(info.bank_name || info.bank || 'Chưa cập nhật');
+        $('#payment-account-number').text(escapeHTML(info.account_number || '...'));
+        $('#payment-account-name').text(escapeHTML(info.account_name || '...'));
+        $('#payment-amount').text(numberFormat(info.amount || order.amount_vnd, 0) + ' VNĐ');
+        $('#payment-content').text(escapeHTML(info.content || '...'));
+
+        if (order.qr_data_string) {
             const qrData = encodeURIComponent(order.qr_data_string);
             const qrImgSrc = `${API_URL}/api/generate-qr?data=${qrData}`;
-            $('#qr-image').attr('src', qrImgSrc);
+            $('#qr-image').attr('src', qrImgSrc).show();
+        } else {
+            $('#qr-image').hide();
+            $('#qr-image').parent().html('<p class="text-danger text-center">Không thể tạo QR</p>');
         }
 
-        // Hiển thị thông tin nhận Coin (User)
         $('#confirm-coin-type').text(order.coin.toUpperCase());
         $('#confirm-coin-amount').text(numberFormat(order.amount_coin, 8));
 
-        // Lấy chi tiết ví user để hiển thị
         $.ajax({
             url: `${API_URL}/api/user/wallets?coin_type=${order.coin}`,
             type: 'GET',

@@ -1,9 +1,9 @@
 $(document).ready(function () {
-    
+
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,
         type: 'GET',
-    
+
         success: function (response) {
             if (response.success) {
                 renderOrderData(response.order);
@@ -35,20 +35,28 @@ $(document).ready(function () {
         }
 
         $('#receive-amount-vnd').text(numberFormat(order.amount_vnd, 0));
-        $.ajax({
-            url: `${API_URL}/api/user/banks`,
-            type: 'GET',
-         
-            success: function (res) {
-                const selectedBank = res.banks.find(b => b.id === order.user_bank_id);
-                if (selectedBank) {
-                    $('#user-bank-name').text(escapeHTML(selectedBank.bank_name));
-                    $('#user-bank-account').text(escapeHTML(selectedBank.account_number));
-                    
-                    $('#user-account-name').text(escapeHTML(selectedBank.account_name));
+        if (order.payment_info && order.payment_info.user_bank_snapshot && order.payment_info.user_bank_snapshot.bank_name) {
+            const bankSnap = order.payment_info.user_bank_snapshot;
+            $('#user-bank-name').text(escapeHTML(bankSnap.bank_name));
+            $('#user-bank-account').text(escapeHTML(bankSnap.account_number));
+            $('#user-account-name').text(escapeHTML(bankSnap.account_name));
+        } else {
+            $.ajax({
+                url: `${API_URL}/api/user/banks`,
+                type: 'GET',
+                success: function (res) {
+                    const selectedBank = res.banks.find(b => b.id === order.user_bank_id);
+                    if (selectedBank) {
+                        $('#user-bank-name').text(escapeHTML(selectedBank.bank_name));
+                        $('#user-bank-account').text(escapeHTML(selectedBank.account_number));
+                        $('#user-account-name').text(escapeHTML(selectedBank.account_name));
+                    } else {
+                        $('#user-bank-name').text("Không tìm thấy (Đã xóa)");
+                    }
                 }
-            }
-        });
+            });
+        }
+
         if (order.payment_info && order.payment_info.sell_content) {
             $('#sell-order-content').text(order.payment_info.sell_content);
         } else {
