@@ -44,7 +44,9 @@ def create_app():
         
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret-key-change-me')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+    if not app.config['SECRET_KEY']:
+        raise ValueError("Chưa cấu hình SECRET_KEY trong file .env! Nguy hiểm!")
 
     # 4. Khởi tạo các công cụ (Extensions)
     db.init_app(app)

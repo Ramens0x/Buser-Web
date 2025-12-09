@@ -15,6 +15,7 @@ from functools import wraps
 from extensions import mail, db
 from models import User, Order, Wallet, Bank, KYC
 from price_service import price_service
+import imghdr
 
 # --- CÁC BIẾN CẤU HÌNH (Global Variables) ---
 CONFIG_FILE = "config.json"
@@ -39,7 +40,7 @@ def load_settings():
                 default_banks = json.loads(env_banks) 
                 print("✅ Đã tải thông tin Bank từ .env")
             except Exception as e:
-                print(f"❌ Lỗi đọc ADMIN_BANKS từ .env: {e}")
+                current_app.logger.error(f"❌ Lỗi đọc ADMIN_BANKS từ .env: {e}", exc_info=True)
                 default_banks = []
         
         default_settings = {
@@ -106,9 +107,9 @@ def send_async_email(app, msg):
     with app.app_context():
         try:
             mail.send(msg)
-            print(f"✅ Đã gửi email tới {msg.recipients[0]}")
+            current_app.logger.error(f"✅ Đã gửi email tới {msg.recipients[0]}")
         except Exception as e:
-            print(f"❌ Lỗi gửi email async: {e}")
+            current_app.logger.error(f"❌ Lỗi gửi email async: {e}", exc_info=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -120,6 +121,12 @@ def allowed_kyc_file(filename):
 def save_secure_image(file_storage, folder, prefix):
     """Lưu ảnh an toàn và nén ảnh"""
     try:
+        header = file_storage.read(512)
+        file_storage.seek(0) # Reset con trỏ về đầu file
+        format = imghdr.what(None, header)
+        if not format:
+            print("❌ File không phải là ảnh hợp lệ")
+            return None
         img = Image.open(file_storage)
         img = ImageOps.exif_transpose(img)
         img = img.convert('RGB')
@@ -128,7 +135,7 @@ def save_secure_image(file_storage, folder, prefix):
         img.save(file_path, format='JPEG', quality=85, optimize=True)
         return filename
     except Exception as e:
-        print(f"Lỗi xử lý ảnh: {e}")
+        current_app.logger.error(f"Lỗi xử lý ảnh: {e}", exc_info=True)
         return None
 
 def is_valid_image(file_stream):
@@ -161,9 +168,9 @@ def send_reset_email(user_email, reset_link):
         # Vì hàm này thường gọi trong request context, ta có thể dùng mail.send trực tiếp 
         # hoặc spawn luồng async. Ở đây dùng current_app._get_current_object() để spawn.
         eventlet.spawn(send_async_email, current_app._get_current_object(), msg)
-        print(f"✅ Đã queue email reset tới {user_email}")
+        current_app.logger.error(f"✅ Đã queue email reset tới {user_email}", exc_info=True)
     except Exception as e:
-        print(f"❌ Lỗi gửi email: {e}")
+        current_app.logger.error(f"❌ Lỗi gửi email: {e}", exc_info=True)
 
 def get_user_from_request():
     """Lấy thông tin User từ Cookie Token"""
@@ -215,7 +222,7 @@ def send_telegram_notification(message, order_id=None):
     try:
         requests.post(api_url, json=payload, timeout=3)
     except Exception as e:
-        print(f"❌ Lỗi Telegram: {e}")
+        current_app.logger.error(f"❌ Lỗi Telegram: {e}", exc_info=True)
 
 # --- CÁC HÀM CHẠY NGẦM (TASKS) ---
 
@@ -239,10 +246,10 @@ def clean_old_bills(app):
                         order.payment_info = json.dumps(info)
                         count += 1
             except Exception as e:
-                print(f"Lỗi xóa bill đơn {order.id}: {e}")
+                current_app.logger.error(f"Lỗi xóa bill đơn {order.id}: {e}", exc_info=True)
         if count > 0:
             db.session.commit()
-            print(f"🧹 Đã dọn dẹp {count} ảnh hóa đơn cũ.")
+            current_app.logger.error(f"🧹 Đã dọn dẹp {count} ảnh hóa đơn cũ.")
 
 def cancel_expired_orders(app):
     """Hủy đơn hàng treo quá 15 phút"""
@@ -258,7 +265,7 @@ def cancel_expired_orders(app):
             count += 1
         if count > 0:
             db.session.commit()
-            print(f"⏰ Đã hủy {count} đơn hàng hết hạn.")
+            current_app.logger.error(f"⏰ Đã hủy {count} đơn hàng hết hạn.")
 
 def update_price_task():
     """Cập nhật giá Coin"""
@@ -268,7 +275,7 @@ def update_price_task():
         if all_prices:
             current_rates.update(all_prices)
     except Exception as e:
-        print(f"⚠️ Lỗi cập nhật giá: {e}")
+        current_app.logger.error(f"⚠️ Lỗi cập nhật giá: {e}", exc_info=True)
 
 # --- HÀM KHỞI TẠO ADMIN (QUAN TRỌNG) ---
 def create_system_admin():
@@ -292,7 +299,7 @@ def create_system_admin():
         )
         db.session.add(new_admin)
         db.session.commit()
-        print(f">>> 👑 Đã khởi tạo Admin mặc định: {env_admin_user}")
+        current_app.logger.error(f">>> 👑 Đã khởi tạo Admin mặc định: {env_admin_user}")
     else:
         # Nếu đã có user thì thôi, không làm gì cả
         pass

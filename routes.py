@@ -10,6 +10,8 @@ import io
 import jwt
 import eventlet
 import time
+from flask_wtf.csrf import generate_csrf
+from flask_limiter.util import get_remote_address
 
 # Import các thành phần từ file khác
 from extensions import db, socketio, limiter, mail
@@ -106,7 +108,7 @@ def api_calculate_swap():
         })
 
     except Exception as e:
-        print(f"Calc Error: {e}")
+        current_app.logger.error(f"Calc Error: {e}", exc_info=True)
         return jsonify({"amount_out": 0}), 200
 
 @bp.route("/api/register", methods=['POST'])
@@ -165,7 +167,7 @@ def api_register_user():
         eventlet.spawn(send_async_email, current_app._get_current_object(), msg)
         
     except Exception as e:
-        print(f"Lỗi setup gửi mail: {e}")
+        current_app.logger.error(f"Lỗi setup gửi mail: {e}", exc_info=True)
     
     return jsonify({"success": True, "message": "Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản."})
 
@@ -329,11 +331,16 @@ def send_contact_email():
         return jsonify({"success": True, "message": "Đã gửi liên hệ thành công"})
         
     except Exception as e:
-        print(f"Lỗi gửi mail liên hệ: {e}")
+        current_app.logger.error(f"Lỗi gửi mail liên hệ: {e}", exc_info=True)
         return jsonify({"success": False, "message": "Lỗi server, vui lòng thử lại sau"}), 500
 
+# Hàm xác định key để limit (Ưu tiên User ID, nếu không có thì dùng IP)
+def rate_limit_key():
+    user = get_user_from_request()
+    return str(user.id) if user else get_remote_address()
+
 @bp.route("/api/create-order", methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("5 per minute", key_func=rate_limit_key)
 def create_order():
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
@@ -495,7 +502,7 @@ def create_order():
         else:
             message = f"🔔 *Đơn BÁN Mới*\nMã: *{new_order.id}*\nUser: *{new_order.username}*\nCoin: *{new_order.amount_coin:.8f}*\nVNĐ: *{new_order.amount_vnd:,.0f}*\nND Admin CK: `{sell_transfer_content}`"
         eventlet.spawn(send_telegram_notification, message, order_id=new_order.id)
-    except Exception as e: print(f"Lỗi Telegram: {e}")
+    except Exception as e: current_app.logger.error(f"Lỗi Telegram: {e}", exc_info=True)
 
     return jsonify({"success": True, "order": {
         "id": new_order.id, "username": new_order.username, "mode": new_order.mode,
@@ -566,7 +573,7 @@ def get_order_detail(order_id):
                 viet_qr.set_transaction_amount(str(int(order.amount_vnd)))
                 viet_qr.set_additional_data_field_template(order.id)
                 qr_data_string = viet_qr.build()
-            except Exception as e: print(f"Error rebuilding QR: {e}")
+            except Exception as e: current_app.logger.error(f"Error rebuilding QR: {e}", exc_info=True)
 
     return jsonify({
         "success": True,
@@ -583,7 +590,10 @@ def get_order_detail(order_id):
 @admin_required
 def admin_settings():
     if request.method == 'GET':
-        return jsonify({"success": True, "settings": load_settings()})
+        settings = load_settings().copy() 
+        if settings.get('TELEGRAM_BOT_TOKEN'):
+            settings['TELEGRAM_BOT_TOKEN'] = settings['TELEGRAM_BOT_TOKEN'][:5] + "******" 
+        return jsonify({"success": True, "settings": settings})
     if request.method == 'POST':
         save_settings(request.json)
         return jsonify({"success": True, "message": "Cài đặt đã được lưu!"})
@@ -763,7 +773,7 @@ def get_admin_transactions():
             **vols
         }
     except Exception as e:
-        print(f"Lỗi thống kê: {e}")
+        current_app.logger.error(f"Lỗi thống kê: {e}", exc_info=True)
         stats_dict = {}
 
     return jsonify({"success": True, "transactions": orders_list, "stats": stats_dict})
@@ -782,7 +792,7 @@ def complete_admin_transaction():
         action = "Đã nhận coin" if order.mode == 'buy' else "Đã nhận VNĐ"
         msg = f"✅ *ĐƠN HÀNG HOÀN TẤT*\nMã GD: *{order.id}*\nUser: *{order.username}*\nLoại: *{order.mode.upper()}*"
         send_telegram_notification(msg, order_id=order.id)
-    except Exception as e: print(f"Lỗi Telegram: {e}")
+    except Exception as e: current_app.logger.error(f"Lỗi Telegram: {e}", exc_info=True)
 
     socketio.emit('order_completed', {'order_id': order.id}, room=order.id)
     return jsonify({"success": True, "message": f"Đã hoàn tất đơn hàng {order.id}"})
@@ -1122,7 +1132,7 @@ def handle_join_room(data):
     if room:
         from flask_socketio import join_room
         join_room(room)
-        print(f"✅ Client joined room: {room}")
+        current_app.logger.error(f"✅ Client joined room: {room}", exc_info=True)
 
 @socketio.on('connect')
 def handle_connect():
@@ -1131,3 +1141,7 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print("Socket Client disconnected")
+
+@bp.route('/api/csrf-token', methods=['GET'])
+def get_csrf_token():
+    return jsonify({'csrf_token': generate_csrf()})
