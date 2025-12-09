@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, send_file, send_from_directory, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from sqlalchemy import or_, func, case
 from datetime import datetime, timedelta
 import os
@@ -409,7 +410,7 @@ def create_order():
         if not user_account_name:
             return jsonify({"success": False, "message": "Vui lòng cập nhật Họ và Tên trong Ví hoặc Ngân hàng."}), 400
             
-    transfer_keywords = ["ck tien", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan", "tra tien hang"]
+    transfer_keywords = ["ck tien", "chuyen tien", "chuyen khoan", "gui tien", "thanh toan", "tra tien", "CK", "TTOAN"]
     random_suffix = random.choice(transfer_keywords)
 
     # Nội dung CK cho khách chuyển (Đơn Mua)
@@ -937,11 +938,15 @@ def submit_kyc():
     
     try:
         for key, f in files_map.items():
-            if not is_valid_image(f) or not allowed_kyc_file(f.filename):
-                return jsonify({"success": False, "message": f"Ảnh {key} lỗi hoặc không hợp lệ"}), 400
             
-            fname = secure_filename(f"{user.username}_{ts}_{key}.jpg")
-            f.save(os.path.join(current_app.config['KYC_UPLOAD_FOLDER'], fname))
+            prefix = f"{user.username}_{ts}_{key}"
+            
+            fname = save_secure_image(f, current_app.config['KYC_UPLOAD_FOLDER'], prefix)
+
+            if not fname:
+                print(f"❌ Lỗi ảnh: {key} - Có thể do định dạng hoặc thư viện Pillow") 
+                return jsonify({"success": False, "message": f"Lỗi xử lý ảnh: {key}. Vui lòng thử ảnh khác."}), 400
+
             saved_filenames[key] = fname
 
         if existing_kyc:
@@ -1028,6 +1033,64 @@ def admin_review_kyc():
     return jsonify({"success": True, "message": f"Đã {action} yêu cầu KYC."})
 
 # --- ROUTES HTML (Frontend) ---
+
+@bp.route('/transaction/<order_id>')
+def transaction_detail_page(order_id):
+    # 1. Kiểm tra đăng nhập
+    user = get_user_from_request()
+    if not user:
+        return redirect('/login.html') # Hoặc trang login của bạn
+
+    # 2. Tìm đơn hàng
+    order = Order.query.filter_by(id=order_id).first()
+    
+    # 3. Kiểm tra quyền (Chỉ chủ đơn hàng hoặc Admin mới được xem)
+    if not order:
+        return render_template('404.html'), 404 # Hoặc thông báo lỗi
+    
+    if order.username != user.username and user.role != 'Admin':
+        return "Bạn không có quyền xem đơn hàng này", 403
+
+    # 4. Xử lý dữ liệu hiển thị
+    payment_info = json.loads(order.payment_info or '{}')
+    
+    # Định dạng lại thời gian
+    time_str = order.created_at.strftime("%H:%M - %d/%m/%Y")
+    
+    # Lấy thông tin người nhận/người gửi hiển thị trên Bill
+    # Nếu là MUA: Người nhận là Admin (lấy trong payment_info)
+    # Nếu là BÁN: Người nhận là User (lấy trong payment_info['user_bank_snapshot'])
+    
+    recipient_name = "N/A"
+    recipient_acc = "N/A"
+    bank_name = "N/A"
+    
+    if order.mode == 'buy':
+        # Đơn mua: User chuyển khoản cho Admin
+        recipient_name = payment_info.get('account_name', 'HỆ THỐNG')
+        recipient_acc = payment_info.get('account_number', 'N/A')
+        bank_name = payment_info.get('bank_name', 'Ngân hàng')
+        bill_amount = order.amount_vnd # Tiền VNĐ
+        
+    else:
+        # Đơn bán: Admin chuyển khoản cho User
+        user_bank = payment_info.get('user_bank_snapshot', {})
+        recipient_name = user_bank.get('account_name', 'User')
+        recipient_acc = user_bank.get('account_number', 'N/A')
+        bank_name = user_bank.get('bank_name', 'N/A')
+        bill_amount = order.amount_vnd
+
+    return render_template(
+        'transaction_detail.html',
+        order=order,
+        user=user,
+        payment_info=payment_info,
+        time_str=time_str,
+        recipient_name=recipient_name,
+        recipient_acc=recipient_acc,
+        bank_name=bank_name,
+        bill_amount="{:,.0f}".format(bill_amount) # Format số tiền có dấu phẩy
+    )
 
 @bp.route('/')
 def serve_index():

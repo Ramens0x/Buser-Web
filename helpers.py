@@ -118,24 +118,35 @@ def allowed_kyc_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED
 
 def save_secure_image(file_storage, folder, prefix):
-    """Lưu ảnh an toàn và nén ảnh"""
+    """Lưu ảnh an toàn và nén ảnh (Dùng Pillow thay vì imghdr)"""
     try:
+        # Dùng Pillow mở ảnh để kiểm tra
         img = Image.open(file_storage)
-
+        
+        # Kiểm tra định dạng hợp lệ
         if img.format not in ['JPEG', 'PNG', 'GIF', 'WEBP']:
-            print("❌ Định dạng file không hỗ trợ")
+            print(f"❌ Định dạng không hỗ trợ: {img.format}")
             return None
 
+        # Xử lý xoay ảnh
         img = ImageOps.exif_transpose(img)
+        
+        # Chuyển sang RGB để lưu JPEG
         img = img.convert('RGB')
         
         filename = f"{prefix}_{int(time.time())}.jpg"
         file_path = os.path.join(folder, secure_filename(filename))
         
+        # Lưu nén
         img.save(file_path, format='JPEG', quality=85, optimize=True)
+        
         return filename
+
     except Exception as e:
-        current_app.logger.error(f"Lỗi xử lý ảnh: {e}", exc_info=True)
+        if current_app:
+            current_app.logger.error(f"Lỗi xử lý ảnh: {e}", exc_info=True)
+        else:
+            print(f"Lỗi xử lý ảnh: {e}")
         return None
 
 def is_valid_image(file_stream):

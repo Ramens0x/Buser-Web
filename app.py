@@ -25,10 +25,17 @@ def create_app():
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
 
+        # Lấy đường dẫn gốc của dự án
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
     # 2. Cấu hình các Thư mục & Email
-    app.config['UPLOAD_FOLDER'] = 'uploads/bills'
-    app.config['KYC_UPLOAD_FOLDER'] = 'uploads/kyc'
-    app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
+    app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads', 'bills')
+    app.config['KYC_UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads', 'kyc')
+    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+
+    # Tạo thư mục nếu chưa có
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(app.config['KYC_UPLOAD_FOLDER'], exist_ok=True)
     
     # Cấu hình Mail từ .env
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'

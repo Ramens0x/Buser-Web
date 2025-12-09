@@ -110,7 +110,7 @@ $(document).ready(function () {
                 .html('<i class="fa fa-times-circle"></i> Đơn Đã Hủy')
                 .prop('disabled', true);
              
-             $('.payment-box').css('opacity', '0.6');
+             $('.auth-box').css('opacity', '0.6');
              $('#upload-bill-form button').prop('disabled', true);
         }
 
