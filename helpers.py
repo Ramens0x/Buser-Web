@@ -15,7 +15,6 @@ from functools import wraps
 from extensions import mail, db
 from models import User, Order, Wallet, Bank, KYC
 from price_service import price_service
-import imghdr
 
 # --- CÁC BIẾN CẤU HÌNH (Global Variables) ---
 CONFIG_FILE = "config.json"
@@ -121,17 +120,18 @@ def allowed_kyc_file(filename):
 def save_secure_image(file_storage, folder, prefix):
     """Lưu ảnh an toàn và nén ảnh"""
     try:
-        header = file_storage.read(512)
-        file_storage.seek(0) # Reset con trỏ về đầu file
-        format = imghdr.what(None, header)
-        if not format:
-            print("❌ File không phải là ảnh hợp lệ")
-            return None
         img = Image.open(file_storage)
+
+        if img.format not in ['JPEG', 'PNG', 'GIF', 'WEBP']:
+            print("❌ Định dạng file không hỗ trợ")
+            return None
+
         img = ImageOps.exif_transpose(img)
         img = img.convert('RGB')
+        
         filename = f"{prefix}_{int(time.time())}.jpg"
         file_path = os.path.join(folder, secure_filename(filename))
+        
         img.save(file_path, format='JPEG', quality=85, optimize=True)
         return filename
     except Exception as e:
