@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 from extensions import db, socketio, mail, limiter, migrate, csrf
 from models import User
-from helpers import load_settings, clean_old_bills, update_price_task, create_system_admin
+from helpers import load_settings, clean_old_bills, update_price_task, create_system_admin, cancel_expired_orders
 from routes import bp as main_bp
 
 load_dotenv()
