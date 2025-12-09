@@ -350,6 +350,7 @@ def create_order():
     amount_from, amount_to = float(data.get('amount_from', 0)), float(data.get('amount_to', 0))
     wallet_id, bank_id = data.get('wallet_id'), data.get('bank_id')
 
+    # Xác định số tiền VNĐ
     transaction_vnd = amount_from if mode == 'buy' else amount_to
     KYC_LIMIT = 100000000
     if transaction_vnd > KYC_LIMIT:
@@ -360,7 +361,9 @@ def create_order():
                 "message": f"Giao dịch > {KYC_LIMIT:,.0f} VNĐ yêu cầu KYC!"
             }), 403
     
+    # 1. Load cài đặt ngay đầu hàm để dùng chung
     settings = load_settings()
+
     if mode == 'buy':
         limit = 0
         if coin_type in ['bustabit', 'btc']: limit = float(settings.get('liquidity_btc', 0))
@@ -381,6 +384,7 @@ def create_order():
 
     transaction_id = get_unique_order_id() 
     
+    # --- Lấy tên người dùng ---
     user_account_name = ""
     kyc_info = KYC.query.filter_by(user_id=user.id).first()
     if kyc_info and kyc_info.full_name:
@@ -400,34 +404,53 @@ def create_order():
             
     transfer_keywords = ["ck tien", "chuyen tien", "hoan tien", "chuyen khoan", "gui tien", "thanh toan", "tra tien hang"]
     random_suffix = random.choice(transfer_keywords)
+
+    # Nội dung CK cho khách chuyển (Đơn Mua)
     full_transfer_content = f"{transaction_id} {user_account_name} {random_suffix}"
     
+    # --- [LOGIC MỚI] XỬ LÝ CHỌN BANK ADMIN & TẠO NỘI DUNG ---
     admin_banks = settings.get('admin_banks', [])
-    admin_name_fixed = "HOANG NGOC SON" 
+    selected_admin_bank = None
+    admin_name_for_content = "ADMIN"
+
     if admin_banks and len(admin_banks) > 0:
-        admin_name_fixed = remove_accents(admin_banks[0].get('name', 'HOANG NGOC SON'))
+        # Chọn ngẫu nhiên 1 ngân hàng
+        selected_admin_bank = random.choice(admin_banks)
+        # Lấy tên chủ tài khoản từ chính ngân hàng đó
+        if selected_admin_bank.get('name'):
+            admin_name_for_content = remove_accents(selected_admin_bank.get('name')).upper()
         
-    sell_transfer_content = f"{transaction_id} {admin_name_fixed} transfer"
+    # Tạo nội dung CK cho Admin (Đơn Bán): Mã GD + Tên Admin Random + Suffix Random
+    sell_transfer_content = f"{transaction_id} {admin_name_for_content} {random_suffix}"
+    # --------------------------------------------------------
 
     payment_info_dict = {}
 
     if mode == 'buy':
-        admin_banks_list = settings.get('admin_banks', [])
-        if not admin_banks_list:
+        if not selected_admin_bank:
             return jsonify({"success": False, "message": "Lỗi hệ thống: Admin chưa cấu hình Bank."}), 500
             
-        selected_bank = random.choice(admin_banks_list)
-        admin_bin = selected_bank.get('bin')
-        admin_account = selected_bank.get('acc')
-        admin_name = selected_bank.get('name')
-        bank_label = selected_bank.get('bank_name', 'Ngân hàng')
+        # Sử dụng thông tin từ bank đã chọn ngẫu nhiên ở trên
+        admin_bin = selected_admin_bank.get('bin')
+        admin_account = selected_admin_bank.get('acc')
+        admin_name = selected_admin_bank.get('name')
+        bank_label = selected_admin_bank.get('bank_name', 'Ngân hàng')
 
-        viet_qr = VietQR(); viet_qr.set_beneficiary_organization(admin_bin, admin_account); viet_qr.set_transaction_amount(str(int(amount_from))); viet_qr.set_additional_data_field_template(full_transfer_content);
+        viet_qr = VietQR()
+        viet_qr.set_beneficiary_organization(admin_bin, admin_account)
+        viet_qr.set_transaction_amount(str(int(amount_from)))
+        viet_qr.set_additional_data_field_template(full_transfer_content)
         qr_data_string = viet_qr.build()
+        
         payment_info_dict = {
-            "bin": admin_bin, "bank_name": bank_label, "bank": f"{bank_label} (BIN: {admin_bin})",
-            "account_number": admin_account, "account_name": admin_name, 
-            "amount": int(amount_from), "content": full_transfer_content, "qr_data_string": qr_data_string
+            "bin": admin_bin, 
+            "bank_name": bank_label, 
+            "bank": f"{bank_label} (BIN: {admin_bin})",
+            "account_number": admin_account, 
+            "account_name": admin_name, 
+            "amount": int(amount_from), 
+            "content": full_transfer_content, 
+            "qr_data_string": qr_data_string
         }
     else: 
         if coin_type == 'bustabit': wallet_address = settings.get('admin_bustabit_id'); network = "Bustabit"
@@ -446,9 +469,11 @@ def create_order():
                     "account_name": u_bank.account_name
                 }
         payment_info_dict = {
-            "memo": "", "wallet_address": wallet_address, "network": network,
+            "memo": "", 
+            "wallet_address": wallet_address, 
+            "network": network,
             "content": full_transfer_content,
-            "sell_content": sell_transfer_content, 
+            "sell_content": sell_transfer_content, # Nội dung đã được update theo yêu cầu
             "user_bank_snapshot": user_bank_snapshot
         }
     
