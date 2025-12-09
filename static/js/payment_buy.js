@@ -1,5 +1,12 @@
 $(document).ready(function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
 
+    if (!orderId) {
+        alert("Lỗi: Không tìm thấy mã đơn hàng!");
+        window.location.href = "index.html";
+        return;
+    }
     // 2. Gọi API lấy chi tiết đơn hàng
     $.ajax({
         url: `${API_URL}/api/order/${orderId}`,

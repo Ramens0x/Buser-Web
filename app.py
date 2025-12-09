@@ -73,12 +73,14 @@ if __name__ == '__main__':
     try:
         scheduler = BackgroundScheduler()
         
-        # Job 1: Cập nhật giá Coin (60 giây/lần)
+        # 1. Cập nhật giá (Không cần app context vì chỉ update biến)
         scheduler.add_job(func=update_price_task, trigger="interval", seconds=60)
         
-        # Job 2: Dọn dẹp bill cũ (24 giờ/lần)
-        # Lưu ý: Cần truyền biến 'app' vào để hàm này có thể truy cập Database
+        # 2. Dọn dẹp bill cũ (CẦN truyền 'app' vào để xóa file và sửa DB)
         scheduler.add_job(func=clean_old_bills, trigger="interval", hours=24, args=[app])
+        
+        # 3. Hủy đơn treo (CẦN truyền 'app' vào để sửa DB)
+        #scheduler.add_job(func=cancel_expired_orders, trigger="interval", minutes=15, args=[app])
         
         scheduler.start()
         print(">>> ✅ Đã kích hoạt: Auto-Clean Bill & Auto-Update Prices")
@@ -86,5 +88,4 @@ if __name__ == '__main__':
         print(f"❌ Lỗi khởi chạy Scheduler: {e}")
 
     print(">>> 🚀 SERVER STARTED tại http://127.0.0.1:5000 <<<")
-    
     socketio.run(app, debug=False, port=5000, allow_unsafe_werkzeug=False)
