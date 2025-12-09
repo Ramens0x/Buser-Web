@@ -49,7 +49,7 @@ $(document).ready(function () {
                     if (response.stats) {
                         $('#stat-vnd-in').text(numberFormat(response.stats.total_vnd_in_month, 0) + ' ₫');
                         $('#stat-vnd-out').text(numberFormat(response.stats.total_vnd_out_month, 0) + ' ₫');
-                        
+
                         // Các phần hiển thị coin giữ nguyên
                         $('#stat-bustabit').text(numberFormat(response.stats.total_bustabit_volume, 8));
                         $('#stat-ether').text(numberFormat(response.stats.total_ether_volume, 8));
@@ -99,6 +99,16 @@ $(document).ready(function () {
         let sellCount = 0;
 
         transactions.forEach(order => {
+            let orderLink = "";
+            if (order.status === 'completed' || order.status === 'cancelled') {
+                orderLink = `/transaction/${order.id}`;
+            } else {
+                if (order.mode === 'buy') {
+                    orderLink = `checkout_payment_buy.html?id=${order.id}`;
+                } else {
+                    orderLink = `checkout_payment_sell.html?id=${order.id}`;
+                }
+            }
             let actionBtns = '';
             if (order.mode === 'buy') {
                 actionBtns = `<button class="btn btn-sm btn-primary btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Gửi Coin</button>`;
@@ -115,7 +125,7 @@ $(document).ready(function () {
                 // Bảng MUA: 6 cột
                 const row = `
                 <tr id="order-${order.id}">
-                    <td><a href="checkout_payment_buy.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
+                    <td><a href="${orderLink}" target="_blank"><strong>${order.id}</strong></a></td>
                     <td>${escapeHTML(order.username)}</td>
                     <td>${numberFormat(order.amount_coin, 8)} ${order.coin.toUpperCase()}</td>
                     <td>${order.coin.toUpperCase()}</td>
@@ -157,7 +167,7 @@ $(document).ready(function () {
 
                 const row = `
                 <tr id="order-${order.id}">
-                    <td><a href="checkout_payment_sell.html?id=${order.id}" target="_blank"><strong>${order.id}</strong></a></td>
+                    <td><a href="${orderLink}" target="_blank"><strong>${order.id}</strong></a></td>
                     <td>${escapeHTML(order.username)}</td>
                     <td>${numberFormat(order.amount_vnd, 0)} VNĐ</td>
                     <td>

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, send_file, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, render_template, send_file, send_from_directory, current_app, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, func, case
@@ -704,6 +704,7 @@ def user_cancel_order():
         return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
     order.status = 'cancelled'
     db.session.commit()
+    socketio.emit('order_cancelled', {'order_id': order.id}, room=order.id)
     return jsonify({"success": True, "message": "Đã hủy đơn hàng thành công!"})
 
 @bp.route("/api/admin/cancel-order", methods=['POST'])
@@ -715,7 +716,7 @@ def admin_cancel_order():
     if not order: return jsonify({"success": False, "message": "Không tìm thấy"}), 404
     order.status = 'cancelled'
     db.session.commit()
-    socketio.emit('order_completed', {'order_id': order.id}, room=order.id)
+    socketio.emit('order_cancelled', {'order_id': order.id}, room=order.id)
     return jsonify({"success": True, "message": f"Admin đã hủy đơn hàng {order_id}"})
 
 @bp.route("/api/admin/transactions", methods=['GET'])
@@ -1034,51 +1035,58 @@ def admin_review_kyc():
 
 # --- ROUTES HTML (Frontend) ---
 
+# --- FILE: routes.py ---
+
 @bp.route('/transaction/<order_id>')
 def transaction_detail_page(order_id):
     # 1. Kiểm tra đăng nhập
     user = get_user_from_request()
-    if not user:
-        return redirect('/login.html') # Hoặc trang login của bạn
+    if not user: return redirect('/login.html')
 
     # 2. Tìm đơn hàng
     order = Order.query.filter_by(id=order_id).first()
+    if not order: return render_template('404.html'), 404
     
-    # 3. Kiểm tra quyền (Chỉ chủ đơn hàng hoặc Admin mới được xem)
-    if not order:
-        return render_template('404.html'), 404 # Hoặc thông báo lỗi
-    
+    # Kiểm tra quyền xem
     if order.username != user.username and user.role != 'Admin':
         return "Bạn không có quyền xem đơn hàng này", 403
 
-    # 4. Xử lý dữ liệu hiển thị
+    # 3. Lấy dữ liệu chi tiết
     payment_info = json.loads(order.payment_info or '{}')
-    
-    # Định dạng lại thời gian
     time_str = order.created_at.strftime("%H:%M - %d/%m/%Y")
     
-    # Lấy thông tin người nhận/người gửi hiển thị trên Bill
-    # Nếu là MUA: Người nhận là Admin (lấy trong payment_info)
-    # Nếu là BÁN: Người nhận là User (lấy trong payment_info['user_bank_snapshot'])
-    
+    # ---XỬ LÝ DỮ LIỆU HIỂN THỊ CHI TIẾT ---
     recipient_name = "N/A"
     recipient_acc = "N/A"
     bank_name = "N/A"
+    transfer_content = "N/A"      # Nội dung CK
+    buyer_wallet_info = "N/A"     # Ví nhận coin của khách
     
+    # Lấy tên file ảnh bill (nếu có)
+    bill_image = payment_info.get('bill_image', None)
+
     if order.mode == 'buy':
-        # Đơn mua: User chuyển khoản cho Admin
+        # MUA: Khách chuyển khoản cho Admin
         recipient_name = payment_info.get('account_name', 'HỆ THỐNG')
         recipient_acc = payment_info.get('account_number', 'N/A')
         bank_name = payment_info.get('bank_name', 'Ngân hàng')
-        bill_amount = order.amount_vnd # Tiền VNĐ
+        transfer_content = payment_info.get('content', 'N/A') # Nội dung khách cần ghi
         
+        # Lấy thông tin ví khách nhận coin (Truy vấn từ bảng Wallet)
+        if order.user_wallet_id:
+            w = Wallet.query.filter_by(id=order.user_wallet_id).first()
+            if w: 
+                # Nếu ví có Tag (như Bustabit/XRP) thì hiển thị kèm
+                tag_info = f" (Tag: {w.tag})" if w.tag and w.tag != 'null' else ""
+                buyer_wallet_info = f"{w.address}{tag_info}"
+
     else:
-        # Đơn bán: Admin chuyển khoản cho User
+        # BÁN: Admin chuyển khoản cho Khách
         user_bank = payment_info.get('user_bank_snapshot', {})
         recipient_name = user_bank.get('account_name', 'User')
         recipient_acc = user_bank.get('account_number', 'N/A')
         bank_name = user_bank.get('bank_name', 'N/A')
-        bill_amount = order.amount_vnd
+        transfer_content = payment_info.get('sell_content', 'N/A') # Nội dung Admin ghi
 
     return render_template(
         'transaction_detail.html',
@@ -1089,7 +1097,11 @@ def transaction_detail_page(order_id):
         recipient_name=recipient_name,
         recipient_acc=recipient_acc,
         bank_name=bank_name,
-        bill_amount="{:,.0f}".format(bill_amount) # Format số tiền có dấu phẩy
+        bill_amount="{:,.0f}".format(order.amount_vnd),
+        # --- Truyền các biến mới sang HTML ---
+        bill_image=bill_image,          
+        transfer_content=transfer_content, 
+        buyer_wallet_info=buyer_wallet_info 
     )
 
 @bp.route('/')

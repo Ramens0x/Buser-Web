@@ -467,9 +467,9 @@ $(document).ready(function () {
 
     function loadPersonalHistory(page = 1) {
         if (!localStorage.getItem('buser_user')) return;
-        
+
         $('#personal-history-body').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</td></tr>');
-    
+
         $.ajax({
             url: API_URL + "/api/user/my-transactions",
             type: 'GET',
@@ -477,27 +477,33 @@ $(document).ready(function () {
             success: function (response) {
                 const historyBody = $('#personal-history-body');
                 historyBody.empty();
-                
+
                 if (response.success && response.transactions.length > 0) {
                     if (response.pagination) {
                         myHistoryPage = response.pagination.current_page;
                         myHistoryTotal = response.pagination.total_pages;
                         $('#his-page').text(myHistoryPage);
-                        
+
                         $('#btn-his-prev').prop('disabled', myHistoryPage <= 1);
                         $('#btn-his-next').prop('disabled', myHistoryPage >= myHistoryTotal);
                     }
-    
+
                     response.transactions.forEach(tx => {
                         const amountCoin = numberFormat(tx.amount_coin, 8);
                         const amountVND = numberFormat(tx.amount_vnd, 0);
                         let statusClass = 'label-success';
                         if (tx.status_vi.includes('Đang chờ')) statusClass = 'label-warning';
                         else if (tx.status_vi.includes('Đã hủy')) statusClass = 'label-danger';
-    
-                        let linkPage = tx.mode.toLowerCase().includes('mua') ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
-                        const idLink = `<a href="${linkPage}?id=${escapeHTML(tx.id)}" style="font-weight:bold; text-decoration:underline;">${escapeHTML(tx.id)}</a>`;
-    
+
+                        let linkUrl = "";
+                        if (tx.status_vi.includes("Đã hoàn thành") || tx.status_vi.includes("Đã hủy")) {
+                            linkUrl = `/transaction/${tx.id}`;
+                        } else {
+                            let pageName = tx.mode.toLowerCase().includes('mua') ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
+                            linkUrl = `${pageName}?id=${tx.id}`;
+                        }
+
+                        const idLink = `<a href="${linkUrl}" style="font-weight:bold; text-decoration:underline;">${escapeHTML(tx.id)}</a>`;
                         const row = `
                         <tr>
                             <td>${idLink}</td> <td>${escapeHTML(tx.created_at)}</td>
@@ -518,12 +524,12 @@ $(document).ready(function () {
             }
         });
     }
-    
+
     // Thêm sự kiện click cho nút phân trang 
-    $(document).on('click', '#btn-his-prev', function() {
+    $(document).on('click', '#btn-his-prev', function () {
         if (myHistoryPage > 1) loadPersonalHistory(myHistoryPage - 1);
     });
-    $(document).on('click', '#btn-his-next', function() {
+    $(document).on('click', '#btn-his-next', function () {
         if (myHistoryPage < myHistoryTotal) loadPersonalHistory(myHistoryPage + 1);
     });
 

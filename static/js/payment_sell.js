@@ -37,7 +37,7 @@ $(document).ready(function () {
             $('#sell-coin-type').text(order.coin.toUpperCase());
             $('#admin-wallet-network').text(info.network);
             $('#admin-wallet-address').text(escapeHTML(info.wallet_address));
-            
+
             if (info.memo) {
                 $('#admin-wallet-memo-li').show();
                 $('#admin-wallet-memo').text(escapeHTML(info.memo));
@@ -83,11 +83,11 @@ $(document).ready(function () {
             // A. Cập nhật Stepper
             $('.stepper .step:eq(1)').removeClass('active');
             $('.stepper .step:eq(1) .circle').html('<i class="fa fa-check"></i>')
-                .css({'background-color': '#28a745', 'color': 'white', 'border-color': '#28a745'});
-            
+                .css({ 'background-color': '#28a745', 'color': 'white', 'border-color': '#28a745' });
+
             $('.stepper .step:eq(2)').addClass('active');
             $('.stepper .step:eq(2) .circle').css('background-color', '#28a745');
-            
+
             // B. Cập nhật nút bấm
             $('#btn-user-cancel')
                 .removeClass('btn-default btn-danger')
@@ -95,7 +95,7 @@ $(document).ready(function () {
                 .html('<i class="fa fa-check-circle"></i> Giao Dịch Thành Công')
                 .prop('disabled', true)
                 .css('opacity', '1');
-            
+
             if ($('.alert-success-msg').length === 0) {
                 $('.auth-box').append('<div class="alert alert-success alert-success-msg text-center" style="margin: 20px;"><strong><i class="fa fa-check-circle"></i> GIAO DỊCH THÀNH CÔNG!</strong></div>');
             }
@@ -104,21 +104,21 @@ $(document).ready(function () {
             $('#upload-bill-form button').prop('disabled', true).text('Đã hoàn tất');
 
         } else if (order.status === 'cancelled') {
-             $('#btn-user-cancel')
+            $('#btn-user-cancel')
                 .removeClass('btn-default')
                 .addClass('btn-danger')
                 .html('<i class="fa fa-times-circle"></i> Đơn Đã Hủy')
                 .prop('disabled', true);
-             
-             $('.auth-box').css('opacity', '0.6');
-             $('#upload-bill-form button').prop('disabled', true);
+
+            $('.auth-box').css('opacity', '0.6');
+            $('#upload-bill-form button').prop('disabled', true);
         }
 
         // --- 3. GÁN SỰ KIỆN CLICK NÚT HỦY ---
         $('#btn-user-cancel').off('click').on('click', function () {
             if ($(this).prop('disabled')) return;
             if (!confirm('Bạn có chắc chắn muốn HỦY đơn hàng này không?')) return;
-            
+
             $.ajax({
                 url: `${API_URL}/api/user/cancel-order`,
                 type: 'POST',
@@ -132,17 +132,31 @@ $(document).ready(function () {
         });
     }
 
+    // Hàm Live Update: Tự động chuyển trang khi hoàn tất
     function setupLiveUpdate(orderId) {
         const socket = io(API_URL);
+
+        // Tham gia room
         socket.emit('join_room', { room_id: orderId });
+        console.log("Đã kết nối Socket bán, đang theo dõi: " + orderId);
+
+        // 1. Xử lý khi Admin xác nhận đã chuyển tiền (Hoàn tất)
         socket.on('order_completed', function (data) {
             if (data.order_id === orderId) {
-                alert('Đơn hàng của bạn đã được hoàn tất!');
-                location.reload();
+                console.log("Giao dịch hoàn tất! Chuyển trang...");
+                window.location.href = "/transaction/" + orderId;
+            }
+        });
+
+        // 2. Xử lý khi đơn bị hủy
+        socket.on('order_cancelled', function (data) {
+            if (data.order_id === orderId) {
+                console.log("Giao dịch bị hủy! Chuyển trang...");
+                window.location.href = "/transaction/" + orderId;
             }
         });
     }
-    
+
     // Xử lý Upload Bill
     $('#upload-bill-form').on('submit', function (e) {
         e.preventDefault();

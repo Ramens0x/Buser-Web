@@ -74,42 +74,42 @@ $(document).ready(function () {
             // Bước 2: Đổi thành dấu tích xanh
             $('.stepper .step:eq(1)').removeClass('active');
             $('.stepper .step:eq(1) .circle').html('<i class="fa fa-check"></i>')
-                .css({'background-color': '#28a745', 'color': 'white', 'border-color': '#28a745'});
-            
+                .css({ 'background-color': '#28a745', 'color': 'white', 'border-color': '#28a745' });
+
             // Bước 3: Kích hoạt (Active)
             $('.stepper .step:eq(2)').addClass('active');
             $('.stepper .step:eq(2) .circle').css('background-color', '#28a745'); // Tô xanh số 3
-            
+
             // B. Cập nhật nút bấm (Thay đổi giao diện nút Hủy thành nút Thành công)
             $('#btn-user-cancel')
                 .removeClass('btn-default btn-danger')
                 .addClass('btn-success')
                 .html('<i class="fa fa-check-circle"></i> Giao Dịch Thành Công')
                 .prop('disabled', true)
-                .css('opacity', '1'); 
-            
+                .css('opacity', '1');
+
             // Hiển thị thêm thông báo text
             if ($('.alert-success-msg').length === 0) {
                 $('.confirmation-box').append('<div class="alert alert-success alert-success-msg" style="margin-top: 15px;"><strong><i class="fa fa-check-circle"></i> GIAO DỊCH THÀNH CÔNG!</strong></div>');
             }
 
         } else if (order.status === 'cancelled') {
-             // Nếu đơn hủy: Nút chuyển màu đỏ
-             $('#btn-user-cancel')
+            // Nếu đơn hủy: Nút chuyển màu đỏ
+            $('#btn-user-cancel')
                 .removeClass('btn-default')
                 .addClass('btn-danger')
                 .html('<i class="fa fa-times-circle"></i> Đơn Đã Hủy')
                 .prop('disabled', true);
-             
-             $('.auth-box').css('opacity', '0.6'); // Làm mờ khung thanh toán
+
+            $('.auth-box').css('opacity', '0.6'); // Làm mờ khung thanh toán
         }
 
         // --- 3. GÁN SỰ KIỆN CLICK NÚT HỦY ---
         $('#btn-user-cancel').off('click').on('click', function () {
             if ($(this).prop('disabled')) return; // Chặn nếu nút đang disable
-            
+
             if (!confirm('Bạn có chắc chắn muốn HỦY đơn hàng này không?')) return;
-            
+
             $.ajax({
                 url: `${API_URL}/api/user/cancel-order`,
                 type: 'POST',
@@ -117,20 +117,36 @@ $(document).ready(function () {
                 data: JSON.stringify({ order_id: order.id }),
                 success: function (res) {
                     alert(res.message);
-                    location.reload(); 
+                    location.reload();
                 }
             });
         });
     }
 
-    // Hàm Live Update (đã tích hợp vào đây)
+    // Hàm Live Update: Tự động chuyển trang khi hoàn tất
     function setupLiveUpdate(orderId) {
+        // Kết nối Socket
+        // Đảm bảo biến API_URL đã được khai báo ở đầu file hoặc file config chung
         const socket = io(API_URL);
+
+        // Gửi yêu cầu tham gia vào "phòng" của đơn hàng này
         socket.emit('join_room', { room_id: orderId });
+        console.log("Đã kết nối Socket, đang lắng nghe đơn: " + orderId);
+
+        // 1. Lắng nghe sự kiện HOÀN THÀNH
         socket.on('order_completed', function (data) {
             if (data.order_id === orderId) {
-                alert('Đơn hàng của bạn đã được hoàn tất!');
-                location.reload(); // Tải lại trang để hiện trạng thái mới
+                console.log("Đơn hàng thành công! Đang chuyển hướng...");
+                // Chuyển hướng ngay lập tức sang trang Chi tiết giao dịch (Bill)
+                window.location.href = "/transaction/" + orderId;
+            }
+        });
+
+        // 2. Lắng nghe sự kiện HỦY ĐƠN (Thêm cái này để xử lý trọn vẹn)
+        socket.on('order_cancelled', function (data) { // Sự kiện này cần khớp với bên Python emit
+            if (data.order_id === orderId) {
+                console.log("Đơn hàng đã bị hủy. Đang chuyển hướng...");
+                window.location.href = "/transaction/" + orderId;
             }
         });
     }
