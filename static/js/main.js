@@ -433,16 +433,13 @@ $(document).ready(function () {
                 if (response.success && response.transactions.length > 0) {
                     historyTableBody.empty();
                     response.transactions.forEach(tx => {
-                        const timeOnly = tx.created_at.split(' ')[1] || tx.created_at;
+                        const timeOnly = tx.created_at;
                         const amountFormatted = numberFormat(tx.amount_coin, 2);
 
-                        // [MỚI] Logic Icon và Màu sắc
                         let typeHtml = '';
                         if (tx.mode === 'Mua' || tx.mode === 'buy') {
-                            // Mũi tên xuống màu xanh
                             typeHtml = `<span class="tx-buy"><i class="fa fa-arrow-down"></i> Mua</span>`;
                         } else {
-                            // Mũi tên lên màu đỏ
                             typeHtml = `<span class="tx-sell"><i class="fa fa-arrow-up"></i> Bán</span>`;
                         }
 
@@ -465,34 +462,42 @@ $(document).ready(function () {
         });
     }
 
-    // --- [MỚI] Hàm tải Lịch sử Giao dịch CÁ NHÂN ---
-    function loadPersonalHistory() {
-        if (!localStorage.getItem('buser_user')) return;
+    let myHistoryPage = 1;
+    let myHistoryTotal = 1;
 
+    function loadPersonalHistory(page = 1) {
+        if (!localStorage.getItem('buser_user')) return;
+        
+        $('#personal-history-body').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</td></tr>');
+    
         $.ajax({
             url: API_URL + "/api/user/my-transactions",
             type: 'GET',
+            data: { page: page },
             success: function (response) {
                 const historyBody = $('#personal-history-body');
+                historyBody.empty();
+                
                 if (response.success && response.transactions.length > 0) {
-                    historyBody.empty();
+                    if (response.pagination) {
+                        myHistoryPage = response.pagination.current_page;
+                        myHistoryTotal = response.pagination.total_pages;
+                        $('#his-page').text(myHistoryPage);
+                        
+                        $('#btn-his-prev').prop('disabled', myHistoryPage <= 1);
+                        $('#btn-his-next').prop('disabled', myHistoryPage >= myHistoryTotal);
+                    }
+    
                     response.transactions.forEach(tx => {
                         const amountCoin = numberFormat(tx.amount_coin, 8);
                         const amountVND = numberFormat(tx.amount_vnd, 0);
                         let statusClass = 'label-success';
-                        if (tx.status_vi.includes('Đang chờ')) {
-                            statusClass = 'label-warning';
-                        } else if (tx.status_vi.includes('Đã hủy')) {
-                            statusClass = 'label-danger';
-                        }
-
-                        let linkPage = tx.mode === 'Mua' ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
-                        if (tx.mode === 'buy' || tx.mode === 'Buy') linkPage = 'checkout_payment_buy.html';
-                        if (tx.mode === 'sell' || tx.mode === 'Sell') linkPage = 'checkout_payment_sell.html';
-                        if (tx.mode === 'Bán') linkPage = 'checkout_payment_sell.html';
-
+                        if (tx.status_vi.includes('Đang chờ')) statusClass = 'label-warning';
+                        else if (tx.status_vi.includes('Đã hủy')) statusClass = 'label-danger';
+    
+                        let linkPage = tx.mode.toLowerCase().includes('mua') ? 'checkout_payment_buy.html' : 'checkout_payment_sell.html';
                         const idLink = `<a href="${linkPage}?id=${escapeHTML(tx.id)}" style="font-weight:bold; text-decoration:underline;">${escapeHTML(tx.id)}</a>`;
-
+    
                         const row = `
                         <tr>
                             <td>${idLink}</td> <td>${escapeHTML(tx.created_at)}</td>
@@ -505,14 +510,22 @@ $(document).ready(function () {
                         historyBody.append(row);
                     });
                 } else {
-                    historyBody.html('<tr><td colspan="6" class="text-center">Bạn chưa có giao dịch nào.</td></tr>');
+                    historyBody.html('<tr><td colspan="7" class="text-center">Chưa có giao dịch nào.</td></tr>');
                 }
             },
-            error: function (xhr) {
-                $('#personal-history-body').html(`<tr><td colspan="6" class="text-center">Lỗi khi tải lịch sử: ${xhr.responseJSON ? xhr.responseJSON.message : "Lỗi kết nối"}</td></tr>`);
+            error: function () {
+                $('#personal-history-body').html('<tr><td colspan="7" class="text-center">Lỗi tải dữ liệu.</td></tr>');
             }
         });
     }
+    
+    // Thêm sự kiện click cho nút phân trang 
+    $(document).on('click', '#btn-his-prev', function() {
+        if (myHistoryPage > 1) loadPersonalHistory(myHistoryPage - 1);
+    });
+    $(document).on('click', '#btn-his-next', function() {
+        if (myHistoryPage < myHistoryTotal) loadPersonalHistory(myHistoryPage + 1);
+    });
 
     // --- Hàm tải danh sách VÍ (Wallet) đã lưu ---
     function loadWalletsList() {

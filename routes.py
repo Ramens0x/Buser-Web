@@ -819,21 +819,45 @@ def get_admin_transactions_history():
 @admin_required
 def get_admin_all_users():
     user = get_user_from_request()
-    all_users = User.query.filter(User.username != user.username).order_by(User.id.asc()).all()
+    
+    # Lấy tham số trang (mặc định trang 1, 20 người/trang)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+
+    # Query cơ bản
+    query = User.query.filter(User.username != user.username).order_by(User.id.asc())
+    
+    # Phân trang
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
     users_list = [{
         "id": u.id, "username": u.username, "email": u.email, "role": u.role,
         "order_count": Order.query.filter_by(username=u.username).count()
-    } for u in all_users]
-    return jsonify({"success": True, "users": users_list})
+    } for u in pagination.items] # Chỉ lấy items của trang hiện tại
+
+    return jsonify({
+        "success": True, 
+        "users": users_list,
+        "pagination": {
+            "total_pages": pagination.pages,
+            "current_page": page,
+            "total_items": pagination.total
+        }
+    })
 
 @bp.route("/api/user/my-transactions", methods=['GET'])
 def get_user_transactions():
     user = get_user_from_request()
     if not user: return jsonify({"success": False, "message": "Chưa đăng nhập"}), 401
 
-    user_orders = Order.query.filter_by(username=user.username).order_by(Order.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 10 
+
+    query = Order.query.filter_by(username=user.username).order_by(Order.created_at.desc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
     orders_list = []
-    for order in user_orders:
+    for order in pagination.items:
         status_vi = "Đã hoàn thành" if order.status == 'completed' else "Đang chờ xử lý" if order.status == 'pending' else "Đã hủy"
         orders_list.append({
             "id": order.id, "mode": "Mua" if order.mode == 'buy' else "Bán",
@@ -841,7 +865,15 @@ def get_user_transactions():
             "amount_coin": order.amount_coin, "status_vi": status_vi,
             "created_at": order.created_at.strftime("%d/%m/%Y %H:%M")
         })
-    return jsonify({"success": True, "transactions": orders_list})
+        
+    return jsonify({
+        "success": True, 
+        "transactions": orders_list,
+        "pagination": {
+            "total_pages": pagination.pages,
+            "current_page": page
+        }
+    })
 
 # --- ROUTES KYC ---
 

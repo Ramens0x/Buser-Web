@@ -47,59 +47,15 @@ $(document).ready(function () {
                     renderTables(response.transactions);
 
                     if (response.stats) {
-                        // 1. Cập nhật số liệu text (giữ nguyên logic cũ)
-                        $('#stat-vnd-in').text(numberFormat(response.stats.total_vnd_in, 0) + ' ₫');
-                        $('#stat-vnd-out').text(numberFormat(response.stats.total_vnd_out, 0) + ' ₫');
-                        $('#stat-vnd-in-month').text(numberFormat(response.stats.total_vnd_in_month, 0) + ' ₫');
-                        $('#stat-vnd-out-month').text(numberFormat(response.stats.total_vnd_out_month, 0) + ' ₫');
-
+                        $('#stat-vnd-in').text(numberFormat(response.stats.total_vnd_in_month, 0) + ' ₫');
+                        $('#stat-vnd-out').text(numberFormat(response.stats.total_vnd_out_month, 0) + ' ₫');
+                        
+                        // Các phần hiển thị coin giữ nguyên
                         $('#stat-bustabit').text(numberFormat(response.stats.total_bustabit_volume, 8));
                         $('#stat-ether').text(numberFormat(response.stats.total_ether_volume, 8));
                         $('#stat-usdt').text(numberFormat(response.stats.total_usdt_volume, 2));
                         $('#stat-bnb').text(numberFormat(response.stats.total_bnb_volume, 4));
                         $('#stat-sol').text(numberFormat(response.stats.total_sol_volume, 4));
-
-                        // 2. [MỚI] Vẽ Biểu đồ Pie (Mua vs Bán)
-                        const ctxVnd = document.getElementById('vndChart').getContext('2d');
-                        if (window.myVndChart) window.myVndChart.destroy(); // Xóa biểu đồ cũ nếu có để vẽ lại
-                        window.myVndChart = new Chart(ctxVnd, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Tiền vào (Mua)', 'Tiền ra (Bán)'],
-                                datasets: [{
-                                    data: [response.stats.total_vnd_in, response.stats.total_vnd_out],
-                                    backgroundColor: ['#468847', '#d9534f'],
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: { responsive: true }
-                        });
-
-                        // 3. [MỚI] Vẽ Biểu đồ Bar (Volume các Coin)
-                        const ctxCoin = document.getElementById('coinChart').getContext('2d');
-                        if (window.myCoinChart) window.myCoinChart.destroy();
-                        window.myCoinChart = new Chart(ctxCoin, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Bits', 'Ethos', 'USDT', 'BNB', 'SOL'],
-                                datasets: [{
-                                    label: 'Volume đã giao dịch',
-                                    data: [
-                                        response.stats.total_bustabit_volume,
-                                        response.stats.total_ether_volume,
-                                        response.stats.total_usdt_volume,
-                                        response.stats.total_bnb_volume,
-                                        response.stats.total_sol_volume
-                                    ],
-                                    backgroundColor: ['#f0ad4e', '#663399', '#26a69a', '#f3ba2f', '#00ffa3'],
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                scales: { y: { beginAtZero: true } }
-                            }
-                        });
                     }
                 }
             },

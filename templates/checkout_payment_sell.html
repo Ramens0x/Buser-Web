@@ -145,10 +145,33 @@
                                 id="user-bank-name">...</strong> - <strong id="user-bank-account">...</strong>
                         </div>
 
-                        <div class="text-center" style="margin-top: 20px;">
-                            <button class="btn btn-link text-danger" id="btn-user-cancel">Hủy bỏ đơn hàng này</button>
-                            <span style="color: #ddd;">|</span>
-                            <a href="/" class="btn btn-link">Về trang chủ</a>
+                        <div class="alert alert-info" style="border-radius: 8px; margin-top: 20px;">
+                            <h5 style="margin-top: 0; font-weight: bold;"><i class="fa fa-upload"></i> Xác nhận đã gửi Coin</h5>
+                            <p>Sau khi chuyển Coin thành công, vui lòng tải ảnh lịch sử giao dịch (Transaction History) để hệ thống xử lý nhanh hơn.</p>
+                            <form id="upload-bill-form" style="margin-top: 10px;">
+                                <div class="input-group">
+                                    <input type="hidden" name="order_id" id="upload-order-id" value="">
+                                    <input type="file" name="bill_image" accept="image/*" class="form-control" required>
+                                    <span class="input-group-btn">
+                                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Gửi Xác Nhận</button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="text-center" style="margin-top: 30px;">
+                            <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-default btn-lg" id="btn-user-cancel" style="border-radius: 8px 0 0 8px;">
+                                        <i class="fa fa-times-circle"></i> Hủy Đơn Hàng
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <a href="/" class="btn btn-primary btn-lg" style="border-radius: 0 8px 8px 0; background-color: #2882C0; border-color: #2882C0;">
+                                        <i class="fa fa-home"></i> Về Trang Chủ
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
