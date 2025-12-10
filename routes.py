@@ -30,7 +30,7 @@ from flask_mail import Message
 # Tạo Blueprint (đại diện cho app chính)
 bp = Blueprint('main', __name__)
 
-ALLOWED_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'btc', 'eth']
+ALLOWED_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'btc', 'eth', 'itlg', 'itl']
 
 # --- CÁC ROUTE (API) ---
 
@@ -46,6 +46,18 @@ def api_get_prices():
         all_prices = price_service.get_all_prices()
         if all_prices:
             current_rates.update(all_prices)
+    # Lấy giá Coin itlg từ cài đặt
+    settings = load_settings()
+    current_rates['itlg'] = {
+        'buy': float(settings.get('admin_itlg_price_buy', 0)),
+        'sell': float(settings.get('admin_itlg_price_sell', 0))
+    }
+    # Lấy giá Coin itl từ cài đặt
+    settings = load_settings()
+    current_rates['itl'] = {
+        'buy': float(settings.get('admin_itl_price_buy', 0)),
+        'sell': float(settings.get('admin_itl_price_sell', 0))
+    }
     return jsonify(current_rates)
 
 @bp.route("/api/calculate", methods=['POST'])
@@ -465,6 +477,8 @@ def create_order():
         elif coin_type == 'ether': wallet_address = settings.get('admin_ether_id'); network = "Ether"
         elif coin_type == 'sol': wallet_address = settings.get('admin_sol_wallet'); network = "Solana"
         elif coin_type == 'bnb': wallet_address = settings.get('admin_bnb_wallet'); network = "BEP-20 (BSC)"
+        elif coin_type == 'itlg': wallet_address = settings.get('admin_itlg_wallet', 'Chưa cấu hình (Liên hệ Admin)'); network = "Nội Bộ"
+        elif coin_type == 'itl': wallet_address = settings.get('admin_itl_wallet', 'Chưa cấu hình (Liên hệ Admin)'); network = "Nội Bộ"
         else: wallet_address = settings.get('admin_usdt_wallet'); network = "BEP-20 (BSC)"
 
         user_bank_snapshot = {}
@@ -1175,7 +1189,9 @@ def get_site_config():
         "liquidity": {
             "usdt": settings.get('liquidity_usdt', 0), "btc": settings.get('liquidity_btc', 0),
             "eth": settings.get('liquidity_eth', 0), "bnb": settings.get('liquidity_bnb', 0),
-            "sol": settings.get('liquidity_sol', 0)
+            "sol": settings.get('liquidity_sol', 0),
+            "itlg": settings.get('liquidity_itlg', 0),
+            "itl": settings.get('liquidity_itl', 0)
         },
         "fee_table": settings.get('fee_html_content', '')
     })
@@ -1198,6 +1214,29 @@ def health_check():
         return jsonify({"status": "ok", "database": "connected"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+# --- API: Gửi tin nhắn từ Admin cho Khách ---
+@bp.route("/api/admin/order-message", methods=['POST'])
+@admin_required
+def admin_send_order_message():
+    data = request.json
+    order_id = data.get('order_id')
+    message = data.get('message')
+    
+    order = Order.query.filter_by(id=order_id).first()
+    if not order: return jsonify({"success": False, "message": "Không tìm thấy đơn"}), 404
+    
+    # 1. Lưu tin nhắn vào payment_info trong Database
+    info = json.loads(order.payment_info or '{}')
+    info['admin_message'] = message 
+    order.payment_info = json.dumps(info)
+    
+    db.session.commit()
+    
+    # 2. Bắn Socket báo cho máy khách biết để tải lại trang
+    socketio.emit('order_message_update', {'order_id': order.id, 'message': message}, room=order.id)
+    
+    return jsonify({"success": True, "message": "Đã gửi thông báo cho khách hàng!"})
 
 # --- SOCKET EVENTS ---
 

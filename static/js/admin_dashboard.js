@@ -115,6 +115,7 @@ $(document).ready(function () {
             } else {
                 actionBtns = `<button class="btn btn-sm btn-warning btn-complete" data-id="${order.id}"><i class="fa fa-check"></i> Đã Chuyển Tiền</button>`;
             }
+            actionBtns += `<br><button class="btn btn-sm btn-info btn-message" data-id="${order.id}" style="margin-top:5px; margin-right:5px;"><i class="fa fa-comment"></i> Nhắn tin</button>`;
             actionBtns += `<br><button class="btn btn-sm btn-danger btn-cancel-admin" data-id="${order.id}" style="margin-top:5px;"><i class="fa fa-times"></i> Hủy đơn</button>`;
 
             let billLink = (order.bill_image && order.bill_image !== 'null') ?
@@ -222,6 +223,27 @@ $(document).ready(function () {
                 alert("Lỗi: " + xhr.responseJSON.message);
             }
         });
+    });
+
+    // --- Xử lý nút "Nhắn tin" ---
+    $(document).on('click', '.btn-message', function () {
+        const orderId = $(this).data('id');
+        const message = prompt("Nhập nội dung muốn nhắn cho khách (VD: Bạn điền sai ví, vui lòng kiểm tra lại):");
+        
+        if (message && message.trim() !== "") {
+            $.ajax({
+                url: `${API_URL}/api/admin/order-message`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ order_id: orderId, message: message }),
+                success: function (res) {
+                    alert(res.message);
+                },
+                error: function (xhr) {
+                    alert("Lỗi: " + xhr.responseJSON.message);
+                }
+            });
+        }
     });
 
     // --- Chạy lần đầu ---

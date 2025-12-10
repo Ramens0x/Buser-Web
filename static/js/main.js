@@ -122,6 +122,17 @@ $(document).ready(function () {
                     $('#sol-buy').html(showPrice(data.sol.buy));
                     $('#sol-sell').html(showPrice(data.sol.sell));
                 }
+
+                if (data.itlg) {
+                    $('#itlg-buy').html(showPrice(data.itlg.buy));
+                    $('#itlg-sell').html(showPrice(data.itlg.sell));
+                }
+
+                if (data.itl) {
+                    $('#itl-buy').html(showPrice(data.itl.buy));
+                    $('#itl-sell').html(showPrice(data.itl.sell));
+                }
+
                 updateRateDisplay(data);
             },
             error: function () {
@@ -329,9 +340,14 @@ $(document).ready(function () {
             coinName = 'BNB - BEP20';
         } else if (currentCoin === 'sol') {
             coinName = 'SOLANA - SOL';
+        } else if (currentCoin === 'itlg') {
+            coinName = 'ITLG Token';
+        } else if (currentCoin === 'itl') {
+            coinName = 'ITL Coin';
         } else {
             coinName = 'USDT - BEP20';
         }
+        
 
         if (rates[currentCoin]) {
             if (currentMode === 'buy') {
@@ -370,6 +386,12 @@ $(document).ready(function () {
         } else if (currentCoin === 'bnb' || currentCoin === 'bnb') {
             coinBal = window.siteLiquidity.eth;
             unit = 'BNB (BEP20)';
+        } else if (currentCoin === 'itlg') {
+            coinBal = window.siteLiquidity.itlg; 
+            unit = 'ITLG';
+        } else if (currentCoin === 'itl') {
+            coinBal = window.siteLiquidity.itl;  
+            unit = 'ITL';
         } else {
             coinBal = 0;
         }
@@ -538,7 +560,7 @@ $(document).ready(function () {
         if (!localStorage.getItem('buser_user')) return;
 
         const tableBody = $('#wallets-table-body');
-        const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol'];
+        const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol', 'itlg', 'itl'];
 
         // Tạo mảng các request Ajax
         let requests = coins.map(coin => {
@@ -934,6 +956,14 @@ $(document).ready(function () {
                     $('input[name="admin_ether_id"]').val(response.settings.admin_ether_id || '');
                     $('input[name="admin_bnb_wallet"]').val(response.settings.admin_bnb_wallet || '');
                     $('input[name="admin_sol_wallet"]').val(response.settings.admin_sol_wallet || '');
+                    $('input[name="admin_itlg_name"]').val(response.settings.admin_itlg_name || '');
+                    $('input[name="admin_itlg_wallet"]').val(response.settings.admin_itlg_wallet || '');
+                    $('input[name="admin_itlg_price_buy"]').val(response.settings.admin_itlg_price_buy || 0);
+                    $('input[name="admin_itlg_price_sell"]').val(response.settings.admin_itlg_price_sell || 0);
+                    $('input[name="admin_itl_name"]').val(response.settings.admin_itl_name || '');
+                    $('input[name="admin_itl_wallet"]').val(response.settings.admin_itl_wallet || '');
+                    $('input[name="admin_itl_price_buy"]').val(response.settings.admin_itl_price_buy || 0);
+                    $('input[name="admin_itl_price_sell"]').val(response.settings.admin_itl_price_sell || 0);
                     $('input[name="telegram_bot_token"]').val(response.settings.TELEGRAM_BOT_TOKEN || '');
                     $('input[name="telegram_chat_id"]').val(response.settings.TELEGRAM_CHAT_ID || '');
                     $('input[name="liquidity_vnd"]').val(response.settings.liquidity_vnd);
@@ -942,6 +972,8 @@ $(document).ready(function () {
                     $('input[name="liquidity_eth"]').val(response.settings.liquidity_eth);
                     $('input[name="liquidity_bnb"]').val(response.settings.liquidity_bnb);
                     $('input[name="liquidity_sol"]').val(response.settings.liquidity_sol);
+                    $('input[name="liquidity_itlg"]').val(response.settings.liquidity_itlg || 0);
+                    $('input[name="liquidity_itl"]').val(response.settings.liquidity_itl || 0);
                     if (response.settings.coin_fees) {
                         const fees = response.settings.coin_fees;
 
@@ -962,6 +994,14 @@ $(document).ready(function () {
 
                         $('input[name="fee_bnb_amount"]').val(getFee('bnb'));
                         $('input[name="fee_bnb_threshold"]').val(getThresh('bnb'));
+                        if(response.settings.coin_fees.itlg) {
+                            $('input[name="fee_itlg_amount"]').val(response.settings.coin_fees.itlg.fee);
+                            $('input[name="fee_itlg_threshold"]').val(response.settings.coin_fees.itlg.threshold);
+                        }
+                        if(response.settings.coin_fees.itl) {
+                            $('input[name="fee_itl_amount"]').val(response.settings.coin_fees.itl.fee);
+                            $('input[name="fee_itl_threshold"]').val(response.settings.coin_fees.itl.threshold);
+                        }
                     }
                     $('textarea[name="fee_html_content"]').val(response.settings.fee_html_content);
 
@@ -1066,6 +1106,14 @@ $(document).ready(function () {
             admin_ether_id: $('input[name="admin_ether_id"]').val(),
             admin_bnb_wallet: $('input[name="admin_bnb_wallet"]').val(),
             admin_sol_wallet: $('input[name="admin_sol_wallet"]').val(),
+            admin_itlg_name: $('input[name="admin_itlg_name"]').val(),
+            admin_itlg_wallet: $('input[name="admin_itlg_wallet"]').val(),
+            admin_itlg_price_buy: $('input[name="admin_itlg_price_buy"]').val(),
+            admin_itlg_price_sell: $('input[name="admin_itlg_price_sell"]').val(),
+            admin_itl_name: $('input[name="admin_itl_name"]').val(),
+            admin_itl_wallet: $('input[name="admin_itl_wallet"]').val(),
+            admin_itl_price_buy: $('input[name="admin_itl_price_buy"]').val(),
+            admin_itl_price_sell: $('input[name="admin_itl_price_sell"]').val(),
             TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
             TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val(),
             liquidity_vnd: $('input[name="liquidity_vnd"]').val(),
@@ -1074,6 +1122,8 @@ $(document).ready(function () {
             liquidity_eth: $('input[name="liquidity_eth"]').val(),
             liquidity_bnb: $('input[name="liquidity_bnb"]').val(),
             liquidity_sol: $('input[name="liquidity_sol"]').val(),
+            liquidity_itlg: $('input[name="liquidity_itlg"]').val(),
+            liquidity_itl: $('input[name="liquidity_itl"]').val(),
             coin_fees: {
                 bustabit: {
                     fee: $('input[name="fee_bustabit_amount"]').val(),
@@ -1094,6 +1144,14 @@ $(document).ready(function () {
                 bnb: {
                     fee: $('input[name="fee_bnb_amount"]').val(),
                     threshold: $('input[name="fee_bnb_threshold"]').val()
+                },
+                itlg: {
+                    fee: $('input[name="fee_itlg_amount"]').val(),
+                    threshold: $('input[name="fee_itlg_threshold"]').val()
+                },
+                itl: {
+                    fee: $('input[name="fee_itl_amount"]').val(),
+                    threshold: $('input[name="fee_itl_threshold"]').val()
                 }
             },
             fee_html_content: $('textarea[name="fee_html_content"]').val(),
@@ -1144,6 +1202,12 @@ $(document).ready(function () {
                 $('#field-address-group').hide();
                 $('#field-tag-group').show();
                 $('#label-tag').text('Ethos ID (Destination Tag):');
+            }
+            else if (type === 'itlg' || type === 'itl') {
+                // Với coin nội bộ, có thể bạn muốn khách nhập ID Tài khoản thay vì Ví dài ngoằng
+                $('label[for="input-address"]').text("Địa chỉ Ví / ID Tài khoản:");
+                // Ẩn Tag đi cho gọn (trừ khi coin bạn cần Tag)
+                $('#field-tag-group').hide(); 
             }
             else {
                 // USDT, BNB, SOL: Chỉ cần Địa chỉ ví (Tag vẫn ẩn)
@@ -1269,6 +1333,8 @@ $(document).ready(function () {
         else if (currentCoin === 'ether' || currentCoin === 'eth') limit = window.siteLiquidity.eth;
         else if (currentCoin === 'bnb') limit = window.siteLiquidity.bnb;
         else if (currentCoin === 'sol') limit = window.siteLiquidity.sol;
+        else if (currentCoin === 'itlg') limit = window.siteLiquidity.itlg;
+        else if (currentCoin === 'itl') limit = window.siteLiquidity.itl;
         else limit = 1000000; // Các coin chưa config thì không giới hạn
 
         if (amountCoin > limit) {
@@ -1287,14 +1353,5 @@ $(document).ready(function () {
             $('#liquidity-warning').remove();
             return true;
         }
-    }
-    function copyToClipboard(elementId) {
-        var $temp = $("<input>");
-        $("body").append($temp);
-        $temp.val($(elementId).text()).select();
-        document.execCommand("copy");
-        $temp.remove();
-        // Hiệu ứng thông báo nhỏ (Optional)
-        alert("Đã sao chép: " + $(elementId).text());
     }
 });

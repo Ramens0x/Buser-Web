@@ -194,6 +194,13 @@
             <a href="/" class="back-btn"><i class="fas fa-home"></i></a>
             <div class="header-title">Chi tiết giao dịch</div>
         </div>
+        {% if payment_info.get('admin_message') %}
+    <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 15px 20px 0 20px; border-left: 5px solid #ffc107; border-radius: 4px; font-size: 0.95rem;">
+        <strong><i class="fas fa-bell"></i> THÔNG BÁO TỪ ADMIN:</strong><br>
+        <span style="margin-top: 5px; display: block;">{{ payment_info.get('admin_message') }}</span>
+    </div>
+
+    {% endif %}
 
         <div class="hero-section">
             {% if order.status == 'completed' %}
@@ -276,6 +283,25 @@
     </script>
     {% endif %}
 
+    <script>
+        const socket = io();
+        const orderId = "{{ order.id }}";
+        
+        socket.emit('join_room', { room_id: orderId });
+        
+        // [THÊM ĐOẠN NÀY] Khi Admin nhắn tin -> Tự động tải lại trang để hiện thông báo
+        socket.on('order_message_update', function(data) {
+            if(data.order_id === orderId) {
+                alert("🔔 Bạn có tin nhắn mới từ Admin!"); // (Tùy chọn: hiện popup)
+                location.reload();
+            }
+        });
+        
+        // Logic cũ
+        socket.on('order_completed', () => location.reload());
+        socket.on('order_cancelled', () => location.reload());
+    </script>
+    
 </body>
 
 </html>
