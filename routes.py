@@ -621,7 +621,7 @@ def get_order_detail(order_id):
     })
 
 @bp.route("/api/admin/settings", methods=['GET', 'POST'])
-@admin_required
+@staff_required
 def admin_settings():
     if request.method == 'GET':
         settings = load_settings().copy() 
