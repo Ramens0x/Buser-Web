@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu Hình Coin Nội Bộ - Buser.ink</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .admin-sidebar {
+            background-color: #f8f8f8;
+            border-right: 1px solid #ddd;
+            padding: 15px;
+            min-height: 80vh
+        }
+
+        .admin-sidebar .nav-pills>li>a {
+            color: #333;
+            font-weight: bold;
+            border-radius: 4px
+        }
+
+        .admin-sidebar .nav-pills>li>a:hover {
+            background-color: #eee
+        }
+
+        .admin-sidebar .nav-pills>li.active>a {
+            background-color: #2882C0;
+            color: #fff
+        }
+
+        .admin-main-content {
+            padding: 20px
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-default" style="background-color: #2882C0; border: none; border-radius: 0;">
+            <div class="container">
+                <div class="navbar-header"><a class="navbar-brand" href="/"
+                        style="color: #fff; font-weight: bold;">BUSER.INK (ADMIN)</a></div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="index.html" style="color: #fff;"><i class="fa fa-home"></i> Trang chủ</a></li>
+                        <li><a href="login.html" style="color: #fff;"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 admin-sidebar">
+                <ul class="nav nav-pills nav-stacked">
+                    <li><a href="admin_dashboard.html"><i class="fa fa-dashboard"></i> Tổng quan</a></li>
+                    <li><a href="admin_history.html"><i class="fa fa-history"></i> Lịch sử Giao dịch</a></li>
+                    <li><a href="admin_users.html"><i class="fa fa-users"></i> Quản lý Người dùng</a></li>
+                    <li><a href="admin_kyc.html"><i class="fa fa-id-card"></i> Quản lý KYC</a></li>
+                    <li><a href="admin_spread.html"><i class="fa fa-line-chart"></i> Quản lý Giá & Spread</a></li>
+                    <li class="active">
+                        <a href="#settingsSubmenu" data-toggle="collapse" aria-expanded="true"><i
+                                class="fa fa-cogs"></i> Cài đặt Hệ thống <span class="caret"></span></a>
+                        <ul class="collapse in" id="settingsSubmenu"
+                            style="list-style: none; padding-left: 20px; background: #f9f9f9;">
+                            <li><a href="admin_settings.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-bank"></i> Ngân hàng & Ví Admin</a></li>
+                            <li><a href="admin_settings_fee.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-list-alt"></i> Bảng Phí Giao Dịch</a></li>
+                            <li><a href="admin_settings_buy_fee.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-ticket"></i> Cấu hình Phí Mua</a></li>
+                            <li><a href="admin_settings_telegram.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-telegram"></i> Cấu hình Telegram</a></li>
+                            <li><a href="admin_settings_internal.html"
+                                    style="padding: 10px; color: #333; font-weight:bold;"><i class="fa fa-empire"></i>
+                                    Coin Nội bộ</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-sm-9 admin-main-content">
+                <h2>Cấu Hình Coin Nội Bộ</h2>
+                <form id="settings-form" class="form-horizontal">
+                    <div class="panel panel-info">
+                        <div class="panel-heading"><b>Coin ITLG</b></div>
+                        <div class="panel-body">
+                            <div class="form-group"><label>Tên hiển thị:</label><input type="text" class="form-control"
+                                    name="admin_itlg_name"></div>
+                            <div class="form-group"><label>Ví/ID Admin:</label><input type="text" class="form-control"
+                                    name="admin_itlg_wallet"></div>
+                            <div class="row">
+                                <div class="col-md-6"><label>Giá BÁN (VNĐ):</label><input type="number"
+                                        class="form-control" name="admin_itlg_price_buy"></div>
+                                <div class="col-md-6"><label>Giá MUA (VNĐ):</label><input type="number"
+                                        class="form-control" name="admin_itlg_price_sell"></div>
+                            </div>
+                            <div class="form-group"><label>Thanh khoản:</label><input type="number" class="form-control"
+                                    name="liquidity_itlg"></div>
+                            <div class="row">
+                                <div class="col-md-6"><label>Phí GD (VNĐ):</label><input type="number"
+                                        class="form-control" name="fee_itlg_amount"></div>
+                                <div class="col-md-6"><label>Miễn phí nếu &ge;:</label><input type="number"
+                                        class="form-control" name="fee_itlg_threshold"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-warning">
+                        <div class="panel-heading"><b>Coin ITL</b></div>
+                        <div class="panel-body">
+                            <div class="form-group"><label>Tên hiển thị:</label><input type="text" class="form-control"
+                                    name="admin_itl_name"></div>
+                            <div class="form-group"><label>Ví/ID Admin:</label><input type="text" class="form-control"
+                                    name="admin_itl_wallet"></div>
+                            <div class="row">
+                                <div class="col-md-6"><label>Giá BÁN (VNĐ):</label><input type="number"
+                                        class="form-control" name="admin_itl_price_buy"></div>
+                                <div class="col-md-6"><label>Giá MUA (VNĐ):</label><input type="number"
+                                        class="form-control" name="admin_itl_price_sell"></div>
+                            </div>
+                            <div class="form-group"><label>Thanh khoản:</label><input type="number" class="form-control"
+                                    name="liquidity_itl"></div>
+                            <div class="row">
+                                <div class="col-md-6"><label>Phí GD (VNĐ):</label><input type="number"
+                                        class="form-control" name="fee_itl_amount"></div>
+                                <div class="col-md-6"><label>Miễn phí nếu &ge;:</label><input type="number"
+                                        class="form-control" name="fee_itl_threshold"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12"><button type="submit" class="btn btn-primary"><i class="fa fa-save"></i>
+                                Lưu Coin Nội Bộ</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/admin_dashboard.js"></script>
+</body>
+
+</html>

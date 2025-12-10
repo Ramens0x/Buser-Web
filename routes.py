@@ -18,7 +18,7 @@ from flask_limiter.util import get_remote_address
 from extensions import db, socketio, limiter, mail
 from models import User, Wallet, Bank, KYC, Order
 from helpers import (
-    load_settings, save_settings, get_user_from_request, admin_required, 
+    load_settings, save_settings, get_user_from_request, admin_required, staff_required, 
     send_telegram_notification, save_secure_image, is_valid_image, 
     allowed_file, allowed_kyc_file, send_reset_email, send_async_email,
     current_rates, app_settings
@@ -381,7 +381,7 @@ def create_order():
                 "message": f"Giao dịch > {KYC_LIMIT:,.0f} VNĐ yêu cầu KYC!"
             }), 403
     
-    # 1. Load cài đặt ngay đầu hàm để dùng chung
+    # Load cài đặt ngay đầu hàm để dùng chung
     settings = load_settings()
 
     if mode == 'buy':
@@ -391,6 +391,8 @@ def create_order():
         elif coin_type in ['ether', 'eth']: limit = float(settings.get('liquidity_eth', 0))
         elif coin_type == 'bnb': limit = float(settings.get('liquidity_bnb', 0))
         elif coin_type == 'sol': limit = float(settings.get('liquidity_sol', 0))
+        elif coin_type == 'itlg': limit = float(settings.get('liquidity_itlg', 0))
+        elif coin_type == 'itl': limit = float(settings.get('liquidity_itl', 0))
         else: limit = 1000000 
         
         if amount_to > limit:
@@ -433,16 +435,33 @@ def create_order():
     selected_admin_bank = None
     admin_name_for_content = "ADMIN"
 
-    if admin_banks and len(admin_banks) > 0:
-        # Chọn ngẫu nhiên 1 ngân hàng
-        selected_admin_bank = random.choice(admin_banks)
-        # Lấy tên chủ tài khoản từ chính ngân hàng đó
-        if selected_admin_bank.get('name'):
-            admin_name_for_content = remove_accents(selected_admin_bank.get('name')).upper()
+    # Lọc bank theo coin (Chỉ áp dụng khi có danh sách bank)
+    if admin_banks:
+        if mode == 'buy':
+            # Chỉ tìm bank hỗ trợ coin này (coin_type nằm trong mảng coins của bank)
+            suitable_banks = [b for b in admin_banks if coin_type in b.get('coins', [])]
+            
+            if suitable_banks:
+                # Random 1 bank trong danh sách đã lọc
+                selected_admin_bank = random.choice(suitable_banks)
+            else:
+                # Nếu khách MUA mà không có bank nhận tiền -> Báo lỗi
+                return jsonify({
+                    "success": False, 
+                    "message": f"Hệ thống chưa cấu hình tài khoản nhận tiền cho {coin_type.upper()}. Vui lòng liên hệ Admin."
+                }), 400
+        else:
+            # Nếu khách BÁN: 
+            # Ta vẫn lấy random 1 bank bất kỳ để lấy tên hiển thị Admin (cho nội dung CK)
+            # Hoặc bạn có thể chọn bank đầu tiên. Ở đây giữ logic random cũ cho chiều Bán.
+            selected_admin_bank = random.choice(admin_banks)
+
+    # Lấy tên chủ tài khoản từ bank đã chọn để ghép vào nội dung (cho Admin dễ đối soát)
+    if selected_admin_bank and selected_admin_bank.get('name'):
+        admin_name_for_content = remove_accents(selected_admin_bank.get('name')).upper()
         
-    # Tạo nội dung CK cho Admin (Đơn Bán): Mã GD + Tên Admin Random + Suffix Random
+    # Tạo nội dung CK cho Admin (Đơn Bán): Mã GD + Tên Admin + Suffix Random
     sell_transfer_content = f"{transaction_id} {admin_name_for_content} {random_suffix}"
-    # --------------------------------------------------------
 
     payment_info_dict = {}
 
@@ -495,7 +514,7 @@ def create_order():
             "wallet_address": wallet_address, 
             "network": network,
             "content": full_transfer_content,
-            "sell_content": sell_transfer_content, # Nội dung đã được update theo yêu cầu
+            "sell_content": sell_transfer_content,
             "user_bank_snapshot": user_bank_snapshot
         }
     
@@ -560,7 +579,7 @@ def upload_bill():
     return jsonify({"success": False, "message": "File không hợp lệ"}), 400
 
 @bp.route("/api/admin/bill/<path:filename>")
-@admin_required
+@staff_required
 def get_bill_image(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
@@ -722,7 +741,7 @@ def user_cancel_order():
     return jsonify({"success": True, "message": "Đã hủy đơn hàng thành công!"})
 
 @bp.route("/api/admin/cancel-order", methods=['POST'])
-@admin_required
+@staff_required
 def admin_cancel_order():
     data = request.json
     order_id = data.get('order_id')
@@ -734,7 +753,7 @@ def admin_cancel_order():
     return jsonify({"success": True, "message": f"Admin đã hủy đơn hàng {order_id}"})
 
 @bp.route("/api/admin/transactions", methods=['GET'])
-@admin_required
+@staff_required
 def get_admin_transactions():
     pending_orders = Order.query.filter_by(status='pending').order_by(Order.created_at.desc()).all()
     
@@ -795,7 +814,7 @@ def get_admin_transactions():
     return jsonify({"success": True, "transactions": orders_list, "stats": stats_dict})
 
 @bp.route("/api/admin/transactions/complete", methods=['POST'])
-@admin_required
+@staff_required
 def complete_admin_transaction():
     data = request.json
     order = Order.query.filter_by(id=data.get('order_id')).first()
@@ -828,7 +847,7 @@ def get_public_transactions():
         return jsonify({"success": False, "message": str(e)}), 500
 
 @bp.route("/api/admin/transactions/history", methods=['GET'])
-@admin_required
+@staff_required
 def get_admin_transactions_history():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -1004,7 +1023,7 @@ def get_kyc_status():
     })
 
 @bp.route("/api/admin/kyc-list", methods=['GET'])
-@admin_required
+@staff_required
 def admin_get_kyc_list():
     reqs = KYC.query.order_by(
         case((KYC.status == 'pending', 1), (KYC.status == 'approved', 2), else_=3),
@@ -1034,7 +1053,7 @@ def serve_kyc_image(filename):
     return send_from_directory(current_app.config['KYC_UPLOAD_FOLDER'], filename) 
 
 @bp.route("/api/admin/kyc-review", methods=['POST'])
-@admin_required
+@staff_required
 def admin_review_kyc():
     data = request.json
     kyc = KYC.query.get(data.get('kyc_id'))
@@ -1217,7 +1236,7 @@ def health_check():
 
 # --- API: Gửi tin nhắn từ Admin cho Khách ---
 @bp.route("/api/admin/order-message", methods=['POST'])
-@admin_required
+@staff_required
 def admin_send_order_message():
     data = request.json
     order_id = data.get('order_id')
@@ -1237,6 +1256,24 @@ def admin_send_order_message():
     socketio.emit('order_message_update', {'order_id': order.id, 'message': message}, room=order.id)
     
     return jsonify({"success": True, "message": "Đã gửi thông báo cho khách hàng!"})
+
+@bp.route("/api/admin/update-role", methods=['POST'])
+@admin_required  # Chỉ Admin tối cao mới được đổi quyền người khác
+def admin_update_role():
+    data = request.json
+    user_id = data.get('user_id')
+    new_role = data.get('new_role') # 'User', 'Manager', 'Admin'
+    
+    if new_role not in ['User', 'Manager', 'Admin']:
+        return jsonify({"success": False, "message": "Vai trò không hợp lệ"}), 400
+        
+    target_user = User.query.get(user_id)
+    if not target_user:
+        return jsonify({"success": False, "message": "Không tìm thấy người dùng"}), 404
+    
+    target_user.role = new_role
+    db.session.commit()
+    return jsonify({"success": True, "message": f"Đã cập nhật quyền của {target_user.username} thành {new_role}"})
 
 # --- SOCKET EVENTS ---
 

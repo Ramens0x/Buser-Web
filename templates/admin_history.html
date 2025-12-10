@@ -66,7 +66,24 @@
                     <li><a href="admin_users.html"><i class="fa fa-users"></i> Quản lý Người dùng</a></li>
                     <li><a href="admin_kyc.html"><i class="fa fa-id-card"></i> Quản lý KYC</a></li>
                     <li><a href="admin_spread.html"><i class="fa fa-line-chart"></i> Quản lý Giá & Spread</a></li>
-                    <li><a href="admin_settings.html"><i class="fa fa-cogs"></i> Cài đặt Thanh toán</a></li>
+                    <li class="active">
+                        <a href="#settingsSubmenu" data-toggle="collapse" aria-expanded="true">
+                            <i class="fa fa-cogs"></i> Cài đặt Hệ thống <span class="caret"></span>
+                        </a>
+                        <ul class="collapse in" id="settingsSubmenu"
+                            style="list-style: none; padding-left: 20px; background: #f9f9f9;">
+                            <li><a href="admin_settings.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-bank"></i> Ngân hàng & Ví Admin</a></li>
+                            <li><a href="admin_settings_fee.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-list-alt"></i> Bảng Phí Giao Dịch</a></li>
+                            <li><a href="admin_settings_buy_fee.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-ticket"></i> Cấu hình Phí Mua</a></li>
+                            <li><a href="admin_settings_telegram.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-telegram"></i> Cấu hình Telegram</a></li>
+                            <li><a href="admin_settings_internal.html" style="padding: 10px; color: #333;"><i
+                                        class="fa fa-empire"></i> Coin Nội bộ</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
 

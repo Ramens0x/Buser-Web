@@ -96,10 +96,36 @@ def load_settings():
         
     return app_settings
 
-def save_settings(settings):
+def save_settings(new_settings):
+    """Lưu cài đặt hỗ trợ cập nhật từng phần (Partial Update)"""
     global app_settings
-    with open(CONFIG_FILE, 'w') as f: json.dump(settings, f, indent=4)
-    app_settings = settings
+    
+    # 1. Tải cài đặt hiện tại từ file để đảm bảo có đủ dữ liệu cũ
+    current_settings = load_settings()
+    
+    # 2. Duyệt qua dữ liệu mới gửi lên để cập nhật đè vào
+    for key, value in new_settings.items():
+        # [QUAN TRỌNG] Xử lý riêng cho 'coin_fees' để tránh mất phí của các coin khác
+        # Nếu gửi lên coin_fees, ta phải merge (trộn) với phí cũ chứ không ghi đè toàn bộ
+        if key == 'coin_fees' and isinstance(value, dict) and 'coin_fees' in current_settings:
+            if isinstance(current_settings['coin_fees'], dict):
+                current_settings['coin_fees'].update(value)
+            else:
+                current_settings['coin_fees'] = value
+        else:
+            # Các trường khác (Telegram, Bank, Liquidity...) thì cập nhật trực tiếp giá trị mới
+            current_settings[key] = value
+
+    # 3. Lưu lại vào file config.json
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(current_settings, f, indent=4)
+        
+        # 4. Cập nhật biến global bộ nhớ đệm
+        app_settings = current_settings
+        print(f"✅ Đã lưu cài đặt (Cập nhật {len(new_settings)} trường)")
+    except Exception as e:
+        current_app.logger.error(f"❌ Lỗi lưu file config: {e}")
 
 def send_async_email(app, msg):
     """Gửi email bất đồng bộ (cần app context)"""
@@ -204,6 +230,21 @@ def admin_required(f):
             return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
         if user.role != 'Admin':
             return jsonify({"success": False, "message": "Bạn không có quyền truy cập (Admin only)"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+def staff_required(f):
+    """Decorator yêu cầu quyền Admin HOẶC Manager (Nhân viên)"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = get_user_from_request()
+        if not user:
+            return jsonify({"success": False, "message": "Vui lòng đăng nhập"}), 401
+        
+        # Cho phép: Admin và Manager
+        if user.role not in ['Admin', 'Manager']:
+            return jsonify({"success": False, "message": "Bạn không có quyền truy cập (Staff only)"}), 403
+            
         return f(*args, **kwargs)
     return decorated_function
 

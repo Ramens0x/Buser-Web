@@ -347,7 +347,7 @@ $(document).ready(function () {
         } else {
             coinName = 'USDT - BEP20';
         }
-        
+
 
         if (rates[currentCoin]) {
             if (currentMode === 'buy') {
@@ -387,10 +387,10 @@ $(document).ready(function () {
             coinBal = window.siteLiquidity.eth;
             unit = 'BNB (BEP20)';
         } else if (currentCoin === 'itlg') {
-            coinBal = window.siteLiquidity.itlg; 
+            coinBal = window.siteLiquidity.itlg;
             unit = 'ITLG';
         } else if (currentCoin === 'itl') {
-            coinBal = window.siteLiquidity.itl;  
+            coinBal = window.siteLiquidity.itl;
             unit = 'ITL';
         } else {
             coinBal = 0;
@@ -428,7 +428,7 @@ $(document).ready(function () {
             $('#menu-login').hide();
             $('#menu-profile').show();
             $('#menu-logout').show();
-            if (user.role === 'Admin') {
+            if (user.role === 'Admin' || user.role === 'Manager') {
                 $('#menu-admin').show();
             }
             $('#btn-submit-swap').text('Tiếp tục').removeClass('btn-primary').addClass('btn-success');
@@ -994,11 +994,11 @@ $(document).ready(function () {
 
                         $('input[name="fee_bnb_amount"]').val(getFee('bnb'));
                         $('input[name="fee_bnb_threshold"]').val(getThresh('bnb'));
-                        if(response.settings.coin_fees.itlg) {
+                        if (response.settings.coin_fees.itlg) {
                             $('input[name="fee_itlg_amount"]').val(response.settings.coin_fees.itlg.fee);
                             $('input[name="fee_itlg_threshold"]').val(response.settings.coin_fees.itlg.threshold);
                         }
-                        if(response.settings.coin_fees.itl) {
+                        if (response.settings.coin_fees.itl) {
                             $('input[name="fee_itl_amount"]').val(response.settings.coin_fees.itl.fee);
                             $('input[name="fee_itl_threshold"]').val(response.settings.coin_fees.itl.threshold);
                         }
@@ -1055,27 +1055,70 @@ $(document).ready(function () {
         renderSupportedBanks();
     });
 
+    // --- KHAI BÁO DANH SÁCH COIN HỆ THỐNG ---
+    const SYSTEM_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'itlg', 'itl'];
+
     function renderBankTable() {
         const tbody = $('#bank-list-table tbody');
         tbody.empty();
 
         if (adminBanks.length === 0) {
-            tbody.append('<tr><td colspan="5" class="text-center">Chưa có ngân hàng nào. Hãy thêm mới.</td></tr>');
+            tbody.append('<tr><td colspan="6" class="text-center">Chưa có ngân hàng nào. Hãy thêm mới.</td></tr>');
             return;
         }
 
         adminBanks.forEach((bank, index) => {
+            // Đảm bảo bank.coins là một mảng
+            let currentCoins = bank.coins || [];
+
+            // Tạo danh sách checkbox cho từng coin
+            let coinChecksHtml = '<div style="display:flex; flex-wrap:wrap; gap:10px;">';
+            SYSTEM_COINS.forEach(coin => {
+                let isChecked = currentCoins.includes(coin) ? 'checked' : '';
+                // Viết hoa tên coin cho đẹp
+                let coinLabel = coin.toUpperCase();
+                if (coin === 'bustabit') coinLabel = 'BTC';
+                if (coin === 'ether') coinLabel = 'ETH';
+
+                coinChecksHtml += `
+                    <label style="font-weight:normal; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" 
+                               onchange="toggleBankCoin(${index}, '${coin}', this.checked)" 
+                               ${isChecked}> ${coinLabel}
+                    </label>`;
+            });
+            coinChecksHtml += '</div>';
+
             const row = `
                 <tr>
                     <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.bank_name)}" onchange="updateBank(${index}, 'bank_name', this.value)" placeholder="VD: Vietcombank"></td>
                     <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.bin)}" onchange="updateBank(${index}, 'bin', this.value)" placeholder="970436"></td>
                     <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.acc)}" onchange="updateBank(${index}, 'acc', this.value)"></td>
                     <td><input type="text" class="form-control input-sm" value="${escapeHTML(bank.name)}" onchange="updateBank(${index}, 'name', this.value)"></td>
+                    
+                    <td>${coinChecksHtml}</td>
+                    
                     <td><button type="button" class="btn btn-danger btn-xs" onclick="removeBank(${index})"><i class="fa fa-trash"></i></button></td>
                 </tr>
             `;
             tbody.append(row);
         });
+    }
+
+    // --- HÀM XỬ LÝ TÍCH CHỌN COIN ---
+    window.toggleBankCoin = function (index, coin, isChecked) {
+        if (!adminBanks[index].coins) {
+            adminBanks[index].coins = [];
+        }
+        if (isChecked) {
+            // Nếu tích -> Thêm vào mảng nếu chưa có
+            if (!adminBanks[index].coins.includes(coin)) {
+                adminBanks[index].coins.push(coin);
+            }
+        } else {
+            // Nếu bỏ tích -> Xóa khỏi mảng
+            adminBanks[index].coins = adminBanks[index].coins.filter(c => c !== coin);
+        }
     }
 
     // Gán hàm vào window để gọi được từ onclick trong HTML
@@ -1091,82 +1134,86 @@ $(document).ready(function () {
 
     // Xử lý nút Thêm Ngân hàng
     $('#btn-add-bank').off('click').on('click', function () {
-        adminBanks.push({ bank_name: "", bin: "", acc: "", name: "" });
+        adminBanks.push({ bank_name: "", bin: "", acc: "", name: "", coins: [] });
         renderBankTable();
     });
-
+    // --- [LOGIC MỚI] XỬ LÝ LƯU CÀI ĐẶT (HỖ TRỢ TÁCH TRANG) ---
     $('#settings-form').on('submit', function (e) {
         e.preventDefault();
-        const cleanBanks = adminBanks.filter(b => b.bin && b.acc);
 
-        var settingsData = {
-            maintenance_mode: $('select[name="maintenance_mode"]').val(),
-            admin_bustabit_id: $('input[name="admin_bustabit_id"]').val(),
-            admin_usdt_wallet: $('input[name="admin_usdt_wallet"]').val(),
-            admin_ether_id: $('input[name="admin_ether_id"]').val(),
-            admin_bnb_wallet: $('input[name="admin_bnb_wallet"]').val(),
-            admin_sol_wallet: $('input[name="admin_sol_wallet"]').val(),
-            admin_itlg_name: $('input[name="admin_itlg_name"]').val(),
-            admin_itlg_wallet: $('input[name="admin_itlg_wallet"]').val(),
-            admin_itlg_price_buy: $('input[name="admin_itlg_price_buy"]').val(),
-            admin_itlg_price_sell: $('input[name="admin_itlg_price_sell"]').val(),
-            admin_itl_name: $('input[name="admin_itl_name"]').val(),
-            admin_itl_wallet: $('input[name="admin_itl_wallet"]').val(),
-            admin_itl_price_buy: $('input[name="admin_itl_price_buy"]').val(),
-            admin_itl_price_sell: $('input[name="admin_itl_price_sell"]').val(),
-            TELEGRAM_BOT_TOKEN: $('input[name="telegram_bot_token"]').val(),
-            TELEGRAM_CHAT_ID: $('input[name="telegram_chat_id"]').val(),
-            liquidity_vnd: $('input[name="liquidity_vnd"]').val(),
-            liquidity_usdt: $('input[name="liquidity_usdt"]').val(),
-            liquidity_btc: $('input[name="liquidity_btc"]').val(),
-            liquidity_eth: $('input[name="liquidity_eth"]').val(),
-            liquidity_bnb: $('input[name="liquidity_bnb"]').val(),
-            liquidity_sol: $('input[name="liquidity_sol"]').val(),
-            liquidity_itlg: $('input[name="liquidity_itlg"]').val(),
-            liquidity_itl: $('input[name="liquidity_itl"]').val(),
-            coin_fees: {
-                bustabit: {
-                    fee: $('input[name="fee_bustabit_amount"]').val(),
-                    threshold: $('input[name="fee_bustabit_threshold"]').val()
-                },
-                ether: {
-                    fee: $('input[name="fee_ether_amount"]').val(),
-                    threshold: $('input[name="fee_ether_threshold"]').val()
-                },
-                usdt: {
-                    fee: $('input[name="fee_usdt_amount"]').val(),
-                    threshold: $('input[name="fee_usdt_threshold"]').val()
-                },
-                sol: {
-                    fee: $('input[name="fee_sol_amount"]').val(),
-                    threshold: $('input[name="fee_sol_threshold"]').val()
-                },
-                bnb: {
-                    fee: $('input[name="fee_bnb_amount"]').val(),
-                    threshold: $('input[name="fee_bnb_threshold"]').val()
-                },
-                itlg: {
-                    fee: $('input[name="fee_itlg_amount"]').val(),
-                    threshold: $('input[name="fee_itlg_threshold"]').val()
-                },
-                itl: {
-                    fee: $('input[name="fee_itl_amount"]').val(),
-                    threshold: $('input[name="fee_itl_threshold"]').val()
-                }
-            },
-            fee_html_content: $('textarea[name="fee_html_content"]').val(),
-            admin_banks: cleanBanks
-        };
+        var settingsData = {};
 
-        settingsData.supported_banks = supportedBanks;
+        // 1. Nhóm các trường đơn giản (Input text/number/select/textarea)
+        // Hàm này tự động quét: Nếu ô nhập tồn tại trên trang thì mới lấy giá trị
+        function addIfExist(name) {
+            var field = $(`[name="${name}"]`);
+            if (field.length > 0) {
+                settingsData[name] = field.val();
+            }
+        }
+
+        // Danh sách các trường đơn lẻ cần kiểm tra
+        var simpleFields = [
+            'maintenance_mode',
+            'fee_html_content',
+            'telegram_bot_token', 'telegram_chat_id',
+            'admin_bustabit_id', 'admin_ether_id', 'admin_usdt_wallet', 'admin_bnb_wallet', 'admin_sol_wallet',
+            'admin_itlg_name', 'admin_itlg_wallet', 'admin_itlg_price_buy', 'admin_itlg_price_sell',
+            'admin_itl_name', 'admin_itl_wallet', 'admin_itl_price_buy', 'admin_itl_price_sell',
+            'liquidity_vnd', 'liquidity_usdt', 'liquidity_btc', 'liquidity_eth', 'liquidity_bnb', 'liquidity_sol', 'liquidity_itlg', 'liquidity_itl'
+        ];
+
+        simpleFields.forEach(addIfExist);
+
+        // 2. Nhóm Coin Fees (Phí coin) - Xử lý phức tạp hơn
+        // Logic: Chỉ gửi object phí của coin nào đang hiển thị trên màn hình
+        var coin_fees = {};
+        var coins = ['bustabit', 'ether', 'usdt', 'sol', 'bnb', 'itlg', 'itl'];
+        var hasFeeUpdate = false;
+
+        coins.forEach(function (coin) {
+            var feeInput = $(`input[name="fee_${coin}_amount"]`);
+            // Nếu tìm thấy ô nhập phí của coin này -> Thêm vào danh sách gửi đi
+            if (feeInput.length > 0) {
+                coin_fees[coin] = {
+                    fee: feeInput.val(),
+                    threshold: $(`input[name="fee_${coin}_threshold"]`).val()
+                };
+                hasFeeUpdate = true;
+            }
+        });
+
+        if (hasFeeUpdate) {
+            settingsData.coin_fees = coin_fees;
+        }
+
+        // 3. Nhóm Ngân hàng (Admin Banks)
+        // Chỉ gửi cập nhật ngân hàng NẾU bảng ngân hàng đang hiển thị
+        if ($('#bank-list-table').length > 0) {
+            const cleanBanks = adminBanks.filter(b => b.bin && b.acc); // adminBanks là biến toàn cục đã load từ trước
+            settingsData.admin_banks = cleanBanks;
+            settingsData.supported_banks = supportedBanks;
+        }
+
+        // --- GỬI DỮ LIỆU LÊN SERVER ---
+        // Nút bấm loading
+        var btn = $(this).find('button[type="submit"]');
+        var originalText = btn.html();
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang lưu...');
 
         $.ajax({
             url: API_URL + "/api/admin/settings",
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(settingsData),
-            success: function (response) { alert(response.message); location.reload(); },
-            error: function (xhr) { alert("Lỗi: " + xhr.responseJSON.message); }
+            success: function (response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function (xhr) {
+                alert("Lỗi: " + (xhr.responseJSON ? xhr.responseJSON.message : "Lỗi kết nối"));
+                btn.prop('disabled', false).html(originalText);
+            }
         });
     });
 
@@ -1207,7 +1254,7 @@ $(document).ready(function () {
                 // Với coin nội bộ, có thể bạn muốn khách nhập ID Tài khoản thay vì Ví dài ngoằng
                 $('label[for="input-address"]').text("Địa chỉ Ví / ID Tài khoản:");
                 // Ẩn Tag đi cho gọn (trừ khi coin bạn cần Tag)
-                $('#field-tag-group').hide(); 
+                $('#field-tag-group').hide();
             }
             else {
                 // USDT, BNB, SOL: Chỉ cần Địa chỉ ví (Tag vẫn ẩn)
@@ -1354,4 +1401,35 @@ $(document).ready(function () {
             return true;
         }
     }
+
+    // --- KIỂM TRA QUYỀN ĐỂ ẨN MENU ADMIN ---
+    function checkAdminSidebar() {
+        const userDataString = localStorage.getItem('buser_user');
+        if (userDataString) {
+            const user = JSON.parse(userDataString);
+
+            // Nếu là Manager (Nhân viên)
+            if (user.role === 'Manager') {
+                // 1. Ẩn các menu cấm
+                $('a[href*="admin_settings.html"]').parent().hide(); // Cài đặt
+                $('a[href*="admin_users.html"]').parent().hide();    // Quản lý User
+                $('a[href*="admin_spread.html"]').parent().hide();   // Quản lý Giá
+
+                // 2. Chặn truy cập trực tiếp bằng link
+                const path = window.location.pathname;
+                if (path.includes('admin_settings.html') ||
+                    path.includes('admin_users.html') ||
+                    path.includes('admin_spread.html')) {
+                    alert('⛔ Bạn không có quyền truy cập trang này (Chỉ dành cho Admin).');
+                    window.location.href = 'admin_dashboard.html';
+                }
+            }
+
+            if (user.role !== 'Admin' && user.role !== 'Manager') {
+            }
+        }
+    }
+
+    // Gọi hàm này khi load trang
+    checkAdminSidebar();
 });
