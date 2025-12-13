@@ -118,7 +118,7 @@ $(document).ready(function () {
         if (!localStorage.getItem('buser_user')) return;
 
         const tableBody = $('#wallets-table-body');
-        const coins = ['bustabit', 'usdt', 'ether', 'bnb', 'sol', 'itlg', 'itl'];
+        const coins = ['bustabit', 'usdt', 'usdc', 'ether', 'bnb', 'sol', 'itlg', 'itl'];
 
         let requests = coins.map(coin => {
             return $.ajax({ url: `${API_URL}/api/user/wallets?coin_type=${coin}`, type: 'GET' });

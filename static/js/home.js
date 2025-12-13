@@ -27,6 +27,7 @@ $(document).ready(function () {
                 if (data.ether) { $('#ether-buy').html(showPrice(data.ether.buy)); $('#ether-sell').html(showPrice(data.ether.sell)); }
                 if (data.btc) { $('#btc-buy').html(showPrice(data.btc.buy)); $('#btc-sell').html(showPrice(data.btc.sell)); }
                 if (data.usdt) { $('#usdt-buy').html(showPrice(data.usdt.buy)); $('#usdt-sell').html(showPrice(data.usdt.sell)); }
+                if (data.usdc) { $('#usdc-buy').html(showPrice(data.usdc.buy)); $('#usdc-sell').html(showPrice(data.usdc.sell)); }
                 if (data.eth) { $('#eth-buy').html(showPrice(data.eth.buy)); $('#eth-sell').html(showPrice(data.eth.sell)); }
                 if (data.bnb) { $('#bnb-buy').html(showPrice(data.bnb.buy)); $('#bnb-sell').html(showPrice(data.bnb.sell)); }
                 if (data.sol) { $('#sol-buy').html(showPrice(data.sol.buy)); $('#sol-sell').html(showPrice(data.sol.sell)); }

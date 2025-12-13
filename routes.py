@@ -30,7 +30,7 @@ from flask_mail import Message
 # Tạo Blueprint (đại diện cho app chính)
 bp = Blueprint('main', __name__)
 
-ALLOWED_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'btc', 'eth', 'itlg', 'itl']
+ALLOWED_COINS = ['bustabit', 'ether', 'usdt', 'usdc', 'bnb', 'sol', 'btc', 'eth', 'itlg', 'itl']
 
 # --- CÁC ROUTE (API) ---
 
@@ -388,6 +388,7 @@ def create_order():
         limit = 0
         if coin_type in ['bustabit', 'btc']: limit = float(settings.get('liquidity_btc', 0))
         elif coin_type == 'usdt': limit = float(settings.get('liquidity_usdt', 0))
+        elif coin_type == 'usdc': limit = float(settings.get('liquidity_usdc', 0))
         elif coin_type in ['ether', 'eth']: limit = float(settings.get('liquidity_eth', 0))
         elif coin_type == 'bnb': limit = float(settings.get('liquidity_bnb', 0))
         elif coin_type == 'sol': limit = float(settings.get('liquidity_sol', 0))
@@ -493,7 +494,9 @@ def create_order():
         }
     else: 
         if coin_type == 'bustabit': wallet_address = settings.get('admin_bustabit_id'); network = "Bustabit"
-        elif coin_type == 'ether': wallet_address = settings.get('admin_ether_id'); network = "Ether"
+        elif coin_type == 'ether': wallet_address = settings.get('admin_ether_id'); network = "Erc20"
+        elif coin_type == 'usdc': wallet_address = settings.get('admin_usdc_wallet'); network = "BEP-20"
+        elif coin_type == 'usdt': wallet_address = settings.get('admin_usdt_wallet'); network = "BEP-20"
         elif coin_type == 'sol': wallet_address = settings.get('admin_sol_wallet'); network = "Solana"
         elif coin_type == 'bnb': wallet_address = settings.get('admin_bnb_wallet'); network = "BEP-20 (BSC)"
         elif coin_type == 'itlg': wallet_address = settings.get('admin_itlg_wallet', 'Chưa cấu hình (Liên hệ Admin)'); network = "Nội Bộ"
@@ -1206,7 +1209,7 @@ def get_site_config():
     return jsonify({
         "success": True,
         "liquidity": {
-            "usdt": settings.get('liquidity_usdt', 0), "btc": settings.get('liquidity_btc', 0),
+            "usdt": settings.get('liquidity_usdt', 0), "usdc": settings.get('liquidity_usdc', 0), "btc": settings.get('liquidity_btc', 0),
             "eth": settings.get('liquidity_eth', 0), "bnb": settings.get('liquidity_bnb', 0),
             "sol": settings.get('liquidity_sol', 0),
             "itlg": settings.get('liquidity_itlg', 0),

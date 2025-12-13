@@ -20,6 +20,7 @@ class PriceService:
             'bustabit': {'buy': 1.015, 'sell': 0.985},  # +1.5% mua, -1.5% bán
             'btc': {'buy': 1.015, 'sell': 0.985},
             'usdt': {'buy': 1.01, 'sell': 0.99},        # +1% mua, -1% bán
+            'usdc': {'buy': 1.01, 'sell': 0.99},
             'eth': {'buy': 1.015, 'sell': 0.985},
             'bnb': {'buy': 1.015, 'sell': 0.985},
             'sol': {'buy': 1.015, 'sell': 0.985}
@@ -50,6 +51,7 @@ class PriceService:
             'btc': 'BTCUSDT',
             'bitcoin': 'BTCUSDT',
             'usdt': 'USDTUSD',      # USDT → USD direct
+            'usdc': 'USDCUSDT',
             'eth': 'ETHUSDT',
             'ethereum': 'ETHUSDT',
             'bnb': 'BNBUSDT',
@@ -170,7 +172,7 @@ class PriceService:
         usd_vnd = self.fetch_usd_vnd_rate()
         
         # Convert
-        if coin_key == 'usdt':
+        if coin_key in ['usdt', 'usdc']:
             base_vnd = price_usd * usd_vnd
         elif coin_key in ['bustabit', 'bits', 'ether', 'ethos']:
             base_vnd = (price_usd * usd_vnd) / 1000000
@@ -205,7 +207,7 @@ class PriceService:
     def get_all_prices(self):
 
         result = {}
-        target_coins = ['bustabit', 'ether', 'btc', 'usdt', 'eth', 'bnb', 'sol'] 
+        target_coins = ['bustabit', 'ether', 'btc', 'usdt', 'usdc', 'eth', 'bnb', 'sol'] 
         for coin in target_coins:
             rates = self.get_rate_buy_sell(coin)
             if rates:

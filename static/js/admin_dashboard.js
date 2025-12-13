@@ -50,10 +50,10 @@ $(document).ready(function () {
                         $('#stat-vnd-in').text(numberFormat(response.stats.total_vnd_in_month, 0) + ' ₫');
                         $('#stat-vnd-out').text(numberFormat(response.stats.total_vnd_out_month, 0) + ' ₫');
 
-                        // Các phần hiển thị coin giữ nguyên
                         $('#stat-bustabit').text(numberFormat(response.stats.total_bustabit_volume, 8));
                         $('#stat-ether').text(numberFormat(response.stats.total_ether_volume, 8));
                         $('#stat-usdt').text(numberFormat(response.stats.total_usdt_volume, 2));
+                        $('#stat-usdc').text(numberFormat(response.stats.total_usdc_volume, 2));
                         $('#stat-bnb').text(numberFormat(response.stats.total_bnb_volume, 4));
                         $('#stat-sol').text(numberFormat(response.stats.total_sol_volume, 4));
                     }

@@ -45,6 +45,7 @@ def load_settings():
         default_settings = {
             "admin_bustabit_id": "",
             "admin_usdt_wallet": "",
+            "admin_usdc_wallet": "",
             "admin_ether_id": "",  
             "admin_sol_wallet": "",
             "admin_bnb_wallet": "",
@@ -52,6 +53,7 @@ def load_settings():
             "TELEGRAM_CHAT_ID": "",
             "admin_banks": default_banks,
             "liquidity_usdt": 10000,
+            "liquidity_usdc": 10000,
             "liquidity_btc": 1000000,
             "liquidity_eth": 1000000,
             "liquidity_bnb": 10,
@@ -60,6 +62,7 @@ def load_settings():
                 "bustabit": {"fee": 50000, "threshold": 20000},
                 "ether": {"fee": 100000, "threshold": 50000},    
                 "usdt": {"fee": 10000, "threshold": 1000},
+                "usdc": {"fee": 10000, "threshold": 1000},
                 "sol": {"fee": 10000, "threshold": 10},
                 "bnb": {"fee": 10000, "threshold": 5}
             },

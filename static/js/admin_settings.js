@@ -4,7 +4,7 @@ $(document).ready(function () {
 
     var adminBanks = [];
     var supportedBanks = [];
-    const SYSTEM_COINS = ['bustabit', 'ether', 'usdt', 'bnb', 'sol', 'itlg', 'itl'];
+    const SYSTEM_COINS = ['bustabit', 'ether', 'usdt', 'usdc', 'bnb', 'sol', 'itlg', 'itl'];
 
     // --- 1. HÀM LOAD DỮ LIỆU TỪ SERVER ---
     function loadSettings() {
@@ -175,10 +175,10 @@ $(document).ready(function () {
         var simpleFields = [
             'maintenance_mode', 'fee_html_content',
             'telegram_bot_token', 'telegram_chat_id',
-            'admin_bustabit_id', 'admin_ether_id', 'admin_usdt_wallet', 'admin_bnb_wallet', 'admin_sol_wallet',
+            'admin_bustabit_id', 'admin_ether_id', 'admin_usdt_wallet', 'admin_usdc_wallet', 'admin_bnb_wallet', 'admin_sol_wallet',
             'admin_itlg_name', 'admin_itlg_wallet', 'admin_itlg_price_buy', 'admin_itlg_price_sell',
             'admin_itl_name', 'admin_itl_wallet', 'admin_itl_price_buy', 'admin_itl_price_sell',
-            'liquidity_vnd', 'liquidity_usdt', 'liquidity_btc', 'liquidity_eth', 'liquidity_bnb', 'liquidity_sol', 'liquidity_itlg', 'liquidity_itl'
+            'liquidity_vnd', 'liquidity_usdt', 'liquidity_usdc', 'liquidity_btc', 'liquidity_eth', 'liquidity_bnb', 'liquidity_sol', 'liquidity_itlg', 'liquidity_itl'
         ];
 
         simpleFields.forEach(function (name) {
@@ -190,7 +190,7 @@ $(document).ready(function () {
 
         // B. Quét Coin Fees (nếu có)
         var coin_fees = {};
-        var coins = ['bustabit', 'ether', 'usdt', 'sol', 'bnb', 'itlg', 'itl'];
+        var coins = ['bustabit', 'ether', 'usdt', 'usdc', 'sol', 'bnb', 'itlg', 'itl'];
         var hasFeeUpdate = false;
 
         coins.forEach(function (coin) {
