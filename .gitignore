@@ -19,6 +19,7 @@ env/
 uploads
 bills
 kyc
+log
 # File nhật ký 
 *.log
 buser.log

@@ -82,7 +82,11 @@ def load_settings():
             "fee_html_content": "",
             "maintenance_mode": "off"
         }
-        save_settings(default_settings)
+        try:
+            with open(CONFIG_FILE, 'w') as f:
+                json.dump(default_settings, f, indent=4)
+        except Exception as e:
+            print(f"Lỗi tạo file config: {e}")
         app_settings = default_settings
         return default_settings
 
